@@ -18,8 +18,9 @@ export async function proxy(request: NextRequest) {
 
     const isAuthRoute = path.startsWith('/login') || path.startsWith('/signup') || path.startsWith('/forgot-password');
     const isCallbackRoute = path.startsWith('/auth');
+    const isPublicRoute = path === '/' || path.startsWith('/checkout') || path.startsWith('/order-success');
 
-    if (!user && !isAuthRoute && !isCallbackRoute) {
+    if (!user && !isAuthRoute && !isCallbackRoute && !isPublicRoute) {
       const url = request.nextUrl.clone();
       url.pathname = '/login';
       const redirectResponse = NextResponse.redirect(url);
@@ -44,8 +45,9 @@ export async function proxy(request: NextRequest) {
     console.error('Error in proxy middleware:', error);
     const path = request.nextUrl.pathname;
     const isAuthRoute = path.startsWith('/login') || path.startsWith('/signup') || path.startsWith('/forgot-password');
+    const isPublicRoute = path === '/' || path.startsWith('/checkout') || path.startsWith('/order-success');
     
-    if (!isAuthRoute) {
+    if (!isAuthRoute && !isPublicRoute) {
       const url = request.nextUrl.clone();
       url.pathname = '/login';
       return NextResponse.redirect(url);

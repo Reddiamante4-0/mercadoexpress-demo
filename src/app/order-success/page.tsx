@@ -9,7 +9,6 @@ import {
   Phone, 
   CreditCard, 
   Clock, 
-  ArrowRight,
   Loader2
 } from 'lucide-react';
 import { getOrders, Order } from '@/lib/db';
@@ -183,14 +182,6 @@ function OrderSuccessContent() {
           >
             <ShoppingBag className="w-4 h-4" />
             <span>Seguir Comprando</span>
-          </button>
-          
-          <button
-            onClick={() => router.push('/login')}
-            className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 font-bold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <span>Ir al Panel Administrador</span>
-            <ArrowRight className="w-4 h-4" />
           </button>
         </div>
 
