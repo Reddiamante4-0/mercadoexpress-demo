@@ -18,6 +18,7 @@ import {
 import { getProducts, saveProduct, deleteProduct, Product } from '@/lib/db';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslation } from '@/hooks/useTranslation';
+import { translations } from '@/config/translations';
 
 const CATEGORIES = [
   'Carnes',
@@ -31,6 +32,35 @@ const CATEGORIES = [
   'Congelados',
   'Ofertas'
 ];
+
+const categoryTranslations: Record<string, Record<string, string>> = {
+  es: {
+    'Todas': 'Todas',
+    'Carnes': 'Carnes',
+    'Pollo': 'Pollo',
+    'Pescado': 'Pescado',
+    'Verduras': 'Verduras',
+    'Frutas': 'Frutas',
+    'Abarrotes': 'Abarrotes',
+    'Bebidas': 'Bebidas',
+    'Aseo': 'Aseo',
+    'Congelados': 'Congelados',
+    'Ofertas': 'Ofertas'
+  },
+  en: {
+    'Todas': 'All',
+    'Carnes': 'Meats',
+    'Pollo': 'Chicken',
+    'Pescado': 'Fish',
+    'Verduras': 'Vegetables',
+    'Frutas': 'Fruits',
+    'Abarrotes': 'Groceries',
+    'Bebidas': 'Drinks',
+    'Aseo': 'Cleaning',
+    'Congelados': 'Frozen',
+    'Ofertas': 'Offers'
+  }
+};
 
 // Preset Unsplash images to choose from to make it easy to select beautiful stock photos
 const STOCK_PHOTOS = [
@@ -47,6 +77,7 @@ const STOCK_PHOTOS = [
 export default function AdminProductsPage() {
   const { toast } = useToast();
   const { language } = useTranslation();
+  const t = translations[language];
 
   const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -58,11 +89,15 @@ export default function AdminProductsPage() {
 
   // Form fields
   const [name, setName] = useState('');
+  const [nameEn, setNameEn] = useState('');
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [price, setPrice] = useState(0);
   const [oldPrice, setOldPrice] = useState<number | undefined>(undefined);
   const [stock, setStock] = useState(10);
   const [description, setDescription] = useState('');
+  const [descriptionEn, setDescriptionEn] = useState('');
+  const [unit, setUnit] = useState('lb');
+  const [unitEn, setUnitEn] = useState('lb');
   const [image, setImage] = useState(STOCK_PHOTOS[0].url);
   const [active, setActive] = useState(true);
 
@@ -74,11 +109,15 @@ export default function AdminProductsPage() {
   const openNewProductModal = () => {
     setEditingProduct(null);
     setName('');
+    setNameEn('');
     setCategory(CATEGORIES[0]);
     setPrice(1000);
     setOldPrice(undefined);
     setStock(10);
     setDescription('');
+    setDescriptionEn('');
+    setUnit('lb');
+    setUnitEn('lb');
     setImage(STOCK_PHOTOS[0].url);
     setActive(true);
     setModalOpen(true);
@@ -87,11 +126,15 @@ export default function AdminProductsPage() {
   const openEditProductModal = (product: Product) => {
     setEditingProduct(product);
     setName(product.name);
+    setNameEn(product.nameEn || '');
     setCategory(product.category);
     setPrice(product.price);
     setOldPrice(product.oldPrice);
     setStock(product.stock);
     setDescription(product.description);
+    setDescriptionEn(product.descriptionEn || '');
+    setUnit(product.unit || 'lb');
+    setUnitEn(product.unitEn || 'lb');
     setImage(product.image);
     setActive(product.active);
     setModalOpen(true);
@@ -102,7 +145,7 @@ export default function AdminProductsPage() {
       const updated = deleteProduct(id);
       setProducts(updated);
       toast({
-        title: language === 'en' ? 'Product deleted.' : 'Producto eliminado con éxito.',
+        title: t.admin.productsToastDeleted,
         type: 'success'
       });
     }
@@ -125,7 +168,7 @@ export default function AdminProductsPage() {
 
     if (!name || !description || !image || price <= 0 || stock < 0) {
       toast({
-        title: 'Por favor, completa todos los campos correctamente.',
+        title: language === 'en' ? 'Please fill out all fields correctly.' : 'Por favor, completa todos los campos correctamente.',
         type: 'error'
       });
       return;
@@ -134,12 +177,16 @@ export default function AdminProductsPage() {
     const newProduct: Product = {
       id: editingProduct ? editingProduct.id : `p-${Math.random().toString(36).substr(2, 9)}`,
       name,
+      nameEn: nameEn.trim() || undefined,
       category,
       price: Number(price),
       oldPrice: oldPrice ? Number(oldPrice) : undefined,
       stock: Number(stock),
       image,
       description,
+      descriptionEn: descriptionEn.trim() || undefined,
+      unit: unit.trim() || 'lb',
+      unitEn: unitEn.trim() || 'lb',
       active
     };
 
@@ -148,9 +195,7 @@ export default function AdminProductsPage() {
     setModalOpen(false);
 
     toast({
-      title: editingProduct 
-        ? (language === 'en' ? 'Product updated.' : 'Producto modificado con éxito.')
-        : (language === 'en' ? 'Product created.' : 'Producto creado con éxito.'),
+      title: editingProduct ? t.admin.productsToastUpdated : t.admin.productsToastCreated,
       type: 'success'
     });
   };
@@ -179,10 +224,10 @@ export default function AdminProductsPage() {
         <div>
           <h1 className="text-xl md:text-2xl font-black text-slate-800 flex items-center gap-2">
             <Package className="w-6 h-6 text-green-600 animate-bounce" />
-            <span>Gestión de Inventario</span>
+            <span>{t.admin.productsTitle}</span>
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            Crea, edita, desactiva y monitorea el stock de los productos del supermercado.
+            {t.admin.productsSubtitle}
           </p>
         </div>
         <button
@@ -190,7 +235,7 @@ export default function AdminProductsPage() {
           className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-green-600 hover:bg-green-700 text-white transition-all shadow-xs cursor-pointer active:scale-95 shrink-0"
         >
           <Plus className="w-4.5 h-4.5" />
-          <span>Nuevo Producto</span>
+          <span>{t.admin.addProductBtn}</span>
         </button>
       </div>
 
@@ -204,7 +249,7 @@ export default function AdminProductsPage() {
           </span>
           <input
             type="text"
-            placeholder="Buscar por nombre o descripción..."
+            placeholder={t.admin.productsSearch}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
@@ -213,15 +258,19 @@ export default function AdminProductsPage() {
 
         {/* Category filter */}
         <div className="md:col-span-2 flex items-center gap-2">
-          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0">Categoría</label>
+          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0">
+            {t.admin.productsCategoryLabel}
+          </label>
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-700"
+            className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-700 font-bold"
           >
-            <option value="Todas">Todas las categorías</option>
+            <option value="Todas">{t.admin.productsCategoryAll}</option>
             {CATEGORIES.map((cat) => (
-              <option key={cat} value={cat}>{cat}</option>
+              <option key={cat} value={cat}>
+                {categoryTranslations[language][cat] || cat}
+              </option>
             ))}
           </select>
         </div>
@@ -234,20 +283,20 @@ export default function AdminProductsPage() {
           <table className="w-full text-xs text-left">
             <thead>
               <tr className="border-b border-slate-100 text-[10px] uppercase text-slate-400 font-bold tracking-wider">
-                <th className="px-5 py-3">Imagen</th>
-                <th className="py-3">Nombre</th>
-                <th className="py-3">Categoría</th>
-                <th className="py-3">Precio</th>
+                <th className="px-5 py-3">{language === 'en' ? 'Image' : 'Imagen'}</th>
+                <th className="py-3">{language === 'en' ? 'Name' : 'Nombre'}</th>
+                <th className="py-3">{language === 'en' ? 'Category' : 'Categoría'}</th>
+                <th className="py-3">{language === 'en' ? 'Price' : 'Precio'}</th>
                 <th className="py-3">Stock</th>
-                <th className="py-3">Estado</th>
-                <th className="px-5 py-3 text-right">Acciones</th>
+                <th className="py-3">{language === 'en' ? 'Status' : 'Estado'}</th>
+                <th className="px-5 py-3 text-right">{t.common.actions}</th>
               </tr>
             </thead>
             <tbody>
               {filteredProducts.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-slate-400 font-bold">
-                    No se encontraron productos en el inventario.
+                    {language === 'en' ? 'No products found.' : 'No se encontraron productos en el inventario.'}
                   </td>
                 </tr>
               ) : (
@@ -263,12 +312,18 @@ export default function AdminProductsPage() {
 
                     {/* Name & desc */}
                     <td className="py-3">
-                      <p className="font-bold text-slate-800 line-clamp-1">{prod.name}</p>
-                      <p className="text-[10px] text-slate-400 line-clamp-1 mt-0.5 max-w-xs">{prod.description}</p>
+                      <p className="font-bold text-slate-800 line-clamp-1">
+                        {language === 'en' && prod.nameEn ? prod.nameEn : prod.name}
+                      </p>
+                      <p className="text-[10px] text-slate-400 line-clamp-1 mt-0.5 max-w-xs">
+                        {language === 'en' && prod.descriptionEn ? prod.descriptionEn : prod.description}
+                      </p>
                     </td>
 
                     {/* Category */}
-                    <td className="py-3 font-semibold text-slate-600">{prod.category}</td>
+                    <td className="py-3 font-semibold text-slate-600">
+                      {categoryTranslations[language][prod.category] || prod.category}
+                    </td>
 
                     {/* Price */}
                     <td className="py-3 font-black text-slate-800">
@@ -289,7 +344,9 @@ export default function AdminProductsPage() {
                           ? 'bg-orange-100 text-orange-700' 
                           : 'bg-slate-100 text-slate-700'
                       }`}>
-                        {prod.stock === 0 ? 'Sin Stock' : `${prod.stock} und`}
+                        {prod.stock === 0 
+                          ? (language === 'en' ? 'Out of Stock' : 'Sin Stock') 
+                          : `${prod.stock} ${language === 'en' ? (prod.unitEn || 'unit') : (prod.unit || 'und')}`}
                       </span>
                     </td>
 
@@ -302,7 +359,7 @@ export default function AdminProductsPage() {
                             ? 'bg-green-50 text-green-700 border-green-200' 
                             : 'bg-slate-100 text-slate-400 border-slate-200'
                         }`}
-                        title={prod.active ? 'Haga clic para desactivar' : 'Haga clic para activar'}
+                        title={prod.active ? (language === 'en' ? 'Click to deactivate' : 'Haga clic para desactivar') : (language === 'en' ? 'Click to activate' : 'Haga clic para activar')}
                       >
                         {prod.active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                       </button>
@@ -313,14 +370,14 @@ export default function AdminProductsPage() {
                       <button
                         onClick={() => openEditProductModal(prod)}
                         className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-green-700 hover:bg-slate-50 transition-colors cursor-pointer inline-flex items-center"
-                        title="Editar"
+                        title={t.common.edit}
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => handleDelete(prod.id)}
                         className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-400 hover:text-red-600 hover:bg-red-50 hover:border-red-200 transition-colors cursor-pointer inline-flex items-center"
-                        title="Eliminar"
+                        title={t.common.delete}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -337,7 +394,7 @@ export default function AdminProductsPage() {
       {/* ── CREATE / EDIT PRODUCT MODAL ── */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="relative w-full max-w-lg bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl my-auto text-left animate-float">
+          <div className="relative w-full max-w-lg bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl my-auto text-left max-h-[90vh] overflow-y-auto animate-float">
             <button 
               onClick={() => setModalOpen(false)}
               className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center hover:bg-slate-200 transition-colors cursor-pointer"
@@ -347,92 +404,145 @@ export default function AdminProductsPage() {
 
             <h3 className="text-sm font-black uppercase tracking-wider text-slate-800 mb-4 flex items-center gap-1.5">
               {editingProduct ? <Edit2 className="w-4 h-4 text-green-600" /> : <PlusCircle className="w-4 h-4 text-green-600" />}
-              <span>{editingProduct ? 'Editar Producto' : 'Crear Nuevo Producto'}</span>
+              <span>{editingProduct ? t.admin.productsEditModalTitle : t.admin.productsAddModalTitle}</span>
             </h3>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Nombre del Producto</label>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">{t.admin.productsFieldName} (ES)</label>
                   <input
                     type="text"
                     required
                     placeholder="Ej: Lomo de Res"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Categoría</label>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">{t.admin.productsFieldNameEn} (EN)</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Beef Loin"
+                    value={nameEn}
+                    onChange={(e) => setNameEn(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">{t.admin.productsFieldCategory}</label>
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600"
                   >
                     {CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
+                      <option key={cat} value={cat}>
+                        {categoryTranslations[language][cat] || cat}
+                      </option>
                     ))}
                   </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">{t.admin.productsFieldUnitEs}</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="lb / unidad"
+                      value={unit}
+                      onChange={(e) => setUnit(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">{t.admin.productsFieldUnitEn}</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="lb / unit"
+                      value={unitEn}
+                      onChange={(e) => setUnitEn(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600"
+                    />
+                  </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Precio COP</label>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">{t.admin.productsFieldPrice}</label>
                   <input
                     type="number"
                     required
                     min={100}
                     value={price}
                     onChange={(e) => setPrice(Number(e.target.value))}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Precio Anterior (Ofertas)</label>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">{language === 'en' ? 'Old Price' : 'Precio Anterior'}</label>
                   <input
                     type="number"
                     min={100}
-                    placeholder="Opcional"
+                    placeholder={language === 'en' ? 'Optional' : 'Opcional'}
                     value={oldPrice || ''}
                     onChange={(e) => setOldPrice(e.target.value ? Number(e.target.value) : undefined)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Stock de Inventario</label>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">{t.admin.productsFieldStock}</label>
                   <input
                     type="number"
                     required
                     min={0}
                     value={stock}
                     onChange={(e) => setStock(Number(e.target.value))}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600"
                   />
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Descripción del Producto</label>
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">{t.admin.productsFieldDesc} (ES)</label>
                 <textarea
                   required
-                  placeholder="Escribe los detalles y beneficios de este producto fresco..."
+                  placeholder="Detalles del producto fresco en español..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={2}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600 resize-none"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600 resize-none"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">{t.admin.productsFieldDescEn} (EN)</label>
+                <textarea
+                  required
+                  placeholder="Fresh product details in English..."
+                  value={descriptionEn}
+                  onChange={(e) => setDescriptionEn(e.target.value)}
+                  rows={2}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600 resize-none"
                 />
               </div>
 
               {/* Photo selection preset */}
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1 block">Foto del Producto</label>
-                <div className="grid grid-cols-4 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200/50">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1 block">{t.admin.productsFieldPhoto}</label>
+                <div className="grid grid-cols-4 gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200/50">
                   {STOCK_PHOTOS.map((ph, idx) => (
                     <button
                       key={idx}
@@ -450,7 +560,6 @@ export default function AdminProductsPage() {
                   ))}
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[8px] font-bold text-slate-400 uppercase tracking-wider pl-1">O ingresa una URL de foto personalizada</label>
                   <input
                     type="url"
                     value={image}
@@ -470,7 +579,7 @@ export default function AdminProductsPage() {
                   className="w-4 h-4 text-green-600 border-slate-300 rounded focus:ring-green-500"
                 />
                 <label htmlFor="active-toggle" className="text-xs font-bold text-slate-700 cursor-pointer select-none">
-                  Producto activo (Visible en catálogo al público)
+                  {t.admin.productsFieldStatusActive}
                 </label>
               </div>
 
@@ -480,13 +589,13 @@ export default function AdminProductsPage() {
                   onClick={() => setModalOpen(false)}
                   className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors cursor-pointer"
                 >
-                  Cancelar
+                  {t.common.cancel}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 rounded-xl text-xs font-bold bg-green-600 hover:bg-green-700 text-white transition-all cursor-pointer flex items-center gap-1.5"
                 >
-                  <span>{editingProduct ? 'Guardar Cambios' : 'Crear Producto'}</span>
+                  <span>{editingProduct ? t.common.save : t.admin.addProductBtn}</span>
                 </button>
               </div>
             </form>

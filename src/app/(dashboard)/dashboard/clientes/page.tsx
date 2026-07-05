@@ -13,9 +13,12 @@ import {
 } from 'lucide-react';
 import { getClients, Client } from '@/lib/db';
 import { useTranslation } from '@/hooks/useTranslation';
+import { translations } from '@/config/translations';
 
 export default function AdminClientsPage() {
   const { language } = useTranslation();
+  const t = translations[language];
+
   const [clients, setClients] = useState<Client[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
@@ -57,10 +60,10 @@ export default function AdminClientsPage() {
         <div>
           <h1 className="text-xl md:text-2xl font-black text-slate-800 flex items-center gap-2">
             <Users className="w-6 h-6 text-green-600 animate-bounce" />
-            <span>Directorio de Clientes</span>
+            <span>{t.admin.clientsTitle}</span>
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            Visualiza los datos de contacto, direcciones registradas y estadísticas de compra de tus clientes.
+            {t.admin.clientsSubtitle}
           </p>
         </div>
       </div>
@@ -72,7 +75,7 @@ export default function AdminClientsPage() {
         </span>
         <input
           type="text"
-          placeholder="Buscar cliente por nombre, teléfono, dirección..."
+          placeholder={t.admin.clientsSearch}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
@@ -85,68 +88,57 @@ export default function AdminClientsPage() {
           <table className="w-full text-xs text-left">
             <thead>
               <tr className="border-b border-slate-100 text-[10px] uppercase text-slate-400 font-bold tracking-wider">
-                <th className="px-5 py-4">Cliente</th>
-                <th className="py-4">Contacto</th>
-                <th className="py-4">Dirección Principal</th>
-                <th className="py-4 text-center">Pedidos</th>
-                <th className="px-5 py-4 text-right">Total Comprado</th>
+                <th className="px-5 py-4">{t.admin.clientsHeaderName}</th>
+                <th className="py-4">{t.admin.clientsHeaderContact}</th>
+                <th className="py-4">{t.admin.clientsHeaderAddress}</th>
+                <th className="py-4 text-center">{t.admin.clientsHeaderCount}</th>
+                <th className="px-5 py-4 text-right">{t.admin.clientsHeaderTotalSpent}</th>
               </tr>
             </thead>
             <tbody>
               {filteredClients.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-12 text-center text-slate-400 font-bold">
-                    No se encontraron clientes registrados.
+                    {t.admin.clientsEmpty}
                   </td>
                 </tr>
               ) : (
                 filteredClients.map((client) => (
                   <tr key={client.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                    
-                    {/* User profile details */}
-                    <td className="px-5 py-4 flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-green-50 text-green-700 font-bold flex items-center justify-center shrink-0 border border-green-100">
-                        {client.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="font-bold text-slate-800">{client.name}</p>
-                        <span className="text-[9px] text-slate-400 font-mono">ID: {client.id}</span>
-                      </div>
-                    </td>
-
-                    {/* Contact (Phone) */}
-                    <td className="py-4">
-                      <div className="flex items-center gap-1 text-slate-600 font-medium">
-                        <Phone className="w-3.5 h-3.5 text-green-600 shrink-0" />
-                        <span>{client.phone}</span>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-black font-mono">
+                          {client.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <span className="font-bold text-slate-800 block">{client.name}</span>
+                          <span className="text-[10px] text-slate-400 font-bold block mt-0.5">ID: {client.id}</span>
+                        </div>
                       </div>
                     </td>
-
-                    {/* Address */}
                     <td className="py-4">
-                      <div className="flex items-start gap-1 text-slate-500 max-w-xs">
-                        <MapPin className="w-3.5 h-3.5 text-green-600 shrink-0 mt-0.5" />
+                      <div className="flex items-center gap-1 text-slate-600">
+                        <Phone className="w-3.5 h-3.5 text-green-600" />
+                        <span className="font-medium">{client.phone}</span>
+                      </div>
+                    </td>
+                    <td className="py-4">
+                      <div className="flex items-center gap-1 text-slate-500 max-w-xs truncate">
+                        <MapPin className="w-3.5 h-3.5 text-green-600 shrink-0" />
                         <span className="truncate">{client.address}</span>
                       </div>
                     </td>
-
-                    {/* Orders count */}
                     <td className="py-4 text-center">
-                      <span className="font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded-full">
+                      <span className="px-2.5 py-1 bg-slate-100 rounded-lg text-slate-700 font-black font-mono">
                         {client.ordersCount}
                       </span>
                     </td>
-
-                    {/* Total spent */}
-                    <td className="px-5 py-4 text-right">
-                      <span className="font-black text-slate-800">
-                        {formatPrice(client.totalSpent)}
-                      </span>
+                    <td className="px-5 py-4 text-right font-black text-slate-800">
+                      {formatPrice(client.totalSpent)}
                     </td>
-
                   </tr>
-                ))
-              )}
+                )))
+              }
             </tbody>
           </table>
         </div>

@@ -16,6 +16,8 @@ import {
 import { getProducts, saveOrder, Order, OrderItem } from '@/lib/db';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslation } from '@/hooks/useTranslation';
+import { translations } from '@/config/translations';
+import { brandConfig } from '@/config/brandConfig';
 
 interface CartItem {
   product: any;
@@ -40,6 +42,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { language, setLanguage } = useTranslation();
+  const t = translations[language];
 
   // Load Cart
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -51,6 +54,7 @@ export default function CheckoutPage() {
   const [address, setAddress] = useState('');
   const [barrio, setBarrio] = useState('');
   const [notes, setNotes] = useState('');
+  const [deliveryType, setDeliveryType] = useState<'daily' | 'weekly'>('daily');
 
   // Payment State
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'pse' | 'wallet'>('card');
@@ -101,7 +105,7 @@ export default function CheckoutPage() {
 
     if (!customerName || !phone || !address || !barrio) {
       toast({
-        title: language === 'en' ? 'Please fill out all delivery fields!' : '¡Por favor completa todos los campos de entrega!',
+        title: t.checkout.validationError,
         type: 'error'
       });
       return;
@@ -109,7 +113,7 @@ export default function CheckoutPage() {
 
     if (paymentMethod === 'card' && (!cardNumber || !cardExpiry || !cardCvv || !cardName)) {
       toast({
-        title: language === 'en' ? 'Please complete card details!' : '¡Por favor completa los detalles de la tarjeta!',
+        title: t.checkout.paymentCompleteError,
         type: 'error'
       });
       return;
@@ -117,7 +121,7 @@ export default function CheckoutPage() {
 
     if (paymentMethod === 'wallet' && !walletPhone) {
       toast({
-        title: language === 'en' ? 'Please enter your Nequi/DaviPlata cell phone number!' : '¡Por favor ingresa tu celular de Nequi o DaviPlata!',
+        title: t.checkout.walletError,
         type: 'error'
       });
       return;
@@ -128,16 +132,16 @@ export default function CheckoutPage() {
     
     // Simulate Gateway Steps
     try {
-      setProcessingStep('Validando disponibilidad de productos...');
+      setProcessingStep(t.checkout.processingStock);
       await new Promise(resolve => setTimeout(resolve, 800));
 
-      setProcessingStep('Simulando pasarela de pago seguro...');
+      setProcessingStep(t.checkout.processingGateway);
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      setProcessingStep('Confirmando transacción con el banco...');
+      setProcessingStep(t.checkout.processingBank);
       await new Promise(resolve => setTimeout(resolve, 800));
 
-      setProcessingStep('Creando tu pedido en MercadoExpress...');
+      setProcessingStep(t.checkout.processingOrder);
       await new Promise(resolve => setTimeout(resolve, 600));
 
       // Generate Order Details
@@ -172,7 +176,8 @@ export default function CheckoutPage() {
         shippingFee,
         total: cartTotal,
         status: 'Recibido',
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        deliveryType
       };
 
       // Save Order to LocalStorage Database
@@ -182,7 +187,7 @@ export default function CheckoutPage() {
       localStorage.removeItem('me_cart');
 
       toast({
-        title: language === 'en' ? 'Payment processed successfully!' : '¡Pago aprobado con éxito!',
+        title: t.checkout.paymentSuccessToast,
         type: 'success'
       });
 
@@ -220,8 +225,8 @@ export default function CheckoutPage() {
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-sm font-black uppercase tracking-wider text-slate-700 text-left">Confirmar Pedido</h1>
-              <p className="text-[10px] text-slate-400 text-left mt-0.5">MercadoExpress App</p>
+              <h1 className="text-sm font-black uppercase tracking-wider text-slate-700 text-left">{t.checkout.title}</h1>
+              <p className="text-[10px] text-slate-400 text-left mt-0.5">{t.checkout.subtitle}</p>
             </div>
           </div>
 
@@ -247,16 +252,16 @@ export default function CheckoutPage() {
             {/* Delivery Details Card */}
             <div className="bg-white rounded-2xl border border-slate-200/60 p-5 shadow-xs space-y-4 text-left">
               <h2 className="text-xs font-black uppercase tracking-widest text-green-600 flex items-center gap-1.5">
-                📍 Dirección de Entrega
+                {t.checkout.deliveryDetails}
               </h2>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Quién Recibe</label>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">{t.checkout.recipient}</label>
                   <input
                     type="text"
                     required
-                    placeholder="Ej: Carlos Gómez"
+                    placeholder={t.checkout.recipientPlaceholder}
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
                     className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
@@ -264,11 +269,11 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Teléfono de Contacto</label>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">{t.checkout.phone}</label>
                   <input
                     type="tel"
                     required
-                    placeholder="Ej: 312 456 7890"
+                    placeholder={t.checkout.phonePlaceholder}
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
@@ -278,11 +283,11 @@ export default function CheckoutPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Dirección de Entrega</label>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">{t.checkout.address}</label>
                   <input
                     type="text"
                     required
-                    placeholder="Ej: Calle 100 # 15 - 22 Apto 402"
+                    placeholder={t.checkout.addressPlaceholder}
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
@@ -290,11 +295,11 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Barrio / Comuna</label>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">{t.checkout.neighborhood}</label>
                   <input
                     type="text"
                     required
-                    placeholder="Ej: Chicó Norte"
+                    placeholder={t.checkout.neighborhoodPlaceholder}
                     value={barrio}
                     onChange={(e) => setBarrio(e.target.value)}
                     className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
@@ -303,9 +308,9 @@ export default function CheckoutPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Notas de Entrega (Opcional)</label>
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">{t.checkout.notes}</label>
                 <textarea
-                  placeholder="Ej: Dejar en portería si no contesto, portón gris."
+                  placeholder={t.checkout.notesPlaceholder}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
@@ -314,13 +319,58 @@ export default function CheckoutPage() {
               </div>
             </div>
 
+            {/* Delivery Option Selector Card */}
+            <div className="bg-white rounded-2xl border border-slate-200/60 p-5 shadow-xs space-y-4 text-left">
+              <h2 className="text-xs font-black uppercase tracking-widest text-green-600 flex items-center gap-1.5">
+                {t.checkout.deliveryModel}
+              </h2>
+              
+              <div className="grid grid-cols-1 gap-3">
+                <label className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-start gap-3 ${
+                  deliveryType === 'daily' 
+                    ? 'border-green-600 bg-green-50/30' 
+                    : 'border-slate-200 hover:border-slate-300'
+                }`}>
+                  <input
+                    type="radio"
+                    name="deliveryType"
+                    checked={deliveryType === 'daily'}
+                    onChange={() => setDeliveryType('daily')}
+                    className="mt-1 text-green-600 focus:ring-green-600"
+                  />
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 block">{t.checkout.deliveryDaily}</span>
+                    <span className="text-[10px] text-slate-400 block mt-0.5 leading-normal">{t.checkout.deliveryDailyDesc}</span>
+                  </div>
+                </label>
+
+                <label className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-start gap-3 ${
+                  deliveryType === 'weekly' 
+                    ? 'border-green-600 bg-green-50/30' 
+                    : 'border-slate-200 hover:border-slate-300'
+                }`}>
+                  <input
+                    type="radio"
+                    name="deliveryType"
+                    checked={deliveryType === 'weekly'}
+                    onChange={() => setDeliveryType('weekly')}
+                    className="mt-1 text-green-600 focus:ring-green-600"
+                  />
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 block">{t.checkout.deliveryWeekly}</span>
+                    <span className="text-[10px] text-slate-400 block mt-0.5 leading-normal">{t.checkout.deliveryWeeklyDesc}</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
             {/* Payment Method Selector Card */}
             <div className="bg-white rounded-2xl border border-slate-200/60 p-5 shadow-xs space-y-4 text-left">
-              <div>
+            <div>
                 <h2 className="text-xs font-black uppercase tracking-widest text-green-600 flex items-center gap-1.5">
-                  💳 Estructura de Pago Integrado
+                  {t.checkout.paymentTitle}
                 </h2>
-                <p className="text-[10px] text-slate-400 mt-1">Pre-integración con pasarelas de pago (Wompi, PayU, ePayco)</p>
+                <p className="text-[10px] text-slate-400 mt-1">{t.checkout.paymentSubtitle}</p>
               </div>
 
               {/* Tabs */}
@@ -335,7 +385,7 @@ export default function CheckoutPage() {
                   }`}
                 >
                   <CreditCard className="w-4 h-4" />
-                  <span>Tarjeta</span>
+                  <span>{t.checkout.paymentCard}</span>
                 </button>
 
                 <button
@@ -348,7 +398,7 @@ export default function CheckoutPage() {
                   }`}
                 >
                   <Building2 className="w-4 h-4" />
-                  <span>PSE</span>
+                  <span>{t.checkout.paymentPSE}</span>
                 </button>
 
                 <button
@@ -361,7 +411,7 @@ export default function CheckoutPage() {
                   }`}
                 >
                   <Smartphone className="w-4 h-4" />
-                  <span>Billetera</span>
+                  <span>{t.checkout.paymentWallet}</span>
                 </button>
               </div>
 
@@ -372,7 +422,7 @@ export default function CheckoutPage() {
                 {paymentMethod === 'card' && (
                   <div className="space-y-3">
                     <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider pl-1">Nombre en Tarjeta</label>
+                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider pl-1">{t.checkout.cardHolder}</label>
                       <input
                         type="text"
                         placeholder="MARTA INES GOMEZ"
@@ -382,7 +432,7 @@ export default function CheckoutPage() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider pl-1">Número de Tarjeta</label>
+                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider pl-1">{t.checkout.cardNumber}</label>
                       <input
                         type="text"
                         maxLength={19}
@@ -394,7 +444,7 @@ export default function CheckoutPage() {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider pl-1">Vencimiento</label>
+                        <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider pl-1">{t.checkout.cardExpiry}</label>
                         <input
                           type="text"
                           maxLength={5}
@@ -405,7 +455,7 @@ export default function CheckoutPage() {
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider pl-1">CVV / CVC</label>
+                        <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider pl-1">{t.checkout.cardCVV}</label>
                         <input
                           type="password"
                           maxLength={4}
@@ -423,10 +473,10 @@ export default function CheckoutPage() {
                 {paymentMethod === 'pse' && (
                   <div className="space-y-3">
                     <p className="text-[10px] text-slate-400 leading-normal">
-                      Serás redirigido de forma simulada al banco seleccionado a través del sistema PSE.
+                      {t.checkout.pseDesc}
                     </p>
                     <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider pl-1">Selecciona tu Banco</label>
+                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider pl-1">{t.checkout.pseSelectBank}</label>
                       <select
                         value={pseBank}
                         onChange={(e) => setPseBank(e.target.value)}
@@ -444,10 +494,10 @@ export default function CheckoutPage() {
                 {paymentMethod === 'wallet' && (
                   <div className="space-y-3">
                     <p className="text-[10px] text-slate-400 leading-normal">
-                      Recibirás una notificación de cobro en tu celular de forma simulada.
+                      {t.checkout.walletDesc}
                     </p>
                     <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider pl-1">Celular de la Cuenta (Nequi / DaviPlata)</label>
+                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider pl-1">{t.checkout.walletPhone}</label>
                       <input
                         type="tel"
                         maxLength={10}
@@ -466,7 +516,7 @@ export default function CheckoutPage() {
               <div className="flex items-center gap-2 p-3 bg-green-50 rounded-xl border border-green-200/50">
                 <ShieldCheck className="w-5 h-5 text-green-600 shrink-0" />
                 <p className="text-[9px] text-green-700 leading-snug font-medium">
-                  Transacción protegida. En la versión de producción, este panel se conecta directamente con los SDKs de <b>ePayco, PayU, Wompi o Mercado Pago</b> usando tokens cifrados.
+                  {t.checkout.secureBadge}
                 </p>
               </div>
             </div>
@@ -480,10 +530,10 @@ export default function CheckoutPage() {
               {isProcessing ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Procesando pago...</span>
+                  <span>{t.checkout.processingPayment}</span>
                 </>
               ) : (
-                <span>Completar Pago Seguro: {formatPrice(cartTotal)}</span>
+                <span>{t.checkout.payButton}: {formatPrice(cartTotal)}</span>
               )}
             </button>
           </form>
@@ -493,7 +543,7 @@ export default function CheckoutPage() {
         <div className="md:col-span-2 space-y-6">
           <div className="bg-white rounded-2xl border border-slate-200/60 p-5 shadow-xs space-y-4 text-left">
             <h2 className="text-xs font-black uppercase tracking-widest text-green-600 flex items-center gap-1.5">
-              🛒 Resumen de Compra
+              {t.checkout.summaryTitle}
             </h2>
 
             {/* Item list */}
@@ -504,8 +554,12 @@ export default function CheckoutPage() {
                     <img src={item.product.image} alt={item.product.name} className="object-cover w-full h-full" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-slate-800 truncate">{item.product.name}</h4>
-                    <span className="text-[10px] text-slate-400 block mt-0.5">Cant: {item.quantity} x {formatPrice(item.product.price)}</span>
+                    <h4 className="font-bold text-slate-800 truncate">
+                      {language === 'en' && item.product.nameEn ? item.product.nameEn : item.product.name}
+                    </h4>
+                    <span className="text-[10px] text-slate-400 block mt-0.5">
+                      {t.checkout.cartTotalItems.replace('{qty}', String(item.quantity)).replace('{price}', formatPrice(item.product.price))}
+                    </span>
                   </div>
                   <span className="font-bold text-slate-800 text-right self-center">{formatPrice(item.product.price * item.quantity)}</span>
                 </div>
@@ -515,17 +569,17 @@ export default function CheckoutPage() {
             {/* Calculations */}
             <div className="border-t border-slate-100 pt-3.5 space-y-2 text-xs text-slate-500">
               <div className="flex justify-between">
-                <span>Subtotal</span>
+                <span>{t.store.subtotal}</span>
                 <span className="font-bold text-slate-700">{formatPrice(cartSubtotal)}</span>
               </div>
               
               <div className="flex justify-between">
-                <span>Domicilio</span>
-                <span className="font-bold text-slate-700">{shippingFee === 0 ? 'Gratis' : formatPrice(shippingFee)}</span>
+                <span>{t.store.shipping}</span>
+                <span className="font-bold text-slate-700">{shippingFee === 0 ? t.store.shippingFree : formatPrice(shippingFee)}</span>
               </div>
 
               <div className="border-t border-slate-200/60 pt-2.5 flex justify-between text-sm font-black text-slate-800">
-                <span>Total a Pagar</span>
+                <span>{t.store.total}</span>
                 <span>{formatPrice(cartTotal)}</span>
               </div>
             </div>
@@ -544,12 +598,12 @@ export default function CheckoutPage() {
             </div>
             
             <div className="space-y-2">
-              <h3 className="text-sm font-black uppercase tracking-wider text-slate-800">Transacción Segura</h3>
+              <h3 className="text-sm font-black uppercase tracking-wider text-slate-800">{t.checkout.processingModalTitle}</h3>
               <p className="text-xs text-slate-400 font-bold font-mono text-green-600 animate-pulse">{processingStep}</p>
             </div>
 
             <p className="text-[10px] text-slate-400 leading-relaxed max-w-xs mx-auto">
-              No cierres esta ventana. Estamos simulando el protocolo 3D Secure y la sincronización con el inventario de la app.
+              {t.checkout.processingModalDesc}
             </p>
           </div>
         </div>

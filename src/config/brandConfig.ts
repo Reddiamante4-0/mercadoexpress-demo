@@ -31,6 +31,7 @@ export interface BrandConfig {
     en: string;
     es: string;
   };
+  whatsappNumber: string;
 }
 
 export const brandConfig: BrandConfig = {
@@ -66,4 +67,5 @@ export const brandConfig: BrandConfig = {
     en: "Manage products, track orders, adjust stock levels, and view sales details in real-time.",
     es: "Administra productos, gestiona pedidos, ajusta niveles de inventario y analiza ventas en tiempo real.",
   },
+  whatsappNumber: "+573124567890",
 };

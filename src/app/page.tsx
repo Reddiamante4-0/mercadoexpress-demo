@@ -20,11 +20,44 @@ import {
   Percent,
   Truck,
   Heart,
-  Globe
+  Globe,
+  MessageCircle
 } from 'lucide-react';
 import { getProducts, Product } from '@/lib/db';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslation } from '@/hooks/useTranslation';
+import { translations } from '@/config/translations';
+import { brandConfig } from '@/config/brandConfig';
+
+const categoryTranslations: Record<string, Record<string, string>> = {
+  es: {
+    'Todas': 'Todas',
+    'Carnes': 'Carnes',
+    'Pollo': 'Pollo',
+    'Pescado': 'Pescado',
+    'Verduras': 'Verduras',
+    'Frutas': 'Frutas',
+    'Abarrotes': 'Abarrotes',
+    'Bebidas': 'Bebidas',
+    'Aseo': 'Aseo',
+    'Congelados': 'Congelados',
+    'Ofertas': 'Ofertas'
+  },
+  en: {
+    'Todas': 'All',
+    'Carnes': 'Meats',
+    'Pollo': 'Chicken',
+    'Pescado': 'Fish',
+    'Verduras': 'Vegetables',
+    'Frutas': 'Fruits',
+    'Abarrotes': 'Groceries',
+    'Bebidas': 'Drinks',
+    'Aseo': 'Cleaning',
+    'Congelados': 'Frozen',
+    'Ofertas': 'Offers'
+  }
+};
+
 
 const CATEGORIES = [
   { name: 'Todas', emoji: '🛒' },
@@ -63,6 +96,7 @@ export default function CatalogPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { language, setLanguage } = useTranslation();
+  const t = translations[language];
 
   // Catalog State
   const [products, setProducts] = useState<Product[]>([]);
@@ -107,29 +141,31 @@ export default function CatalogPage() {
       return;
     }
 
-    const updatedCart = [...cart];
-    const existingIndex = updatedCart.findIndex(item => item.product.id === product.id);
+    const existing = cart.find(item => item.product.id === product.id);
+    let updatedCart: CartItem[] = [];
 
-    if (existingIndex >= 0) {
-      const currentQty = updatedCart[existingIndex].quantity;
-      const targetQty = currentQty + customQty;
-      if (targetQty > product.stock) {
+    if (existing) {
+      if (existing.quantity >= product.stock) {
         toast({
           title: language === 'en' 
-            ? `Cannot add more. Only ${product.stock} items in stock.` 
-            : `No puedes agregar más. Solo quedan ${product.stock} unidades en inventario.`,
+            ? `Only ${product.stock} units available!` 
+            : `¡Solo quedan ${product.stock} unidades disponibles!`,
           type: 'error'
         });
         return;
       }
-      updatedCart[existingIndex].quantity = targetQty;
+      updatedCart = cart.map(item => 
+        item.product.id === product.id 
+          ? { ...item, quantity: item.quantity + 1 } 
+          : item
+      );
     } else {
-      updatedCart.push({ product, quantity: customQty });
+      updatedCart = [...cart, { product, quantity: 1 }];
     }
 
     saveCartToStorage(updatedCart);
     toast({
-      title: language === 'en' ? `${product.name} added to cart.` : `Se agregó ${product.name} al carrito.`,
+      title: language === 'en' ? `${product.nameEn || product.name} added to cart.` : `Se agregó ${product.name} al carrito.`,
       type: 'success'
     });
   };
@@ -234,7 +270,7 @@ export default function CatalogPage() {
   const handleCheckout = () => {
     if (cart.length === 0) {
       toast({
-        title: language === 'en' ? 'Your cart is empty!' : '¡Tu carrito está vacío!',
+        title: t.store.emptyCart,
         type: 'error'
       });
       return;
@@ -261,7 +297,9 @@ export default function CatalogPage() {
               <h1 className="text-base font-black text-slate-900 tracking-tight leading-none">
                 MercadoExpress
               </h1>
-              <span className="text-[9px] text-orange-600 font-extrabold tracking-widest uppercase mt-1 block">Express Delivery</span>
+              <span className="text-[9px] text-orange-600 font-extrabold tracking-widest uppercase mt-1 block">
+                {language === 'en' ? 'Express Delivery' : 'Envíos Express'}
+              </span>
             </div>
           </div>
 
@@ -320,18 +358,31 @@ export default function CatalogPage() {
             <div className="md:col-span-7 space-y-6">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500 text-white text-[10px] font-black uppercase tracking-widest shadow-xs">
                 <Truck className="w-3.5 h-3.5 fill-white text-orange-500" />
-                <span>Envíos en 45 minutos</span>
+                <span>{language === 'en' ? 'Delivery in 45 minutes' : 'Envíos en 45 minutos'}</span>
               </div>
 
               <h2 className="text-3xl sm:text-5xl font-black tracking-tight leading-none">
-                Tu mercado fresco <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-amber-400">
-                  directo a tu hogar
-                </span>
+                {language === 'en' ? (
+                  <>
+                    Your fresh market <br />
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-amber-400">
+                      direct to your door
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    Tu mercado fresco <br />
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-amber-400">
+                      directo a tu hogar
+                    </span>
+                  </>
+                )}
               </h2>
 
               <p className="text-xs sm:text-sm text-green-100 font-medium max-w-lg leading-relaxed">
-                ¡Olvídate de las filas! Pide las carnes más tiernas, verduras frescas recolectadas hoy, abarrotes y aseo al mejor precio del mercado.
+                {language === 'en'
+                  ? "Forget the lines! Order the tenderest meats, fresh vegetables harvested today, groceries, and cleaning products at the best market price."
+                  : "¡Olvídate de las filas! Pide las carnes más tiernas, verduras frescas recolectadas hoy, abarrotes y aseo al mejor precio del mercado."}
               </p>
 
               {/* Badges block */}
@@ -341,8 +392,12 @@ export default function CatalogPage() {
                     <Sparkles className="w-4 h-4 text-yellow-300" />
                   </div>
                   <div>
-                    <h4 className="text-[10px] font-black uppercase tracking-wider text-white">Garantía</h4>
-                    <p className="text-[9px] text-green-200">Reembolso si no te gusta</p>
+                    <h4 className="text-[10px] font-black uppercase tracking-wider text-white">
+                      {language === 'en' ? 'Guarantee' : 'Garantía'}
+                    </h4>
+                    <p className="text-[9px] text-green-200">
+                      {language === 'en' ? 'Refund if not satisfied' : 'Reembolso si no te gusta'}
+                    </p>
                   </div>
                 </div>
 
@@ -351,8 +406,12 @@ export default function CatalogPage() {
                     <Percent className="w-4 h-4 text-orange-300" />
                   </div>
                   <div>
-                    <h4 className="text-[10px] font-black uppercase tracking-wider text-white">Descuentos</h4>
-                    <p className="text-[9px] text-green-200">Ofertas reales a diario</p>
+                    <h4 className="text-[10px] font-black uppercase tracking-wider text-white">
+                      {language === 'en' ? 'Discounts' : 'Descuentos'}
+                    </h4>
+                    <p className="text-[9px] text-green-200">
+                      {language === 'en' ? 'Real daily offers' : 'Ofertas reales a diario'}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -365,7 +424,7 @@ export default function CatalogPage() {
                   }}
                   className="bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-slate-900 px-7 py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-lg shadow-orange-500/15 cursor-pointer active:scale-95 flex items-center gap-2"
                 >
-                  <span>Pedir Ahora</span>
+                  <span>{language === 'en' ? 'Order Now' : 'Pedir Ahora'}</span>
                   <ArrowRight className="w-4 h-4 stroke-[3px]" />
                 </button>
 
@@ -374,7 +433,7 @@ export default function CatalogPage() {
                   className="bg-white/15 hover:bg-white/20 text-white border border-white/10 px-7 py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   <Flame className="w-4.5 h-4.5 text-orange-400 fill-orange-400" />
-                  <span>Sección de Ofertas</span>
+                  <span>{language === 'en' ? 'Hot Deals Section' : 'Sección de Ofertas'}</span>
                 </button>
               </div>
             </div>
@@ -389,9 +448,15 @@ export default function CatalogPage() {
                   className="object-cover w-full h-full"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent flex flex-col justify-end p-5 text-left">
-                  <span className="text-[9px] font-black uppercase tracking-wider text-yellow-300">100% Cosechados a Mano</span>
-                  <h4 className="text-sm font-black text-white mt-1">Frutas y Verduras Orgánicas</h4>
-                  <p className="text-[10px] text-slate-300 mt-0.5">Frescura del campo directo a tu puerta.</p>
+                  <span className="text-[9px] font-black uppercase tracking-wider text-yellow-300">
+                    {language === 'en' ? '100% Hand-Harvested' : '100% Cosechados a Mano'}
+                  </span>
+                  <h4 className="text-sm font-black text-white mt-1">
+                    {language === 'en' ? 'Organic Fruits & Vegetables' : 'Frutas y Verduras Orgánicas'}
+                  </h4>
+                  <p className="text-[10px] text-slate-300 mt-0.5">
+                    {language === 'en' ? 'Freshness from the field direct to your door.' : 'Frescura del campo directo a tu puerta.'}
+                  </p>
                 </div>
               </div>
             </div>
@@ -406,7 +471,9 @@ export default function CatalogPage() {
         {/* Department Navigation Card Buttons */}
         <section id="departments-navigation" className="w-full">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 text-left">Departamentos Recomendados</h3>
+            <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 text-left">
+              {t.store.departmentsTitle}
+            </h3>
           </div>
           
           <div className="flex items-center gap-3.5 overflow-x-auto pb-4 pt-1 scrollbar-thin select-none scroll-smooth">
@@ -428,7 +495,7 @@ export default function CatalogPage() {
                     {cat.emoji}
                   </div>
                   <span className={`text-[10px] sm:text-[11px] font-black tracking-tight mt-2.5 ${isSelected ? 'text-white' : 'text-slate-600'}`}>
-                    {cat.name}
+                    {categoryTranslations[language][cat.name] || cat.name}
                   </span>
                 </div>
               );
@@ -439,7 +506,9 @@ export default function CatalogPage() {
         {/* HIGH CONVERTING SAVINGS COMBOS BLOCK [NEW] */}
         <section className="w-full">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 text-left">🧺 Combos de Ahorro Popular</h3>
+            <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 text-left">
+              {t.store.combosTitle}
+            </h3>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -447,21 +516,35 @@ export default function CatalogPage() {
             <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl border border-green-200/60 p-5 flex flex-col justify-between shadow-xs text-left relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-green-200/30 blur-xl pointer-events-none" />
               <div>
-                <span className="bg-green-600 text-white text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md">Saludable</span>
-                <h4 className="text-sm font-black text-slate-800 mt-2">Combo Sancocho Casero</h4>
-                <p className="text-[10px] text-slate-400 mt-1 leading-normal">Incluye papas, plátanos, cebolla, tomate, y cilantro fresco seleccionado.</p>
+                <span className="bg-green-600 text-white text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md">
+                  {language === 'en' ? 'Healthy' : 'Saludable'}
+                </span>
+                <h4 className="text-sm font-black text-slate-800 mt-2">
+                  {language === 'en' ? 'Homemade Sancocho Stew Combo' : 'Combo Sancocho Casero'}
+                </h4>
+                <p className="text-[10px] text-slate-400 mt-1 leading-normal">
+                  {language === 'en' 
+                    ? 'Includes potatoes, plantains, onion, tomato, and selected fresh cilantro.' 
+                    : 'Incluye papas, plátanos, cebolla, tomate, y cilantro fresco seleccionado.'}
+                </p>
                 <div className="flex items-center gap-1.5 mt-3">
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-white border border-slate-200 text-slate-500 font-bold">🥦 Verduras</span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-white border border-slate-200 text-slate-500 font-bold">🧅 3 Variedades</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-white border border-slate-200 text-slate-500 font-bold">
+                    {language === 'en' ? '🥦 Vegetables' : '🥦 Verduras'}
+                  </span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-white border border-slate-200 text-slate-500 font-bold">
+                    {language === 'en' ? '🧅 3 Varieties' : '🧅 3 Variedades'}
+                  </span>
                 </div>
               </div>
               <div className="flex items-center justify-between mt-5 pt-3 border-t border-green-200/30">
-                <span className="text-xs font-black text-green-800">Llevar todo por $12.500</span>
+                <span className="text-xs font-black text-green-800">
+                  {language === 'en' ? 'Get all for $12,500' : 'Llevar todo por $12.500'}
+                </span>
                 <button 
-                  onClick={() => addComboToCart('Sancocho Casero', ['p7', 'p8', 'p9'])}
+                  onClick={() => addComboToCart(language === 'en' ? 'Homemade Sancocho Combo' : 'Sancocho Casero', ['p7', 'p8', 'p9'])}
                   className="bg-green-600 hover:bg-green-700 text-white text-[10px] font-black uppercase tracking-wider px-3.5 py-2 rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
                 >
-                  Agregar Combo
+                  {t.store.addCombo}
                 </button>
               </div>
             </div>
@@ -470,21 +553,35 @@ export default function CatalogPage() {
             <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-3xl border border-red-200/60 p-5 flex flex-col justify-between shadow-xs text-left relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-red-200/30 blur-xl pointer-events-none" />
               <div>
-                <span className="bg-red-600 text-white text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md">Asado Asombroso</span>
-                <h4 className="text-sm font-black text-slate-800 mt-2">Combo Parrillada Premium</h4>
-                <p className="text-[10px] text-slate-400 mt-1 leading-normal">Incluye lomo de res premium fresco, alitas de pollo adobables y aguacate Hass.</p>
+                <span className="bg-red-600 text-white text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md">
+                  {language === 'en' ? 'Awesome BBQ' : 'Asado Asombroso'}
+                </span>
+                <h4 className="text-sm font-black text-slate-800 mt-2">
+                  {language === 'en' ? 'Premium Grilled Meat Combo' : 'Combo Parrillada Premium'}
+                </h4>
+                <p className="text-[10px] text-slate-400 mt-1 leading-normal">
+                  {language === 'en'
+                    ? 'Includes fresh premium beef tenderloin, chicken wings to season, and Hass avocado.'
+                    : 'Incluye lomo de res premium fresco, alitas de pollo adobables y aguacate Hass.'}
+                </p>
                 <div className="flex items-center gap-1.5 mt-3">
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-white border border-slate-200 text-slate-500 font-bold">🥩 Carnes</span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-white border border-slate-200 text-slate-500 font-bold">🥑 Acompañante</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-white border border-slate-200 text-slate-500 font-bold">
+                    {language === 'en' ? '🥩 Meats' : '🥩 Carnes'}
+                  </span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-white border border-slate-200 text-slate-500 font-bold">
+                    {language === 'en' ? '🥑 Side dish' : '🥑 Acompañante'}
+                  </span>
                 </div>
               </div>
               <div className="flex items-center justify-between mt-5 pt-3 border-t border-red-200/30">
-                <span className="text-xs font-black text-red-800">Llevar todo por $68.400</span>
+                <span className="text-xs font-black text-red-800">
+                  {language === 'en' ? 'Get all for $68,400' : 'Llevar todo por $68.400'}
+                </span>
                 <button 
-                  onClick={() => addComboToCart('Parrillada Premium', ['p1', 'p4', 'p10'])}
+                  onClick={() => addComboToCart(language === 'en' ? 'Premium Grilled Combo' : 'Parrillada Premium', ['p1', 'p4', 'p10'])}
                   className="bg-red-600 hover:bg-red-700 text-white text-[10px] font-black uppercase tracking-wider px-3.5 py-2 rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
                 >
-                  Agregar Combo
+                  {t.store.addCombo}
                 </button>
               </div>
             </div>
@@ -493,21 +590,35 @@ export default function CatalogPage() {
             <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-3xl border border-orange-200/60 p-5 flex flex-col justify-between shadow-xs text-left relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-orange-200/30 blur-xl pointer-events-none" />
               <div>
-                <span className="bg-orange-600 text-white text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md">Vitaminas al Día</span>
-                <h4 className="text-sm font-black text-slate-800 mt-2">Combo Ensalada Dulce</h4>
-                <p className="text-[10px] text-slate-400 mt-1 leading-normal">Fresas seleccionadas rojas y dulces acompañadas de banano Urabá fresco.</p>
+                <span className="bg-orange-600 text-white text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md">
+                  {language === 'en' ? 'Daily Vitamins' : 'Vitaminas al Día'}
+                </span>
+                <h4 className="text-sm font-black text-slate-800 mt-2">
+                  {language === 'en' ? 'Sweet Salad Combo' : 'Combo Ensalada Dulce'}
+                </h4>
+                <p className="text-[10px] text-slate-400 mt-1 leading-normal">
+                  {language === 'en'
+                    ? 'Selected red and sweet strawberries accompanied by fresh Uraba bananas.'
+                    : 'Fresas seleccionadas rojas y dulces acompañadas de banano Urabá fresco.'}
+                </p>
                 <div className="flex items-center gap-1.5 mt-3">
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-white border border-slate-200 text-slate-500 font-bold">🍎 Frutas</span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-white border border-slate-200 text-slate-500 font-bold">🍌 100% Orgánico</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-white border border-slate-200 text-slate-500 font-bold">
+                    {language === 'en' ? '🍎 Fruits' : '🍎 Frutas'}
+                  </span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-white border border-slate-200 text-slate-500 font-bold">
+                    {language === 'en' ? '🍌 100% Organic' : '🍌 100% Orgánico'}
+                  </span>
                 </div>
               </div>
               <div className="flex items-center justify-between mt-5 pt-3 border-t border-orange-200/30">
-                <span className="text-xs font-black text-orange-800">Llevar todo por $11.000</span>
+                <span className="text-xs font-black text-orange-800">
+                  {language === 'en' ? 'Get all for $11,000' : 'Llevar todo por $11.000'}
+                </span>
                 <button 
-                  onClick={() => addComboToCart('Ensalada Dulce', ['p11', 'p12'])}
+                  onClick={() => addComboToCart(language === 'en' ? 'Sweet Salad Combo' : 'Ensalada Dulce', ['p11', 'p12'])}
                   className="bg-orange-600 hover:bg-orange-700 text-white text-[10px] font-black uppercase tracking-wider px-3.5 py-2 rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
                 >
-                  Agregar Combo
+                  {t.store.addCombo}
                 </button>
               </div>
             </div>
@@ -520,9 +631,13 @@ export default function CatalogPage() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Flame className="w-5 h-5 fill-white text-white animate-bounce" />
-                <h3 className="text-sm font-black uppercase tracking-wider">Ofertas Imperdibles del Día</h3>
+                <h3 className="text-sm font-black uppercase tracking-wider">
+                  {t.store.hotDealsTitle}
+                </h3>
               </div>
-              <span className="text-[9px] font-black uppercase tracking-widest bg-white/20 px-3 py-1 rounded-full">¡Solo por 24 horas!</span>
+              <span className="text-[9px] font-black uppercase tracking-widest bg-white/20 px-3 py-1 rounded-full">
+                {t.store.hotDealsTag}
+              </span>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -561,10 +676,14 @@ export default function CatalogPage() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-lg font-black text-slate-800 text-left flex items-center gap-2">
-                <span>{selectedCategory === 'Todas' ? 'Nuestros Productos Seleccionados' : selectedCategory}</span>
+                <span>
+                  {selectedCategory === 'Todas' 
+                    ? t.store.catalogTitle 
+                    : (categoryTranslations[language][selectedCategory] || selectedCategory)}
+                </span>
               </h3>
               <p className="text-xs text-slate-400 text-left mt-0.5 font-medium">
-                Encontramos {filteredProducts.length} deliciosos productos listos para entregar
+                {t.store.catalogSubtitle.replace('{count}', String(filteredProducts.length))}
               </p>
             </div>
           </div>
@@ -572,13 +691,17 @@ export default function CatalogPage() {
           {filteredProducts.length === 0 ? (
             <div className="text-center py-16 bg-white rounded-3xl border border-slate-200/50 shadow-xs max-w-md mx-auto my-8">
               <ShoppingBag className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-              <p className="text-sm font-bold text-slate-600">No encontramos resultados</p>
-              <p className="text-xs text-slate-400 mt-1 px-4">Intenta buscar otro producto o cambia la categoría de filtro.</p>
+              <p className="text-sm font-bold text-slate-600">
+                {language === 'en' ? 'No products found' : 'No encontramos resultados'}
+              </p>
+              <p className="text-xs text-slate-400 mt-1 px-4">
+                {language === 'en' ? 'Try searching for another product or change filters.' : 'Intenta buscar otro producto o cambia la categoría de filtro.'}
+              </p>
               <button 
                 onClick={() => { setSelectedCategory('Todas'); setSearchQuery(''); }}
                 className="mt-5 px-4.5 py-2.5 rounded-xl text-xs font-black bg-green-600 text-white cursor-pointer active:scale-95 transition-all"
               >
-                Restaurar Filtros
+                {language === 'en' ? 'Reset Filters' : 'Restaurar Filtros'}
               </button>
             </div>
           ) : (
@@ -604,12 +727,12 @@ export default function CatalogPage() {
                     <div className="absolute top-2.5 left-2.5 z-10 flex flex-col gap-1.5">
                       {badge && (
                         <div className={`${badge.color} text-white px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider shadow-sm`}>
-                          {badge.text}
+                          {language === 'en' ? badge.text.replace('Más Vendido', 'Best Seller').replace('Oferta', 'Sale').replace('Fresco', 'Fresh') : badge.text}
                         </div>
                       )}
                       {product.stock > 0 && product.stock <= 5 && (
                         <div className="bg-red-500 text-white px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider">
-                          Quedan {product.stock}
+                          {language === 'en' ? `Only ${product.stock} left` : `Quedan ${product.stock}`}
                         </div>
                       )}
                     </div>
@@ -636,7 +759,9 @@ export default function CatalogPage() {
                       {/* Dark overlay for out of stock */}
                       {isOutOfStock && (
                         <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-2 text-center">
-                          <span className="text-[10px] font-black uppercase tracking-widest bg-red-600 text-white px-2.5 py-1 rounded-lg">Agotado</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest bg-red-600 text-white px-2.5 py-1 rounded-lg">
+                            {t.store.outOfStock}
+                          </span>
                         </div>
                       )}
                     </div>
@@ -646,14 +771,14 @@ export default function CatalogPage() {
                       <div className="cursor-pointer space-y-1 flex-1" onClick={() => setSelectedProduct(product)}>
                         <div className="flex items-center justify-between">
                           <span className="text-[8px] font-black uppercase tracking-widest text-green-600 bg-green-50 px-1.5 py-0.5 rounded-sm">
-                            {product.category}
+                            {categoryTranslations[language][product.category] || product.category}
                           </span>
                         </div>
                         <h4 className="text-xs font-bold text-slate-800 line-clamp-1 group-hover:text-green-600 transition-colors">
-                          {product.name}
+                          {language === 'en' && product.nameEn ? product.nameEn : product.name}
                         </h4>
                         <p className="text-[10px] text-slate-400 line-clamp-2 leading-relaxed">
-                          {product.description}
+                          {language === 'en' && product.descriptionEn ? product.descriptionEn : product.description}
                         </p>
                       </div>
 
@@ -697,10 +822,10 @@ export default function CatalogPage() {
                           <button
                             onClick={() => addToCart(product)}
                             className="bg-green-600 hover:bg-green-700 text-white font-extrabold text-[10px] uppercase tracking-wider px-3 py-2 rounded-xl flex items-center gap-1 cursor-pointer active:scale-95 shadow-md shadow-green-600/10 transition-all shrink-0"
-                            title="Agregar al Carrito"
+                            title={t.store.addToCart}
                           >
                             <ShoppingCart className="w-3.5 h-3.5" />
-                            <span>Agregar</span>
+                            <span>{language === 'en' ? 'Add' : 'Agregar'}</span>
                           </button>
                         )}
                       </div>
@@ -725,7 +850,7 @@ export default function CatalogPage() {
           <div className="p-4 border-b border-slate-100 bg-green-600 text-white flex items-center justify-between">
             <div className="flex items-center gap-2">
               <ShoppingCart className="w-5 h-5" />
-              <h3 className="text-xs font-black uppercase tracking-wider">Tu Carrito</h3>
+              <h3 className="text-xs font-black uppercase tracking-wider">{t.store.cartTitle}</h3>
               <span className="bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
                 {totalItemsCount}
               </span>
@@ -740,13 +865,13 @@ export default function CatalogPage() {
             {cart.length === 0 ? (
               <div className="text-center py-20">
                 <ShoppingBag className="w-12 h-12 text-slate-300 mx-auto mb-3 animate-pulse" />
-                <p className="text-sm font-bold text-slate-600">El carrito está vacío</p>
-                <p className="text-xs text-slate-400 mt-1">Navega en la tienda y agrega los mejores productos frescos.</p>
+                <p className="text-sm font-bold text-slate-600">{t.store.emptyCart}</p>
+                <p className="text-xs text-slate-400 mt-1">{t.store.emptyCartDesc}</p>
                 <button 
                   onClick={() => setIsCartOpen(false)}
                   className="mt-5 px-4.5 py-2.5 rounded-xl text-xs font-black bg-green-600 text-white cursor-pointer active:scale-95"
                 >
-                  Seguir Comprando
+                  {t.store.emptyCartButton}
                 </button>
               </div>
             ) : (
@@ -758,8 +883,12 @@ export default function CatalogPage() {
                   
                   <div className="flex-1 min-w-0 flex flex-col justify-between">
                     <div>
-                      <h4 className="text-xs font-bold text-slate-800 truncate">{item.product.name}</h4>
-                      <p className="text-[9px] text-slate-400 font-bold uppercase">{item.product.category}</p>
+                      <h4 className="text-xs font-bold text-slate-800 truncate">
+                        {language === 'en' && item.product.nameEn ? item.product.nameEn : item.product.name}
+                      </h4>
+                      <p className="text-[9px] text-slate-400 font-bold uppercase">
+                        {categoryTranslations[language][item.product.category] || item.product.category}
+                      </p>
                     </div>
                     <div className="flex items-center justify-between mt-1">
                       <span className="text-xs font-black text-slate-700">{formatPrice(item.product.price)}</span>
@@ -805,23 +934,25 @@ export default function CatalogPage() {
             <div className="p-4 border-t border-slate-100 bg-slate-50 space-y-4">
               <div className="space-y-1.5 text-xs text-slate-500">
                 <div className="flex justify-between">
-                  <span>Subtotal</span>
+                  <span>{t.store.subtotal}</span>
                   <span className="font-bold text-slate-800">{formatPrice(cartSubtotal)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="flex items-center gap-1">
-                    Domicilio
-                    {shippingFee === 0 && <span className="bg-green-100 text-green-700 font-black text-[9px] px-1.5 py-0.5 rounded-md">GRATIS</span>}
+                    {t.store.shipping}
+                    {shippingFee === 0 && <span className="bg-green-100 text-green-700 font-black text-[9px] px-1.5 py-0.5 rounded-md">{language === 'en' ? 'FREE' : 'GRATIS'}</span>}
                   </span>
-                  <span className="font-bold text-slate-800">{shippingFee === 0 ? 'Gratis' : formatPrice(shippingFee)}</span>
+                  <span className="font-bold text-slate-800">{shippingFee === 0 ? t.store.shippingFree : formatPrice(shippingFee)}</span>
                 </div>
                 {shippingFee > 0 && (
                   <p className="text-[10px] text-green-600 font-bold text-left">
-                    💡 Agrega <b>{formatPrice(80000 - cartSubtotal)}</b> más para tener envío <b>GRATIS</b>.
+                    {language === 'en' 
+                      ? <>💡 Add <b>{formatPrice(80000 - cartSubtotal)}</b> more to get <b>FREE</b> shipping.</>
+                      : <>💡 Agrega <b>{formatPrice(80000 - cartSubtotal)}</b> más para tener envío <b>GRATIS</b>.</>}
                   </p>
                 )}
                 <div className="border-t border-slate-200 pt-2.5 flex justify-between text-sm font-black text-slate-800">
-                  <span>Total</span>
+                  <span>{t.store.total}</span>
                   <span>{formatPrice(cartTotal)}</span>
                 </div>
               </div>
@@ -830,7 +961,7 @@ export default function CatalogPage() {
                 onClick={handleCheckout}
                 className="w-full py-3 rounded-2xl bg-orange-500 hover:bg-orange-600 transition-all text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-orange-500/10 active:scale-95"
               >
-                <span>Proceder al Pago</span>
+                <span>{t.store.checkoutButton}</span>
                 <ChevronRight className="w-4.5 h-4.5" />
               </button>
             </div>
@@ -867,26 +998,34 @@ export default function CatalogPage() {
             <div className="p-6 space-y-4">
               <div>
                 <span className="text-[9px] font-black uppercase tracking-widest text-green-700 bg-green-50 px-2.5 py-1 rounded-md inline-block border border-green-200/30">
-                  {selectedProduct.category}
+                  {categoryTranslations[language][selectedProduct.category] || selectedProduct.category}
                 </span>
-                <h3 className="text-base font-black text-slate-800 mt-2">{selectedProduct.name}</h3>
+                <h3 className="text-base font-black text-slate-800 mt-2">
+                  {language === 'en' && selectedProduct.nameEn ? selectedProduct.nameEn : selectedProduct.name}
+                </h3>
                 
                 {/* Stock Tag */}
                 <div className="mt-1.5 flex items-center gap-1.5">
                   <div className={`w-1.5 h-1.5 rounded-full ${selectedProduct.stock > 0 ? 'bg-green-500' : 'bg-red-500'}`} />
                   <span className="text-[10px] text-slate-400 font-bold">
-                    {selectedProduct.stock > 0 ? `Stock disponible: ${selectedProduct.stock} unidades` : 'Sin inventario disponible'}
+                    {selectedProduct.stock > 0 
+                      ? (language === 'en' ? `Available stock: ${selectedProduct.stock} ${selectedProduct.unitEn || 'units'}` : `Stock disponible: ${selectedProduct.stock} ${selectedProduct.unit || 'unidades'}`)
+                      : (language === 'en' ? 'Out of stock' : 'Sin inventario disponible')}
                   </span>
                 </div>
               </div>
 
               <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/50">
-                <p className="text-xs text-slate-500 font-bold leading-relaxed">{selectedProduct.description}</p>
+                <p className="text-xs text-slate-500 font-bold leading-relaxed">
+                  {language === 'en' && selectedProduct.descriptionEn ? selectedProduct.descriptionEn : selectedProduct.description}
+                </p>
               </div>
 
               <div className="flex items-center justify-between pt-3 border-t border-slate-100">
                 <div>
-                  <span className="text-[10px] text-slate-400 block font-bold">Precio unitario</span>
+                  <span className="text-[10px] text-slate-400 block font-bold">
+                    {language === 'en' ? 'Unit price' : 'Precio unitario'}
+                  </span>
                   <div className="flex items-baseline gap-2">
                     <span className="text-lg font-black text-slate-800">{formatPrice(selectedProduct.price)}</span>
                     {selectedProduct.oldPrice && (
@@ -902,14 +1041,14 @@ export default function CatalogPage() {
                       className="px-5 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-md cursor-pointer active:scale-95"
                     >
                       <ShoppingCart className="w-4 h-4" />
-                      <span>Agregar al Carrito</span>
+                      <span>{t.store.addToCart}</span>
                     </button>
                   ) : (
                     <button
                       disabled
                       className="px-5 py-3 rounded-xl bg-slate-200 text-slate-400 font-bold text-xs uppercase tracking-wider cursor-not-allowed"
                     >
-                      Agotado
+                      {t.store.outOfStock}
                     </button>
                   )}
                 </div>
@@ -918,6 +1057,19 @@ export default function CatalogPage() {
           </div>
         </div>
       )}
+      {/* ── FLOATING WHATSAPP BUTTON ── */}
+      <a
+        href={`https://wa.me/${brandConfig.whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(t.store.whatsappHello)}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50 p-4 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-full shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center group"
+        title={t.store.whatsappFloatTooltip}
+      >
+        <MessageCircle className="w-6.5 h-6.5" />
+        <span className="absolute right-14 bg-slate-900 text-white text-[10px] font-bold px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap shadow-md">
+          {t.store.whatsappFloatTooltip}
+        </span>
+      </a>
     </div>
   );
 }

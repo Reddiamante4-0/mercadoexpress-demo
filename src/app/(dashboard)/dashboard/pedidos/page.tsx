@@ -17,6 +17,7 @@ import {
 import { getOrders, saveOrder, Order } from '@/lib/db';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslation } from '@/hooks/useTranslation';
+import { translations } from '@/config/translations';
 
 const STATUS_OPTIONS = [
   'Recibido',
@@ -24,11 +25,31 @@ const STATUS_OPTIONS = [
   'En camino',
   'Entregado',
   'Cancelado'
-];
+] as const;
+
+const statusTranslations: Record<string, Record<string, string>> = {
+  es: {
+    'Recibido': 'Recibido',
+    'En preparación': 'En preparación',
+    'En camino': 'En camino',
+    'Entregado': 'Entregado',
+    'Cancelado': 'Cancelado',
+    'Todos': 'Todos los estados'
+  },
+  en: {
+    'Recibido': 'Received',
+    'En preparación': 'Preparing',
+    'En camino': 'On the way',
+    'Entregado': 'Delivered',
+    'Cancelado': 'Canceled',
+    'Todos': 'All statuses'
+  }
+};
 
 export default function AdminOrdersPage() {
   const { toast } = useToast();
   const { language } = useTranslation();
+  const t = translations[language];
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -44,10 +65,10 @@ export default function AdminOrdersPage() {
     const updatedOrder = { ...order, status: newStatus };
     const updatedList = saveOrder(updatedOrder);
     setOrders(updatedList);
+    
+    const translatedStatus = statusTranslations[language][newStatus] || newStatus;
     toast({
-      title: language === 'en' 
-        ? `Order status changed to: ${newStatus}` 
-        : `Estado del pedido cambiado a: ${newStatus}`,
+      title: t.admin.ordersToastStatusChanged.replace('{status}', translatedStatus),
       type: 'success'
     });
   };
@@ -88,7 +109,7 @@ export default function AdminOrdersPage() {
   const formatDate = (isoString: string) => {
     try {
       const date = new Date(isoString);
-      return date.toLocaleDateString('es-CO', {
+      return date.toLocaleDateString(language === 'en' ? 'en-US' : 'es-CO', {
         day: 'numeric',
         month: 'short',
         hour: '2-digit',
@@ -116,10 +137,10 @@ export default function AdminOrdersPage() {
         <div>
           <h1 className="text-xl md:text-2xl font-black text-slate-800 flex items-center gap-2">
             <ClipboardList className="w-6 h-6 text-green-600 animate-bounce" />
-            <span>Pedidos Recibidos</span>
+            <span>{t.admin.ordersTitle}</span>
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            Visualiza los pedidos de tus clientes en tiempo real y gestiona el flujo de despacho.
+            {t.admin.ordersSubtitle}
           </p>
         </div>
       </div>
@@ -133,7 +154,7 @@ export default function AdminOrdersPage() {
           </span>
           <input
             type="text"
-            placeholder="Buscar por ID, cliente, dirección..."
+            placeholder={language === 'en' ? "Search by ID, customer, address..." : "Buscar por ID, cliente, dirección..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
@@ -142,15 +163,19 @@ export default function AdminOrdersPage() {
 
         {/* Filter by status */}
         <div className="md:col-span-2 flex items-center gap-2">
-          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0">Filtrar por</label>
+          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0">
+            {t.admin.ordersFilterStatus}
+          </label>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-700"
+            className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-700 font-bold"
           >
-            <option value="Todos">Todos los estados</option>
+            <option value="Todos">{statusTranslations[language]['Todos']}</option>
             {STATUS_OPTIONS.map((status) => (
-              <option key={status} value={status}>{status}</option>
+              <option key={status} value={status}>
+                {statusTranslations[language][status] || status}
+              </option>
             ))}
           </select>
         </div>
@@ -161,8 +186,7 @@ export default function AdminOrdersPage() {
         {filteredOrders.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-3xl border border-slate-200/60 shadow-sm">
             <ClipboardList className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-            <p className="text-sm font-bold text-slate-600">No se encontraron pedidos</p>
-            <p className="text-xs text-slate-400 mt-1">No hay órdenes registradas con los filtros seleccionados.</p>
+            <p className="text-sm font-bold text-slate-600">{t.admin.ordersEmpty}</p>
           </div>
         ) : (
           filteredOrders.map((order) => {
@@ -193,15 +217,28 @@ export default function AdminOrdersPage() {
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-3 sm:gap-6 self-start sm:self-center">
+                  <div className="flex flex-wrap items-center gap-4 sm:gap-8 self-start sm:self-center">
                     <div>
-                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block text-left sm:text-right">Total Pedido</span>
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block text-left sm:text-right">
+                        {language === 'en' ? 'Delivery Model' : 'Modelo de Entrega'}
+                      </span>
+                      <span className="text-xs font-bold text-slate-600 block mt-0.5">
+                        {order.deliveryType === 'weekly' 
+                          ? (language === 'en' ? 'Weekly Presale 📅' : 'Preventa Semanal 📅') 
+                          : (language === 'en' ? 'Daily Delivery ⚡' : 'Venta Diaria ⚡')}
+                      </span>
+                    </div>
+
+                    <div>
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block text-left sm:text-right">
+                        {language === 'en' ? 'Order Total' : 'Total Pedido'}
+                      </span>
                       <span className="text-sm font-black text-slate-800 block mt-0.5">{formatPrice(order.total)}</span>
                     </div>
 
                     <div className="flex items-center gap-2">
                       <span className={`px-3 py-1 rounded-full text-[10px] font-bold border ${getStatusStyle(order.status)}`}>
-                        {order.status}
+                        {statusTranslations[language][order.status] || order.status}
                       </span>
                       {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
                     </div>
@@ -214,13 +251,13 @@ export default function AdminOrdersPage() {
                     
                     {/* Column 1 & 2: Client/Delivery Details (Span 2) */}
                     <div className="md:col-span-2 space-y-4">
-                      <h5 className="text-[10px] font-black uppercase tracking-wider text-slate-400">Detalles del Cliente</h5>
+                      <h5 className="text-[10px] font-black uppercase tracking-wider text-slate-400">{t.success.dispatchDetails}</h5>
                       
                       <div className="space-y-3 bg-white p-4 rounded-xl border border-slate-200/50">
                         <div className="flex gap-2.5 items-start">
                           <MapPin className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />
                           <div>
-                            <p className="font-bold text-slate-700">Dirección</p>
+                            <p className="font-bold text-slate-700">{language === 'en' ? 'Address' : 'Dirección'}</p>
                             <p className="text-slate-400 mt-0.5">{order.address}</p>
                           </div>
                         </div>
@@ -228,7 +265,7 @@ export default function AdminOrdersPage() {
                         <div className="flex gap-2.5 items-center">
                           <Phone className="w-4 h-4 text-green-600 shrink-0" />
                           <div>
-                            <span className="font-bold text-slate-700 mr-1.5">Teléfono:</span>
+                            <span className="font-bold text-slate-700 mr-1.5">{language === 'en' ? 'Phone:' : 'Teléfono:'}</span>
                             <span className="font-medium text-slate-600">{order.phone}</span>
                           </div>
                         </div>
@@ -236,28 +273,32 @@ export default function AdminOrdersPage() {
                         <div className="flex gap-2.5 items-center">
                           <CreditCard className="w-4 h-4 text-green-600 shrink-0" />
                           <div>
-                            <span className="font-bold text-slate-700 mr-1.5">Pago:</span>
+                            <span className="font-bold text-slate-700 mr-1.5">{language === 'en' ? 'Payment:' : 'Pago:'}</span>
                             <span className="font-medium text-slate-600">{order.paymentDetails}</span>
                           </div>
                         </div>
 
                         {order.notes && (
                           <div className="p-3 bg-slate-50 rounded-lg border border-slate-200/40 text-[10px] text-slate-400 italic">
-                            <b>Instrucciones:</b> {order.notes}
+                            <b>{language === 'en' ? 'Instructions:' : 'Instrucciones:'}</b> {order.notes}
                           </div>
                         )}
                       </div>
 
                       {/* Status quick switcher dropdown */}
                       <div className="space-y-1">
-                        <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 pl-1 block">Actualizar Estado</label>
+                        <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 pl-1 block">
+                          {t.admin.ordersDetailActions}
+                        </label>
                         <select
                           value={order.status}
                           onChange={(e) => handleStatusChange(order, e.target.value)}
                           className="w-full bg-white border border-slate-200 rounded-xl py-2 px-3 text-xs font-bold text-slate-700 focus:outline-hidden focus:border-green-600"
                         >
                           {STATUS_OPTIONS.map((opt) => (
-                            <option key={opt} value={opt}>{opt}</option>
+                            <option key={opt} value={opt}>
+                              {statusTranslations[language][opt] || opt}
+                            </option>
                           ))}
                         </select>
                       </div>
@@ -265,15 +306,15 @@ export default function AdminOrdersPage() {
 
                     {/* Column 3 & 4 & 5: Items Purchased List (Span 3) */}
                     <div className="md:col-span-3 space-y-4">
-                      <h5 className="text-[10px] font-black uppercase tracking-wider text-slate-400">Productos Solicitados</h5>
+                      <h5 className="text-[10px] font-black uppercase tracking-wider text-slate-400">{t.admin.ordersDetailProducts}</h5>
                       
                       <div className="bg-white rounded-xl border border-slate-200/50 overflow-hidden shadow-xs">
                         <table className="w-full text-xs text-left">
                           <thead>
                             <tr className="bg-slate-50 border-b border-slate-100 text-[9px] uppercase font-bold text-slate-400 tracking-wider">
                               <th className="px-4 py-2">Item</th>
-                              <th className="py-2 text-right">Unitario</th>
-                              <th className="py-2 text-center">Cant</th>
+                              <th className="py-2 text-right">{language === 'en' ? 'Unit' : 'Unitario'}</th>
+                              <th className="py-2 text-center">{language === 'en' ? 'Qty' : 'Cant'}</th>
                               <th className="px-4 py-2 text-right">Total</th>
                             </tr>
                           </thead>
@@ -292,15 +333,15 @@ export default function AdminOrdersPage() {
                         {/* Receipts breakdown */}
                         <div className="p-4 border-t border-slate-100 bg-slate-50/50 space-y-1.5 text-xs text-slate-500">
                           <div className="flex justify-between">
-                            <span>Subtotal</span>
+                            <span>{t.success.subtotal}</span>
                             <span className="font-bold text-slate-700">{formatPrice(order.subtotal)}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span>Costo Domicilio</span>
-                            <span className="font-bold text-slate-700">{order.shippingFee === 0 ? 'Gratis' : formatPrice(order.shippingFee)}</span>
+                            <span>{t.success.shippingFee}</span>
+                            <span className="font-bold text-slate-700">{order.shippingFee === 0 ? t.store.shippingFree : formatPrice(order.shippingFee)}</span>
                           </div>
                           <div className="border-t border-slate-200 pt-2 flex justify-between text-sm font-black text-slate-800">
-                            <span>Total Facturado</span>
+                            <span>{t.success.totalPaid}</span>
                             <span>{formatPrice(order.total)}</span>
                           </div>
                         </div>

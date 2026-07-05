@@ -13,7 +13,10 @@ import {
   ClipboardList,
   Users,
   TrendingUp,
-  Store
+  Store,
+  Calendar,
+  Star,
+  MessageSquare
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -56,6 +59,12 @@ const NAV_SECTIONS = [
         labelEs: 'Pedidos Recibidos',
       },
       {
+        href: '/dashboard/preventa',
+        icon: <Calendar className="w-5 h-5 shrink-0" />,
+        labelEn: 'Weekly Presale',
+        labelEs: 'Preventa Semanal',
+      },
+      {
         href: '/dashboard/clientes',
         icon: <Users className="w-5 h-5 shrink-0" />,
         labelEn: 'Customers',
@@ -66,6 +75,18 @@ const NAV_SECTIONS = [
         icon: <TrendingUp className="w-5 h-5 shrink-0" />,
         labelEn: 'Sales Report',
         labelEs: 'Reporte de Ventas',
+      },
+      {
+        href: '/dashboard/calificaciones',
+        icon: <Star className="w-5 h-5 shrink-0" />,
+        labelEn: 'Ratings',
+        labelEs: 'Calificaciones',
+      },
+      {
+        href: '/dashboard/mensajes',
+        icon: <MessageSquare className="w-5 h-5 shrink-0" />,
+        labelEn: 'Messages',
+        labelEs: 'Mensajes Internos',
       },
     ],
   },
