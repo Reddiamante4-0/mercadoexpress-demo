@@ -87,9 +87,9 @@ export default function AdminMessagesPage() {
               <tbody>
                 {messages.map((m) => {
                   const replyText = language === 'en'
-                    ? `Hello ${m.customerName}, regarding your query on order ${m.orderId}:`
-                    : `Hola ${m.customerName}, respondiendo a tu consulta sobre el pedido ${m.orderId}:`;
-                  const cleanPhone = m.phone.replace(/[^0-9]/g, '');
+                    ? `Hello ${m.customerName || 'Customer'}, regarding your query on order ${m.orderId || ''}:`
+                    : `Hola ${m.customerName || 'Cliente'}, respondiendo a tu consulta sobre el pedido ${m.orderId || ''}:`;
+                  const cleanPhone = (m.phone || '').replace(/[^0-9]/g, '');
                   // For Colombian numbers, prepend country code if not present
                   const whatsappPhone = cleanPhone.length === 10 ? `57${cleanPhone}` : cleanPhone;
                   const replyWhatsappLink = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(replyText)}`;

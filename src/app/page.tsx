@@ -657,11 +657,33 @@ export default function CatalogPage() {
                       <img src={p.image} alt={p.name} className="object-cover w-full h-full group-hover:scale-105 transition-all duration-300" />
                     </div>
 
-                    <div className="text-left">
+                    <div className="text-left space-y-1">
                       <h4 className="text-xs font-bold text-slate-800 truncate">{p.name}</h4>
-                      <div className="flex items-baseline gap-1.5 mt-1">
-                        <span className="text-xs font-black text-slate-800">{formatPrice(p.price)}</span>
-                        {p.oldPrice && <span className="text-[10px] text-slate-400 line-through">{formatPrice(p.oldPrice)}</span>}
+                      <div className="flex items-center justify-between gap-1.5 pt-1.5 border-t border-slate-100">
+                        <div>
+                          <span className="text-xs font-black text-slate-800 block leading-none">{formatPrice(p.price)}</span>
+                          {p.oldPrice && <span className="text-[10px] text-slate-400 line-through block mt-0.5 leading-none">{formatPrice(p.oldPrice)}</span>}
+                        </div>
+                        {p.stock <= 0 ? (
+                          <button
+                            disabled
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-slate-200 text-slate-400 font-extrabold text-[9px] uppercase tracking-wider px-2 py-1.5 rounded-lg cursor-not-allowed shrink-0"
+                          >
+                            <span>{language === 'en' ? 'Out' : 'Agotado'}</span>
+                          </button>
+                        ) : (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              addToCart(p);
+                            }}
+                            className="bg-green-600 hover:bg-green-700 text-white font-extrabold text-[9px] uppercase tracking-wider px-2.5 py-1.5 rounded-lg flex items-center gap-1 cursor-pointer active:scale-95 shadow-md shadow-green-600/10 transition-all shrink-0"
+                          >
+                            <ShoppingCart className="w-3 h-3" />
+                            <span>{language === 'en' ? 'Add' : 'Agregar'}</span>
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -797,27 +819,12 @@ export default function CatalogPage() {
 
                         {/* Interactive Cart Buttons */}
                         {isOutOfStock ? (
-                          <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300">
-                            <Plus className="w-4 h-4" />
-                          </div>
-                        ) : quantityInCart > 0 ? (
-                          <div className="flex items-center bg-green-50 rounded-xl border border-green-200 overflow-hidden shadow-xs">
-                            <button
-                              onClick={() => removeFromCart(product.id)}
-                              className="px-2 py-2 text-green-600 hover:bg-green-100/50 transition-colors cursor-pointer"
-                            >
-                              <Minus className="w-3 h-3" />
-                            </button>
-                            <span className="px-1 text-xs font-black text-green-700 min-w-4 text-center">
-                              {quantityInCart}
-                            </span>
-                            <button
-                              onClick={() => addToCart(product)}
-                              className="px-2 py-2 text-green-600 hover:bg-green-100/50 transition-colors cursor-pointer"
-                            >
-                              <Plus className="w-3 h-3" />
-                            </button>
-                          </div>
+                          <button
+                            disabled
+                            className="bg-slate-200 text-slate-400 font-extrabold text-[10px] uppercase tracking-wider px-3 py-2 rounded-xl flex items-center gap-1 cursor-not-allowed shrink-0"
+                          >
+                            <span>{language === 'en' ? 'Out of stock' : 'Agotado'}</span>
+                          </button>
                         ) : (
                           <button
                             onClick={() => addToCart(product)}
@@ -844,7 +851,10 @@ export default function CatalogPage() {
         <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs" onClick={() => setIsCartOpen(false)} />
 
         {/* Panel */}
-        <div className={`absolute inset-y-0 right-0 max-w-md w-full bg-white shadow-2xl flex flex-col transition-transform duration-300 ${isCartOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div 
+          onClick={(e) => e.stopPropagation()}
+          className={`absolute inset-y-0 right-0 max-w-md w-full bg-white shadow-2xl flex flex-col transition-transform duration-300 z-10 ${isCartOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        >
           
           {/* Cart Header */}
           <div className="p-4 border-b border-slate-100 bg-green-600 text-white flex items-center justify-between">
@@ -1058,18 +1068,20 @@ export default function CatalogPage() {
         </div>
       )}
       {/* ── FLOATING WHATSAPP BUTTON ── */}
-      <a
-        href={`https://wa.me/${brandConfig.whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(t.store.whatsappHello)}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-50 p-4 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-full shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center group"
-        title={t.store.whatsappFloatTooltip}
-      >
-        <MessageCircle className="w-6.5 h-6.5" />
-        <span className="absolute right-14 bg-slate-900 text-white text-[10px] font-bold px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap shadow-md">
-          {t.store.whatsappFloatTooltip}
-        </span>
-      </a>
+      {!isCartOpen && !selectedProduct && (
+        <a
+          href={`https://wa.me/${brandConfig.whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(t.store.whatsappHello)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="fixed bottom-6 right-6 z-40 p-4 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-full shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center group"
+          title={t.store.whatsappFloatTooltip}
+        >
+          <MessageCircle className="w-6.5 h-6.5" />
+          <span className="absolute right-14 bg-slate-900 text-white text-[10px] font-bold px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap shadow-md">
+            {t.store.whatsappFloatTooltip}
+          </span>
+        </a>
+      )}
     </div>
   );
 }

@@ -64,6 +64,7 @@ export default function CheckoutPage() {
   const [cardName, setCardName] = useState('');
   const [pseBank, setPseBank] = useState(COLOMBIAN_BANKS[0]);
   const [walletPhone, setWalletPhone] = useState('');
+  const [walletType, setWalletType] = useState<'nequi' | 'daviplata' | 'other'>('nequi');
 
   // Processing State
   const [isProcessing, setIsProcessing] = useState(false);
@@ -160,7 +161,8 @@ export default function CheckoutPage() {
       } else if (paymentMethod === 'pse') {
         paymentDetails = `PSE (${pseBank})`;
       } else {
-        paymentDetails = `Billetera Digital (Celular: ${walletPhone})`;
+        const typeLabel = walletType === 'nequi' ? 'Nequi' : walletType === 'daviplata' ? 'DaviPlata' : 'Otro';
+        paymentDetails = `Billetera Digital (${typeLabel} - Celular: ${walletPhone})`;
       }
 
       const newOrder: Order = {
@@ -473,10 +475,14 @@ export default function CheckoutPage() {
                 {paymentMethod === 'pse' && (
                   <div className="space-y-3">
                     <p className="text-[10px] text-slate-400 leading-normal">
-                      {t.checkout.pseDesc}
+                      {language === 'en'
+                        ? 'Payment by bank transfer. You will be securely redirected to your bank portal through the PSE system.'
+                        : 'Pago por transferencia bancaria. Serás redirigido de forma segura al portal de tu banco a través del sistema PSE.'}
                     </p>
                     <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider pl-1">{t.checkout.pseSelectBank}</label>
+                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider pl-1">
+                        {language === 'en' ? 'Select your Bank' : 'Selecciona tu Banco de Pago'}
+                      </label>
                       <select
                         value={pseBank}
                         onChange={(e) => setPseBank(e.target.value)}
@@ -490,20 +496,41 @@ export default function CheckoutPage() {
                   </div>
                 )}
 
-                {/* 3. Billetera Digital Option (Nequi / DaviPlata) */}
+                {/* 3. Billetera Digital Option (Nequi / DaviPlata / Otro) */}
                 {paymentMethod === 'wallet' && (
                   <div className="space-y-3">
                     <p className="text-[10px] text-slate-400 leading-normal">
-                      {t.checkout.walletDesc}
+                      {language === 'en'
+                        ? 'Select your digital wallet and enter the associated phone number.'
+                        : 'Selecciona tu billetera digital e ingresa el número asociado.'}
                     </p>
+                    
                     <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider pl-1">{t.checkout.walletPhone}</label>
+                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider pl-1">
+                        {language === 'en' ? 'Wallet Type' : 'Tipo de Billetera'}
+                      </label>
+                      <select
+                        value={walletType}
+                        onChange={(e) => setWalletType(e.target.value as any)}
+                        className="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 bg-white"
+                      >
+                        <option value="nequi">Nequi</option>
+                        <option value="daviplata">DaviPlata</option>
+                        <option value="other">{language === 'en' ? 'Other Wallet' : 'Otro'}</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider pl-1">
+                        {language === 'en' ? 'Mobile Number' : 'Número de Celular'}
+                      </label>
                       <input
                         type="tel"
                         maxLength={10}
+                        required
                         placeholder="Ej: 3001234567"
                         value={walletPhone}
-                        onChange={(e) => setWalletPhone(e.target.value)}
+                        onChange={(e) => setWalletPhone(e.target.value.replace(/\D/g, ''))}
                         className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white font-mono"
                       />
                     </div>
