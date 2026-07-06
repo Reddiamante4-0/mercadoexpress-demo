@@ -75,8 +75,19 @@ export default function CheckoutPage() {
     if (savedCart) {
       try {
         const parsed = JSON.parse(savedCart);
-        setCart(parsed);
-        if (parsed.length === 0) {
+        const dbProducts = getProducts();
+        const syncedCart = parsed.map((item: any) => {
+          const dbProd = dbProducts.find(p => p.id === item.product.id);
+          if (dbProd) {
+            return { ...item, product: dbProd };
+          }
+          return item;
+        }).filter((item: any) => {
+          const dbProd = dbProducts.find(p => p.id === item.product.id);
+          return dbProd !== undefined;
+        });
+        setCart(syncedCart);
+        if (syncedCart.length === 0) {
           router.push('/');
         }
       } catch (e) {

@@ -391,7 +391,7 @@ export default function DashboardAdminPage() {
                   }`}>
                     {prod.stock === 0 
                       ? (language === 'en' ? 'Out of stock' : 'Agotado') 
-                      : `${prod.stock} ${language === 'en' ? (prod.unitEn || 'unit') : (prod.unit || 'und')}`}
+                      : `${prod.stock} ${language === 'en' ? (prod.unitEn || prod.unit || 'unit') : (prod.unit || 'und')}`}
                   </span>
                 </div>
               ))

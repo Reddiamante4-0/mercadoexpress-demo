@@ -47,7 +47,7 @@ export default function AdminPresalePage() {
         nameEn: prod?.nameEn,
         quantity,
         unit: prod?.unit || 'unidad',
-        unitEn: prod?.unitEn || 'unit'
+        unitEn: prod?.unitEn || prod?.unit || 'unit'
       };
     });
 

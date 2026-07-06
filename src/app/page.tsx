@@ -87,6 +87,8 @@ const CATEGORY_STYLES: Record<string, { bg: string; text: string; border: string
   'Ofertas': { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200/40', gradient: 'from-rose-600 to-pink-500' }
 };
 
+const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&auto=format&fit=crop&q=60';
+
 interface CartItem {
   product: Product;
   quantity: number;
@@ -113,12 +115,25 @@ export default function CatalogPage() {
 
   // Load products & cart from localStorage
   useEffect(() => {
-    setProducts(getProducts());
+    const dbProducts = getProducts();
+    setProducts(dbProducts);
     
     const savedCart = localStorage.getItem('me_cart');
     if (savedCart) {
       try {
-        setCart(JSON.parse(savedCart));
+        const parsed = JSON.parse(savedCart) as CartItem[];
+        const syncedCart = parsed.map(item => {
+          const dbProd = dbProducts.find(p => p.id === item.product.id);
+          if (dbProd) {
+            return { ...item, product: dbProd };
+          }
+          return item;
+        }).filter(item => {
+          const dbProd = dbProducts.find(p => p.id === item.product.id);
+          return dbProd !== undefined;
+        });
+        setCart(syncedCart);
+        localStorage.setItem('me_cart', JSON.stringify(syncedCart));
       } catch (e) {
         console.error('Error loading cart:', e);
       }
@@ -654,7 +669,12 @@ export default function CatalogPage() {
                     </span>
 
                     <div className="w-full aspect-square rounded-xl overflow-hidden bg-slate-100 mb-2">
-                      <img src={p.image} alt={p.name} className="object-cover w-full h-full group-hover:scale-105 transition-all duration-300" />
+                      <img 
+                        src={p.image || DEFAULT_IMAGE} 
+                        alt={p.name} 
+                        onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_IMAGE; }}
+                        className="object-cover w-full h-full group-hover:scale-105 transition-all duration-300" 
+                      />
                     </div>
 
                     <div className="text-left space-y-1">
@@ -773,8 +793,9 @@ export default function CatalogPage() {
                       onClick={() => setSelectedProduct(product)}
                     >
                       <img 
-                        src={product.image} 
+                        src={product.image || DEFAULT_IMAGE} 
                         alt={product.name}
+                        onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_IMAGE; }}
                         className="object-cover w-full h-full group-hover:scale-105 transition-all duration-300"
                       />
                       
@@ -888,7 +909,12 @@ export default function CatalogPage() {
               cart.map((item) => (
                 <div key={item.product.id} className="flex gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200/40 text-left relative">
                   <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-200 shrink-0">
-                    <img src={item.product.image} alt={item.product.name} className="object-cover w-full h-full" />
+                    <img 
+                      src={item.product.image || DEFAULT_IMAGE} 
+                      alt={item.product.name} 
+                      onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_IMAGE; }}
+                      className="object-cover w-full h-full" 
+                    />
                   </div>
                   
                   <div className="flex-1 min-w-0 flex flex-col justify-between">
@@ -996,7 +1022,12 @@ export default function CatalogPage() {
 
             {/* Product Image */}
             <div className="h-56 sm:h-64 relative bg-slate-100">
-              <img src={selectedProduct.image} alt={selectedProduct.name} className="object-cover w-full h-full" />
+              <img 
+                src={selectedProduct.image || DEFAULT_IMAGE} 
+                alt={selectedProduct.name} 
+                onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_IMAGE; }}
+                className="object-cover w-full h-full" 
+              />
               {selectedProduct.oldPrice && (
                 <div className="absolute top-4 left-4 bg-orange-500 text-white px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider">
                   ¡Oferta Especial!
@@ -1019,7 +1050,7 @@ export default function CatalogPage() {
                   <div className={`w-1.5 h-1.5 rounded-full ${selectedProduct.stock > 0 ? 'bg-green-500' : 'bg-red-500'}`} />
                   <span className="text-[10px] text-slate-400 font-bold">
                     {selectedProduct.stock > 0 
-                      ? (language === 'en' ? `Available stock: ${selectedProduct.stock} ${selectedProduct.unitEn || 'units'}` : `Stock disponible: ${selectedProduct.stock} ${selectedProduct.unit || 'unidades'}`)
+                      ? (language === 'en' ? `Available stock: ${selectedProduct.stock} ${selectedProduct.unitEn || selectedProduct.unit || 'units'}` : `Stock disponible: ${selectedProduct.stock} ${selectedProduct.unit || 'unidades'}`)
                       : (language === 'en' ? 'Out of stock' : 'Sin inventario disponible')}
                   </span>
                 </div>
