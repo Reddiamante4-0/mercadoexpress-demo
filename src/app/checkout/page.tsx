@@ -520,31 +520,65 @@ export default function CheckoutPage() {
                       <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider pl-1">
                         {language === 'en' ? 'Wallet Type' : 'Tipo de Billetera'}
                       </label>
-                      <select
-                        value={walletType}
-                        onChange={(e) => setWalletType(e.target.value as any)}
-                        className="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 bg-white"
-                      >
-                        <option value="nequi">Nequi</option>
-                        <option value="daviplata">DaviPlata</option>
-                        <option value="other">{language === 'en' ? 'Other Wallet' : 'Otro'}</option>
-                      </select>
+                      
+                      <div className="grid grid-cols-3 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setWalletType('nequi')}
+                          className={`py-2 px-1 rounded-lg border flex flex-col items-center gap-1.5 transition-all ${
+                            walletType === 'nequi' 
+                              ? 'border-purple-600 bg-purple-50 shadow-xs' 
+                              : 'border-slate-200 bg-white hover:border-purple-300'
+                          }`}
+                        >
+                          <img src="https://nequi.com.co/wp-content/themes/nequi/images/logo_nequi.svg" alt="Nequi" className="h-4 object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling!.classList.remove('hidden'); }} />
+                          <span className="text-[10px] font-bold text-slate-700">Nequi</span>
+                        </button>
+                        
+                        <button
+                          type="button"
+                          onClick={() => setWalletType('daviplata')}
+                          className={`py-2 px-1 rounded-lg border flex flex-col items-center gap-1.5 transition-all ${
+                            walletType === 'daviplata' 
+                              ? 'border-red-600 bg-red-50 shadow-xs' 
+                              : 'border-slate-200 bg-white hover:border-red-300'
+                          }`}
+                        >
+                          <img src="https://daviplata.com/wcm/connect/91d92a08-e737-47b7-952f-cce1d2f9d6bc/Logo+Daviplata.png?MOD=AJPERES&CACHEID=ROOTWORKSPACE-91d92a08-e737-47b7-952f-cce1d2f9d6bc-nn9Y.vJ" alt="DaviPlata" className="h-4 object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling!.classList.remove('hidden'); }} />
+                          <span className="text-[10px] font-bold text-slate-700">DaviPlata</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setWalletType('other')}
+                          className={`py-2 px-1 rounded-lg border flex flex-col items-center gap-1.5 transition-all ${
+                            walletType === 'other' 
+                              ? 'border-green-600 bg-green-50 shadow-xs' 
+                              : 'border-slate-200 bg-white hover:border-green-300'
+                          }`}
+                        >
+                          <Smartphone className="w-4 h-4 text-slate-500" />
+                          <span className="text-[10px] font-bold text-slate-700">{language === 'en' ? 'Other' : 'Otro'}</span>
+                        </button>
+                      </div>
                     </div>
 
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider pl-1">
-                        {language === 'en' ? 'Mobile Number' : 'Número de Celular'}
-                      </label>
-                      <input
-                        type="tel"
-                        maxLength={10}
-                        required
-                        placeholder="Ej: 3001234567"
-                        value={walletPhone}
-                        onChange={(e) => setWalletPhone(e.target.value.replace(/\D/g, ''))}
-                        className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white font-mono"
-                      />
-                    </div>
+                    {walletType && (
+                      <div className="space-y-1 mt-4">
+                        <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider pl-1">
+                          {language === 'en' ? 'Mobile Number' : 'Número de Celular'}
+                        </label>
+                        <input
+                          type="tel"
+                          maxLength={10}
+                          required
+                          placeholder="Ej: 3001234567"
+                          value={walletPhone}
+                          onChange={(e) => setWalletPhone(e.target.value.replace(/\D/g, ''))}
+                          className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white font-mono"
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
 

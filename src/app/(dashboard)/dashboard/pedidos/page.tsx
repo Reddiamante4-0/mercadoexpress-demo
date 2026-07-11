@@ -54,6 +54,7 @@ export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('Todos');
+  const [deliveryFilter, setDeliveryFilter] = useState('Todos');
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
   // Load orders on mount
@@ -123,10 +124,12 @@ export default function AdminOrdersPage() {
   // Filters
   const filteredOrders = orders.filter(o => {
     const matchesStatus = statusFilter === 'Todos' || o.status === statusFilter;
+    const matchesDelivery = deliveryFilter === 'Todos' || 
+                            (deliveryFilter === 'daily' ? o.deliveryType !== 'weekly' : o.deliveryType === 'weekly');
     const matchesSearch = o.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           o.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           o.address.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesStatus && matchesSearch;
+    return matchesStatus && matchesDelivery && matchesSearch;
   });
 
   return (
@@ -146,7 +149,7 @@ export default function AdminOrdersPage() {
       </div>
 
       {/* Filters row */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-center">
         {/* Search */}
         <div className="md:col-span-2 relative">
           <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
@@ -159,6 +162,22 @@ export default function AdminOrdersPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
           />
+        </div>
+
+        {/* Filter by delivery type */}
+        <div className="md:col-span-2 flex items-center gap-2">
+          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0">
+            {language === 'en' ? 'Type' : 'Tipo'}
+          </label>
+          <select
+            value={deliveryFilter}
+            onChange={(e) => setDeliveryFilter(e.target.value)}
+            className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-700 font-bold"
+          >
+            <option value="Todos">{language === 'en' ? 'All Types' : 'Todos los tipos'}</option>
+            <option value="daily">{language === 'en' ? 'Daily Delivery' : 'Venta Diaria'}</option>
+            <option value="weekly">{language === 'en' ? 'Weekly Presale' : 'Preventa Semanal'}</option>
+          </select>
         </div>
 
         {/* Filter by status */}

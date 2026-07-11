@@ -83,6 +83,7 @@ export default function AdminRatingsPage() {
               <thead>
                 <tr className="border-b border-slate-100 text-[10px] uppercase text-slate-400 font-bold tracking-wider">
                   <th className="px-5 py-4">{t.admin.ratingsHeaderClient}</th>
+                  <th className="py-4 text-center">{language === 'en' ? 'Date' : 'Fecha'}</th>
                   <th className="py-4 text-center">{t.admin.ratingsAverage}</th>
                   <th className="py-4 text-center">{t.success.rateProduct}</th>
                   <th className="py-4 text-center">{t.success.rateService}</th>
@@ -96,6 +97,9 @@ export default function AdminRatingsPage() {
                     <td className="px-5 py-4">
                       <span className="font-bold text-slate-800 block">{r.customerName}</span>
                       <span className="text-[10px] font-mono text-green-600 font-bold block mt-0.5">{r.orderId}</span>
+                    </td>
+                    <td className="py-4 text-center text-[10px] text-slate-400 font-medium whitespace-nowrap">
+                      {r.createdAt ? new Date(r.createdAt).toLocaleDateString(language === 'en' ? 'en-US' : 'es-CO', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}
                     </td>
                     <td className="py-4 text-center">
                       <span className="inline-block px-2.5 py-1 bg-amber-50 border border-amber-200 text-amber-700 text-[11px] font-black rounded-lg">

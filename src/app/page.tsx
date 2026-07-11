@@ -265,8 +265,12 @@ export default function CatalogPage() {
     const matchesCategory = selectedCategory === 'Todas' || 
                             (selectedCategory === 'Ofertas' ? p.oldPrice !== undefined : p.category === selectedCategory);
     
-    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          p.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const term = searchQuery.toLowerCase();
+    const matchesSearch = p.name.toLowerCase().includes(term) ||
+                          p.description.toLowerCase().includes(term) ||
+                          p.category.toLowerCase().includes(term) ||
+                          (p.nameEn?.toLowerCase().includes(term) || false) ||
+                          (p.descriptionEn?.toLowerCase().includes(term) || false);
     
     return matchesCategory && matchesSearch;
   });

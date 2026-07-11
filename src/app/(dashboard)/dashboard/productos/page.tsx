@@ -340,9 +340,9 @@ export default function AdminProductsPage() {
             className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-700 font-bold"
           >
             <option value="Todas">{t.admin.productsCategoryAll}</option>
-            {CATEGORIES.map((cat) => (
+            {Array.from(new Set([...CATEGORIES, ...products.map(p => p.category)])).map((cat) => (
               <option key={cat} value={cat}>
-                {categoryTranslations[language][cat] || cat}
+                {categoryTranslations[language] && categoryTranslations[language][cat] ? categoryTranslations[language][cat] : cat}
               </option>
             ))}
           </select>
@@ -400,7 +400,7 @@ export default function AdminProductsPage() {
 
                     {/* Category */}
                     <td className="py-3 font-semibold text-slate-600">
-                      {categoryTranslations[language][prod.category] || prod.category}
+                      {categoryTranslations[language] && categoryTranslations[language][prod.category] ? categoryTranslations[language][prod.category] : prod.category}
                     </td>
 
                     {/* Price */}
@@ -649,17 +649,22 @@ export default function AdminProductsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">{t.admin.productsFieldCategory}</label>
-                  <select
+                  <input
+                    type="text"
+                    required
+                    list="category-options"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600"
-                  >
-                    {CATEGORIES.map((cat) => (
+                    placeholder="Ej: Carnes"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600"
+                  />
+                  <datalist id="category-options">
+                    {Array.from(new Set([...CATEGORIES, ...products.map(p => p.category)])).map((cat) => (
                       <option key={cat} value={cat}>
-                        {categoryTranslations[language][cat] || cat}
+                        {categoryTranslations[language] && categoryTranslations[language][cat] ? categoryTranslations[language][cat] : cat}
                       </option>
                     ))}
-                  </select>
+                  </datalist>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
