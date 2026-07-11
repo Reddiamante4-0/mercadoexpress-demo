@@ -531,7 +531,19 @@ export default function CheckoutPage() {
                               : 'border-slate-200 bg-white hover:border-purple-300'
                           }`}
                         >
-                          <img src="https://upload.wikimedia.org/wikipedia/commons/2/29/Nequi_Logo.png" alt="Nequi" className="h-5 object-contain" />
+                          <div className="h-5 flex items-center justify-center">
+                            <img 
+                              src="https://upload.wikimedia.org/wikipedia/commons/2/29/Nequi_Logo.png" 
+                              alt="Nequi" 
+                              className="h-full object-contain" 
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                const fallback = e.currentTarget.parentElement?.querySelector('.fallback-icon');
+                                if (fallback) fallback.classList.remove('hidden');
+                              }}
+                            />
+                            <Smartphone className="fallback-icon hidden w-5 h-5 text-purple-600" />
+                          </div>
                           <span className="text-[10px] font-bold text-slate-700">Nequi</span>
                         </button>
                         
@@ -544,7 +556,19 @@ export default function CheckoutPage() {
                               : 'border-slate-200 bg-white hover:border-red-300'
                           }`}
                         >
-                          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Logo_Daviplata.png/640px-Logo_Daviplata.png" alt="DaviPlata" className="h-5 object-contain" />
+                          <div className="h-5 flex items-center justify-center">
+                            <img 
+                              src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Logo_Daviplata.png/640px-Logo_Daviplata.png" 
+                              alt="DaviPlata" 
+                              className="h-full object-contain" 
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                const fallback = e.currentTarget.parentElement?.querySelector('.fallback-icon');
+                                if (fallback) fallback.classList.remove('hidden');
+                              }}
+                            />
+                            <Smartphone className="fallback-icon hidden w-5 h-5 text-red-600" />
+                          </div>
                           <span className="text-[10px] font-bold text-slate-700">DaviPlata</span>
                         </button>
 
@@ -620,22 +644,30 @@ export default function CheckoutPage() {
 
             {/* Item list */}
             <div className="space-y-3.5 max-h-60 overflow-y-auto pr-1">
-              {cart.map((item) => (
-                <div key={item.product.id} className="flex gap-2 text-xs">
-                  <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
-                    <img src={item.product.image} alt={item.product.name} className="object-cover w-full h-full" />
+              {cart.map((item) => {
+                const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&auto=format&fit=crop&q=60';
+                return (
+                  <div key={item.product.id} className="flex gap-2 text-xs">
+                    <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                      <img 
+                        src={item.product.image || DEFAULT_IMAGE} 
+                        alt={item.product.name} 
+                        onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_IMAGE; }}
+                        className="object-cover w-full h-full" 
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-bold text-slate-800 truncate">
+                        {language === 'en' && item.product.nameEn ? item.product.nameEn : item.product.name}
+                      </h4>
+                      <span className="text-[10px] text-slate-400 block mt-0.5">
+                        {t.checkout.cartTotalItems.replace('{qty}', String(item.quantity)).replace('{price}', formatPrice(item.product.price))}
+                      </span>
+                    </div>
+                    <span className="font-bold text-slate-800 text-right self-center">{formatPrice(item.product.price * item.quantity)}</span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-slate-800 truncate">
-                      {language === 'en' && item.product.nameEn ? item.product.nameEn : item.product.name}
-                    </h4>
-                    <span className="text-[10px] text-slate-400 block mt-0.5">
-                      {t.checkout.cartTotalItems.replace('{qty}', String(item.quantity)).replace('{price}', formatPrice(item.product.price))}
-                    </span>
-                  </div>
-                  <span className="font-bold text-slate-800 text-right self-center">{formatPrice(item.product.price * item.quantity)}</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Calculations */}
