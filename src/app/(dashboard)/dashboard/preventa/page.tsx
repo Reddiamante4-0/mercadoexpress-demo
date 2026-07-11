@@ -11,6 +11,7 @@ interface AccumulatedItem {
   name: string;
   nameEn?: string;
   quantity: number;
+  orderCount: number;
   unit: string;
   unitEn: string;
 }
@@ -31,21 +32,26 @@ export default function AdminPresalePage() {
     const weeklyOrders = orders.filter(o => o.deliveryType === 'weekly' && o.status !== 'Cancelado');
 
     // Group items by productId
-    const totals: Record<string, number> = {};
+    const totals: Record<string, { quantity: number; orderIds: Set<string> }> = {};
     weeklyOrders.forEach(order => {
       order.items.forEach(item => {
-        totals[item.productId] = (totals[item.productId] || 0) + item.quantity;
+        if (!totals[item.productId]) {
+          totals[item.productId] = { quantity: 0, orderIds: new Set() };
+        }
+        totals[item.productId].quantity += item.quantity;
+        totals[item.productId].orderIds.add(order.id);
       });
     });
 
     // Match with product units
-    const list: AccumulatedItem[] = Object.entries(totals).map(([productId, quantity]) => {
+    const list: AccumulatedItem[] = Object.entries(totals).map(([productId, data]) => {
       const prod = products.find(p => p.id === productId);
       return {
         productId,
         name: prod ? prod.name : productId,
         nameEn: prod?.nameEn,
-        quantity,
+        quantity: data.quantity,
+        orderCount: data.orderIds.size,
         unit: prod?.unit || 'unidad',
         unitEn: prod?.unitEn || prod?.unit || 'unit'
       };
@@ -87,7 +93,7 @@ export default function AdminPresalePage() {
       <div className="bg-white rounded-3xl border border-slate-200/60 shadow-xs overflow-hidden">
         <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
           <h3 className="text-xs font-black uppercase tracking-widest text-slate-500">
-            {t.admin.presaleAccumulatedTitle}
+            {language === 'en' ? 'Summary for Suppliers' : 'Resumen para proveedores'}
           </h3>
         </div>
 
@@ -106,16 +112,13 @@ export default function AdminPresalePage() {
               <thead>
                 <tr className="border-b border-slate-100 text-[10px] uppercase text-slate-400 font-bold tracking-wider">
                   <th className="px-6 py-4">{t.admin.presaleProduct}</th>
-                  <th className="px-6 py-4 text-center">{t.admin.presaleQuantity}</th>
+                  <th className="px-6 py-4 text-center">{language === 'en' ? 'Total Qty' : 'Cantidad Total'}</th>
                   <th className="px-6 py-4 text-center">{t.admin.presaleUnit}</th>
-                  <th className="px-6 py-4 text-right">{t.admin.presaleTotalLb}</th>
+                  <th className="px-6 py-4 text-center">{language === 'en' ? 'Related Orders' : 'Nº de Pedidos'}</th>
                 </tr>
               </thead>
               <tbody>
                 {accumulated.map((item) => {
-                  const isPounds = item.unit.toLowerCase() === 'lb' || item.unit.toLowerCase() === 'libra';
-                  const totalLbDisplay = isPounds ? `${item.quantity} lb` : 'N/A';
-                  
                   return (
                     <tr key={item.productId} className="border-b border-slate-50 hover:bg-slate-50/30 transition-colors">
                       <td className="px-6 py-4 font-bold text-slate-800">
@@ -127,8 +130,8 @@ export default function AdminPresalePage() {
                       <td className="px-6 py-4 text-center font-medium text-slate-500">
                         {language === 'en' ? item.unitEn : item.unit}
                       </td>
-                      <td className="px-6 py-4 text-right font-black text-green-700">
-                        {totalLbDisplay}
+                      <td className="px-6 py-4 text-center font-black text-green-700">
+                        {item.orderCount}
                       </td>
                     </tr>
                   );
