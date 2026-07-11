@@ -531,7 +531,7 @@ export default function CheckoutPage() {
                               : 'border-slate-200 bg-white hover:border-purple-300'
                           }`}
                         >
-                          <img src="https://nequi.com.co/wp-content/themes/nequi/images/logo_nequi.svg" alt="Nequi" className="h-4 object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling!.classList.remove('hidden'); }} />
+                          <img src="https://upload.wikimedia.org/wikipedia/commons/2/29/Nequi_Logo.png" alt="Nequi" className="h-5 object-contain" />
                           <span className="text-[10px] font-bold text-slate-700">Nequi</span>
                         </button>
                         
@@ -544,7 +544,7 @@ export default function CheckoutPage() {
                               : 'border-slate-200 bg-white hover:border-red-300'
                           }`}
                         >
-                          <img src="https://daviplata.com/wcm/connect/91d92a08-e737-47b7-952f-cce1d2f9d6bc/Logo+Daviplata.png?MOD=AJPERES&CACHEID=ROOTWORKSPACE-91d92a08-e737-47b7-952f-cce1d2f9d6bc-nn9Y.vJ" alt="DaviPlata" className="h-4 object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling!.classList.remove('hidden'); }} />
+                          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Logo_Daviplata.png/640px-Logo_Daviplata.png" alt="DaviPlata" className="h-5 object-contain" />
                           <span className="text-[10px] font-bold text-slate-700">DaviPlata</span>
                         </button>
 
