@@ -16,7 +16,8 @@ import {
   Store,
   Calendar,
   Star,
-  MessageSquare
+  MessageSquare,
+  CreditCard
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -87,6 +88,12 @@ const NAV_SECTIONS = [
         icon: <MessageSquare className="w-5 h-5 shrink-0" />,
         labelEn: 'Messages',
         labelEs: 'Mensajes Internos',
+      },
+      {
+        href: '/dashboard/configuracion-pagos',
+        icon: <CreditCard className="w-5 h-5 shrink-0" />,
+        labelEn: 'Payment Settings',
+        labelEs: 'Configuración de Pagos',
       },
     ],
   },
