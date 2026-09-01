@@ -20,7 +20,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { translations } from '@/config/translations';
 import { brandConfig } from '@/config/brandConfig';
 
-function OrderSuccessContent() {
+function OrderSuccessContent({ storeId, storeName }: { storeId: string; storeName: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
@@ -93,7 +93,6 @@ function OrderSuccessContent() {
 
   const handleRatingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const storeId = '3d0bf0e9-057e-4fa1-9c23-d9d6527c01e1';
     await saveRating({
       id: `RAT-${Math.floor(1000 + Math.random() * 9000)}`,
       orderId: order.id,
@@ -113,7 +112,6 @@ function OrderSuccessContent() {
       alert(t.success.messageInputError);
       return;
     }
-    const storeId = '3d0bf0e9-057e-4fa1-9c23-d9d6527c01e1';
     await saveMessage({
       id: `MSG-${Math.floor(1000 + Math.random() * 9000)}`,
       orderId: order.id,
@@ -365,14 +363,14 @@ function OrderSuccessContent() {
   );
 }
 
-export default function OrderSuccessPage() {
+export default function OrderSuccessPage({ storeId, storeName }: { storeId: string; storeName: string }) {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-green-600 animate-spin" />
       </div>
     }>
-      <OrderSuccessContent />
+      <OrderSuccessContent storeId={storeId} storeName={storeName} />
     </Suspense>
   );
 }

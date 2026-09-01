@@ -39,7 +39,7 @@ const COLOMBIAN_BANKS = [
   'Lulo Bank'
 ];
 
-export default function CheckoutPage() {
+export default function CheckoutPage({ storeId, storeName }: { storeId: string; storeName: string }) {
   const router = useRouter();
   const { toast } = useToast();
   const { language, setLanguage } = useTranslation();
@@ -64,7 +64,6 @@ export default function CheckoutPage() {
   const [processingStep, setProcessingStep] = useState('');
 
   useEffect(() => {
-    const storeId = '3d0bf0e9-057e-4fa1-9c23-d9d6527c01e1'; // Tienda demo
     const cartKey = `carrito_${storeId}`;
     const savedCart = localStorage.getItem(cartKey);
     if (savedCart) {
@@ -124,7 +123,6 @@ export default function CheckoutPage() {
     
     try {
       const orderId = crypto.randomUUID();
-      const storeId = '3d0bf0e9-057e-4fa1-9c23-d9d6527c01e1'; // Tienda demo
       
       const orderItems: OrderItem[] = cart.map(item => ({
         productId: item.product.id,
