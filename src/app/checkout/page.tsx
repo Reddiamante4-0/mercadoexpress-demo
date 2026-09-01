@@ -18,6 +18,7 @@ import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslation } from '@/hooks/useTranslation';
 import { translations } from '@/config/translations';
 import { brandConfig } from '@/config/brandConfig';
+import { generateWompiSignature } from './actions';
 
 interface CartItem {
   product: any;
@@ -56,15 +57,7 @@ export default function CheckoutPage() {
   const [notes, setNotes] = useState('');
   const [deliveryType, setDeliveryType] = useState<'daily' | 'weekly'>('daily');
 
-  // Payment State
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'pse' | 'wallet'>('card');
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardExpiry, setCardExpiry] = useState('');
-  const [cardCvv, setCardCvv] = useState('');
-  const [cardName, setCardName] = useState('');
-  const [pseBank, setPseBank] = useState(COLOMBIAN_BANKS[0]);
-  const [walletPhone, setWalletPhone] = useState('');
-  const [walletType, setWalletType] = useState<'nequi' | 'daviplata' | 'other'>('nequi');
+  // Payment is handled by Wompi Widget
 
   // Processing State
   const [isProcessing, setIsProcessing] = useState(false);
@@ -126,41 +119,12 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (paymentMethod === 'card' && (!cardNumber || !cardExpiry || !cardCvv || !cardName)) {
-      toast({
-        title: t.checkout.paymentCompleteError,
-        type: 'error'
-      });
-      return;
-    }
-
-    if (paymentMethod === 'wallet' && !walletPhone) {
-      toast({
-        title: t.checkout.walletError,
-        type: 'error'
-      });
-      return;
-    }
-
-    // Start Simulation
     setIsProcessing(true);
+    setProcessingStep('Generando orden de pago segura...');
     
-    // Simulate Gateway Steps
     try {
-      setProcessingStep(t.checkout.processingStock);
-      await new Promise(resolve => setTimeout(resolve, 800));
-
-      setProcessingStep(t.checkout.processingGateway);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      setProcessingStep(t.checkout.processingBank);
-      await new Promise(resolve => setTimeout(resolve, 800));
-
-      setProcessingStep(t.checkout.processingOrder);
-      await new Promise(resolve => setTimeout(resolve, 600));
-
-      // Generate Order Details
       const orderId = crypto.randomUUID();
+      const storeId = '3d0bf0e9-057e-4fa1-9c23-d9d6527c01e1'; // Tienda demo
       
       const orderItems: OrderItem[] = cart.map(item => ({
         productId: item.product.id,
@@ -169,54 +133,76 @@ export default function CheckoutPage() {
         quantity: item.quantity
       }));
 
-      let paymentDetails = '';
-      if (paymentMethod === 'card') {
-        paymentDetails = `Tarjeta de Crédito (***${cardNumber.slice(-4)}) - Titular: ${cardName}`;
-      } else if (paymentMethod === 'pse') {
-        paymentDetails = `PSE (${pseBank})`;
-      } else {
-        const typeLabel = walletType === 'nequi' ? 'Nequi' : walletType === 'daviplata' ? 'DaviPlata' : 'Otro';
-        paymentDetails = `Billetera Digital (${typeLabel} - Celular: ${walletPhone})`;
-      }
-
       const newOrder: Order = {
         id: orderId,
         customerName,
         phone,
         address: `${address}, Barrio: ${barrio}`,
         notes: notes || undefined,
-        paymentMethod,
-        paymentDetails,
+        paymentMethod: 'card', 
+        paymentDetails: 'Pago a través de Wompi',
         items: orderItems,
         subtotal: cartSubtotal,
         shippingFee,
         total: cartTotal,
-        status: 'Recibido',
+        status: 'Pendiente de pago',
         createdAt: new Date().toISOString(),
         deliveryType
       };
 
-      // Save Order to Supabase Database
-      const storeId = '3d0bf0e9-057e-4fa1-9c23-d9d6527c01e1'; // Tienda demo
+      setProcessingStep('Guardando pedido...');
       await saveOrder(newOrder, storeId);
 
-      // Clear Cart
-      const cartKey = `carrito_${storeId}`;
-      localStorage.removeItem(cartKey);
+      setProcessingStep('Conectando con Wompi...');
+      const wompiData = await generateWompiSignature(orderId, storeId);
 
-      toast({
-        title: t.checkout.paymentSuccessToast,
-        type: 'success'
+      if (!(window as any).WidgetCheckout) {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = 'https://checkout.wompi.co/widget.js';
+          script.async = true;
+          script.onload = resolve;
+          script.onerror = reject;
+          document.body.appendChild(script);
+        });
+      }
+
+      setIsProcessing(false); 
+
+      const checkout = new (window as any).WidgetCheckout({
+        currency: wompiData.currency,
+        amountInCents: wompiData.amountInCents,
+        reference: orderId,
+        publicKey: wompiData.pubKey,
+        signature: { integrity: wompiData.signature }
       });
 
-      // Save to sessionStorage so the success page can read it without Supabase
-      sessionStorage.setItem('last_order', JSON.stringify(newOrder));
-      router.push(`/order-success?orderId=${orderId}`);
+      checkout.open(function (result: any) {
+        if (result && result.transaction && result.transaction.id) {
+          // El usuario completó el flujo (aunque haya sido rechazado, Wompi lo procesó)
+          const cartKey = `carrito_${storeId}`;
+          localStorage.removeItem(cartKey);
 
-    } catch (err) {
-      console.error('Error during payment simulation:', err);
+          toast({
+            title: 'Tu pago está siendo procesado.',
+            type: 'success'
+          });
+
+          sessionStorage.setItem('last_order', JSON.stringify(newOrder));
+          router.push(`/order-success?orderId=${orderId}`);
+        } else {
+          // El usuario cerró el widget sin terminar
+          toast({
+            title: 'Cancelaste el pago. Tu carrito sigue intacto.',
+            type: 'error'
+          });
+        }
+      });
+
+    } catch (err: any) {
+      console.error('Error durante el pago con Wompi:', err);
       toast({
-        title: 'Error procesando el pago ficticio.',
+        title: err.message || 'Error inicializando el pago.',
         type: 'error'
       });
       setIsProcessing(false);
@@ -384,235 +370,15 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Payment Method Selector Card */}
+            {/* Payment Method Info Card */}
             <div className="bg-white rounded-2xl border border-slate-200/60 p-5 shadow-xs space-y-4 text-left">
-            <div>
+              <div>
                 <h2 className="text-xs font-black uppercase tracking-widest text-green-600 flex items-center gap-1.5">
                   {t.checkout.paymentTitle}
                 </h2>
-                <p className="text-[10px] text-slate-400 mt-1">{t.checkout.paymentSubtitle}</p>
-              </div>
-
-              {/* Tabs */}
-              <div className="grid grid-cols-3 gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod('card')}
-                  className={`py-2 rounded-lg text-[10px] font-bold flex flex-col items-center justify-center gap-1 border transition-all cursor-pointer ${
-                    paymentMethod === 'card'
-                      ? 'bg-white text-green-700 border-green-200 shadow-xs'
-                      : 'bg-transparent text-slate-400 border-transparent hover:text-slate-600'
-                  }`}
-                >
-                  <CreditCard className="w-4 h-4" />
-                  <span>{t.checkout.paymentCard}</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod('pse')}
-                  className={`py-2 rounded-lg text-[10px] font-bold flex flex-col items-center justify-center gap-1 border transition-all cursor-pointer ${
-                    paymentMethod === 'pse'
-                      ? 'bg-white text-green-700 border-green-200 shadow-xs'
-                      : 'bg-transparent text-slate-400 border-transparent hover:text-slate-600'
-                  }`}
-                >
-                  <Building2 className="w-4 h-4" />
-                  <span>{t.checkout.paymentPSE}</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod('wallet')}
-                  className={`py-2 rounded-lg text-[10px] font-bold flex flex-col items-center justify-center gap-1 border transition-all cursor-pointer ${
-                    paymentMethod === 'wallet'
-                      ? 'bg-white text-green-700 border-green-200 shadow-xs'
-                      : 'bg-transparent text-slate-400 border-transparent hover:text-slate-600'
-                  }`}
-                >
-                  <Smartphone className="w-4 h-4" />
-                  <span>{t.checkout.paymentWallet}</span>
-                </button>
-              </div>
-
-              {/* Dynamic Inputs depending on selector */}
-              <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
-                
-                {/* 1. Credit Card Option */}
-                {paymentMethod === 'card' && (
-                  <div className="space-y-3">
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider pl-1">{t.checkout.cardHolder}</label>
-                      <input
-                        type="text"
-                        placeholder="MARTA INES GOMEZ"
-                        value={cardName}
-                        onChange={(e) => setCardName(e.target.value.toUpperCase())}
-                        className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider pl-1">{t.checkout.cardNumber}</label>
-                      <input
-                        type="text"
-                        maxLength={19}
-                        placeholder="4542 0000 0000 4242"
-                        value={cardNumber}
-                        onChange={(e) => setCardNumber(e.target.value.replace(/\s?/g, '').replace(/(\d{4})/g, '$1 ').trim())}
-                        className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white font-mono"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider pl-1">{t.checkout.cardExpiry}</label>
-                        <input
-                          type="text"
-                          maxLength={5}
-                          placeholder="MM/AA"
-                          value={cardExpiry}
-                          onChange={(e) => setCardExpiry(e.target.value)}
-                          className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white font-mono"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider pl-1">{t.checkout.cardCVV}</label>
-                        <input
-                          type="password"
-                          maxLength={4}
-                          placeholder="123"
-                          value={cardCvv}
-                          onChange={(e) => setCardCvv(e.target.value)}
-                          className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white font-mono"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 2. PSE Option */}
-                {paymentMethod === 'pse' && (
-                  <div className="space-y-3">
-                    <p className="text-[10px] text-slate-400 leading-normal">
-                      {language === 'en'
-                        ? 'Payment by bank transfer. You will be securely redirected to your bank portal through the PSE system.'
-                        : 'Pago por transferencia bancaria. Serás redirigido de forma segura al portal de tu banco a través del sistema PSE.'}
-                    </p>
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider pl-1">
-                        {language === 'en' ? 'Select your Bank' : 'Selecciona tu Banco de Pago'}
-                      </label>
-                      <select
-                        value={pseBank}
-                        onChange={(e) => setPseBank(e.target.value)}
-                        className="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 bg-white"
-                      >
-                        {COLOMBIAN_BANKS.map((b) => (
-                          <option key={b} value={b}>{b}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                )}
-
-                {/* 3. Billetera Digital Option (Nequi / DaviPlata / Otro) */}
-                {paymentMethod === 'wallet' && (
-                  <div className="space-y-3">
-                    <p className="text-[10px] text-slate-400 leading-normal">
-                      {language === 'en'
-                        ? 'Select your digital wallet and enter the associated phone number.'
-                        : 'Selecciona tu billetera digital e ingresa el número asociado.'}
-                    </p>
-                    
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider pl-1">
-                        {language === 'en' ? 'Wallet Type' : 'Tipo de Billetera'}
-                      </label>
-                      
-                      <div className="grid grid-cols-3 gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setWalletType('nequi')}
-                          className={`py-2 px-1 rounded-lg border flex flex-col items-center gap-1.5 transition-all ${
-                            walletType === 'nequi' 
-                              ? 'border-purple-600 bg-purple-50 shadow-xs' 
-                              : 'border-slate-200 bg-white hover:border-purple-300'
-                          }`}
-                        >
-                          <div className="h-5 flex items-center justify-center">
-                            <img 
-                              src="https://upload.wikimedia.org/wikipedia/commons/2/29/Nequi_Logo.png" 
-                              alt="Nequi" 
-                              className="h-full object-contain" 
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                                const fallback = e.currentTarget.parentElement?.querySelector('.fallback-icon');
-                                if (fallback) fallback.classList.remove('hidden');
-                              }}
-                            />
-                            <Smartphone className="fallback-icon hidden w-5 h-5 text-purple-600" />
-                          </div>
-                          <span className="text-[10px] font-bold text-slate-700">Nequi</span>
-                        </button>
-                        
-                        <button
-                          type="button"
-                          onClick={() => setWalletType('daviplata')}
-                          className={`py-2 px-1 rounded-lg border flex flex-col items-center gap-1.5 transition-all ${
-                            walletType === 'daviplata' 
-                              ? 'border-red-600 bg-red-50 shadow-xs' 
-                              : 'border-slate-200 bg-white hover:border-red-300'
-                          }`}
-                        >
-                          <div className="h-5 flex items-center justify-center">
-                            <img 
-                              src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Logo_Daviplata.png/640px-Logo_Daviplata.png" 
-                              alt="DaviPlata" 
-                              className="h-full object-contain" 
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                                const fallback = e.currentTarget.parentElement?.querySelector('.fallback-icon');
-                                if (fallback) fallback.classList.remove('hidden');
-                              }}
-                            />
-                            <Smartphone className="fallback-icon hidden w-5 h-5 text-red-600" />
-                          </div>
-                          <span className="text-[10px] font-bold text-slate-700">DaviPlata</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => setWalletType('other')}
-                          className={`py-2 px-1 rounded-lg border flex flex-col items-center gap-1.5 transition-all ${
-                            walletType === 'other' 
-                              ? 'border-green-600 bg-green-50 shadow-xs' 
-                              : 'border-slate-200 bg-white hover:border-green-300'
-                          }`}
-                        >
-                          <Smartphone className="w-4 h-4 text-slate-500" />
-                          <span className="text-[10px] font-bold text-slate-700">{language === 'en' ? 'Other' : 'Otro'}</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    {walletType && (
-                      <div className="space-y-1 mt-4">
-                        <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider pl-1">
-                          {language === 'en' ? 'Mobile Number' : 'Número de Celular'}
-                        </label>
-                        <input
-                          type="tel"
-                          maxLength={10}
-                          required
-                          placeholder="Ej: 3001234567"
-                          value={walletPhone}
-                          onChange={(e) => setWalletPhone(e.target.value.replace(/\D/g, ''))}
-                          className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white font-mono"
-                        />
-                      </div>
-                    )}
-                  </div>
-                )}
-
+                <p className="text-[10px] text-slate-400 mt-2">
+                  Tu pago será procesado de forma segura a través de Wompi. Podrás elegir pagar con Tarjeta, PSE, Bancolombia o Billeteras Digitales en el siguiente paso.
+                </p>
               </div>
 
               {/* Secure Transaction badge */}
