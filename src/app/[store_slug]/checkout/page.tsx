@@ -6,7 +6,7 @@ export default async function CheckoutServerPage({ params }: { params: Promise<{
   const { store_slug } = await params;
   const supabase = await createClient();
   
-  const { data: store } = await supabase
+  const { data: store, error } = await supabase
     .from('stores')
     .select('id, name')
     .eq('slug', store_slug)
@@ -14,6 +14,7 @@ export default async function CheckoutServerPage({ params }: { params: Promise<{
     .single();
 
   if (!store) {
+    console.error("DEBUG checkout/page.tsx: store not found!", { store_slug, store, error });
     notFound();
   }
 
