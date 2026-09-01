@@ -12,7 +12,7 @@ import {
   Plus,
   Package
 } from 'lucide-react';
-import { getSalesMetrics, getOrders, getProducts, Order, Product, SalesMetrics } from '@/lib/db';
+import { getSalesMetrics, getOrders, getProducts, getCurrentStoreId, Order, Product, SalesMetrics } from '@/lib/supabase-api';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslation } from '@/hooks/useTranslation';
 import { translations } from '@/config/translations';
@@ -75,15 +75,29 @@ export default function DashboardAdminPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch metrics, orders, products
-    const salesMetrics = getSalesMetrics();
-    const allOrders = getOrders();
-    const allProducts = getProducts();
+    let active = true;
+    const fetchData = async () => {
+      const storeId = await getCurrentStoreId();
+      if (!storeId || !active) {
+        if (active) setLoading(false);
+        return;
+      }
 
-    setMetrics(salesMetrics);
-    setRecentOrders(allOrders.slice(0, 5)); // Last 5 orders
-    setLowStockItems(allProducts.filter(p => p.stock <= 5 && p.active));
-    setLoading(false);
+      const [salesMetrics, allOrders, allProducts] = await Promise.all([
+        getSalesMetrics(storeId),
+        getOrders(storeId),
+        getProducts(storeId)
+      ]);
+
+      if (active) {
+        setMetrics(salesMetrics);
+        setRecentOrders(allOrders.slice(0, 5)); // Last 5 orders
+        setLowStockItems(allProducts.filter(p => p.stock <= 5 && p.active));
+        setLoading(false);
+      }
+    };
+    fetchData();
+    return () => { active = false; };
   }, []);
 
   const formatPrice = (val: number) => {

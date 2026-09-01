@@ -15,7 +15,7 @@ import {
   Sparkles,
   TrendingDown
 } from 'lucide-react';
-import { getProducts, saveProduct, deleteProduct, Product } from '@/lib/db';
+import { getProducts, saveProduct, deleteProduct, getCurrentStoreId, Product } from '@/lib/supabase-api';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslation } from '@/hooks/useTranslation';
 import { translations } from '@/config/translations';
@@ -82,6 +82,7 @@ export default function AdminProductsPage() {
   const t = translations[language];
 
   const [products, setProducts] = useState<Product[]>([]);
+  const [currentStoreId, setCurrentStoreId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todas');
   
@@ -110,7 +111,7 @@ export default function AdminProductsPage() {
   const [active, setActive] = useState(true);
 
   // Helper functions for inline editing
-  const saveInlinePrice = (id: string) => {
+  const saveInlinePrice = async (id: string) => {
     const prod = products.find(p => p.id === id);
     if (prod) {
       if (Number(tempPriceValue) <= 0) {
@@ -121,8 +122,8 @@ export default function AdminProductsPage() {
         return;
       }
       const updatedProd = { ...prod, price: Number(tempPriceValue) };
-      const updatedList = saveProduct(updatedProd);
-      setProducts(updatedList);
+      if (currentStoreId) await saveProduct(updatedProd, currentStoreId);
+      setProducts(products.map(p => p.id === id ? updatedProd : p));
       toast({
         title: language === 'en' ? 'Price updated.' : 'Precio actualizado.',
         type: 'success'
@@ -131,7 +132,7 @@ export default function AdminProductsPage() {
     setEditingPriceId(null);
   };
 
-  const saveInlineStock = (id: string) => {
+  const saveInlineStock = async (id: string) => {
     const prod = products.find(p => p.id === id);
     if (prod) {
       if (Number(tempStockValue) < 0) {
@@ -142,8 +143,8 @@ export default function AdminProductsPage() {
         return;
       }
       const updatedProd = { ...prod, stock: Number(tempStockValue) };
-      const updatedList = saveProduct(updatedProd);
-      setProducts(updatedList);
+      if (currentStoreId) await saveProduct(updatedProd, currentStoreId);
+      setProducts(products.map(p => p.id === id ? updatedProd : p));
       toast({
         title: language === 'en' ? 'Stock updated.' : 'Inventario actualizado.',
         type: 'success'
@@ -152,11 +153,11 @@ export default function AdminProductsPage() {
     setEditingStockId(null);
   };
 
-  const handleQuickStock = (prod: Product, change: number) => {
+  const handleQuickStock = async (prod: Product, change: number) => {
     const newStock = Math.max(0, prod.stock + change);
     const updatedProd = { ...prod, stock: newStock };
-    const updatedList = saveProduct(updatedProd);
-    setProducts(updatedList);
+    if (currentStoreId) await saveProduct(updatedProd, currentStoreId);
+    setProducts(products.map(p => p.id === prod.id ? updatedProd : p));
     toast({
       title: language === 'en' ? 'Stock updated.' : 'Inventario actualizado.',
       type: 'success'
@@ -165,7 +166,19 @@ export default function AdminProductsPage() {
 
   // Load products on mount
   useEffect(() => {
-    setProducts(getProducts());
+    let active = true;
+    async function loadData() {
+      const storeId = await getCurrentStoreId();
+      if (!storeId || !active) {
+        if (active) setProducts([]);
+        return;
+      }
+      setCurrentStoreId(storeId);
+      const data = await getProducts(storeId);
+      if (active) setProducts(data);
+    }
+    loadData();
+    return () => { active = false; };
   }, []);
 
   const openNewProductModal = () => {
@@ -202,10 +215,10 @@ export default function AdminProductsPage() {
     setModalOpen(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm(language === 'en' ? 'Are you sure you want to delete this product?' : '¿Estás seguro de que quieres eliminar este producto?')) {
-      const updated = deleteProduct(id);
-      setProducts(updated);
+      if (currentStoreId) await deleteProduct(id, currentStoreId);
+      setProducts(products.filter(p => p.id !== id));
       toast({
         title: t.admin.productsToastDeleted,
         type: 'success'
@@ -213,10 +226,10 @@ export default function AdminProductsPage() {
     }
   };
 
-  const toggleActive = (product: Product) => {
+  const toggleActive = async (product: Product) => {
     const updatedProd = { ...product, active: !product.active };
-    const updatedList = saveProduct(updatedProd);
-    setProducts(updatedList);
+    if (currentStoreId) await saveProduct(updatedProd, currentStoreId);
+    setProducts(products.map(p => p.id === product.id ? updatedProd : p));
     toast({
       title: updatedProd.active 
         ? (language === 'en' ? 'Product activated.' : 'Producto activado.')
@@ -236,7 +249,7 @@ export default function AdminProductsPage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!name || !description || price <= 0 || stock < 0) {
@@ -248,7 +261,7 @@ export default function AdminProductsPage() {
     }
 
     const newProduct: Product = {
-      id: editingProduct ? editingProduct.id : `p-${Math.random().toString(36).substr(2, 9)}`,
+      id: editingProduct ? editingProduct.id : crypto.randomUUID(),
       name,
       nameEn: nameEn.trim() || undefined,
       category,
@@ -263,8 +276,8 @@ export default function AdminProductsPage() {
       active
     };
 
-    const updated = saveProduct(newProduct);
-    setProducts(updated);
+    if (currentStoreId) await saveProduct(newProduct, currentStoreId);
+    setProducts(editingProduct ? products.map(p => p.id === newProduct.id ? newProduct : p) : [...products, newProduct]);
     setModalOpen(false);
 
     toast({
@@ -361,14 +374,13 @@ export default function AdminProductsPage() {
                 <th className="py-3">{language === 'en' ? 'Category' : 'Categoría'}</th>
                 <th className="py-3">{language === 'en' ? 'Price' : 'Precio'}</th>
                 <th className="py-3">Stock</th>
-                <th className="py-3">{language === 'en' ? 'Status' : 'Estado'}</th>
                 <th className="px-5 py-3 text-right">{t.common.actions}</th>
               </tr>
             </thead>
             <tbody>
               {filteredProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-slate-400 font-bold">
+                  <td colSpan={6} className="py-12 text-center text-slate-400 font-bold">
                     {language === 'en' ? 'No products found.' : 'No se encontraron productos en el inventario.'}
                   </td>
                 </tr>
@@ -521,21 +533,6 @@ export default function AdminProductsPage() {
                           </button>
                         </div>
                       )}
-                    </td>
-
-                    {/* Active */}
-                    <td className="py-3">
-                      <button
-                        onClick={() => toggleActive(prod)}
-                        className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
-                          prod.active 
-                            ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' 
-                            : 'bg-slate-100 text-slate-400 border-slate-200 hover:bg-slate-200'
-                        }`}
-                        title={prod.active ? (language === 'en' ? 'Click to deactivate' : 'Haga clic para desactivar') : (language === 'en' ? 'Click to activate' : 'Haga clic para activar')}
-                      >
-                        {prod.active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                      </button>
                     </td>
 
                     {/* Actions */}

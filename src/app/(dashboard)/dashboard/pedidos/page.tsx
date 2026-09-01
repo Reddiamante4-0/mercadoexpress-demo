@@ -14,7 +14,7 @@ import {
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
-import { getOrders, saveOrder, Order } from '@/lib/db';
+import { getOrders, updateOrder, getCurrentStoreId, Order } from '@/lib/supabase-api';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslation } from '@/hooks/useTranslation';
 import { translations } from '@/config/translations';
@@ -52,6 +52,7 @@ export default function AdminOrdersPage() {
   const t = translations[language];
 
   const [orders, setOrders] = useState<Order[]>([]);
+  const [currentStoreId, setCurrentStoreId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('Todos');
   const [deliveryFilter, setDeliveryFilter] = useState('Todos');
@@ -59,19 +60,39 @@ export default function AdminOrdersPage() {
 
   // Load orders on mount
   useEffect(() => {
-    setOrders(getOrders());
+    let active = true;
+    async function loadData() {
+      const storeId = await getCurrentStoreId();
+      if (!storeId || !active) {
+        if (active) setOrders([]);
+        return;
+      }
+      setCurrentStoreId(storeId);
+      const data = await getOrders(storeId);
+      if (active) setOrders(data);
+    }
+    loadData();
+    return () => { active = false; };
   }, []);
 
-  const handleStatusChange = (order: Order, newStatus: any) => {
-    const updatedOrder = { ...order, status: newStatus };
-    const updatedList = saveOrder(updatedOrder);
-    setOrders(updatedList);
-    
-    const translatedStatus = statusTranslations[language][newStatus] || newStatus;
-    toast({
-      title: t.admin.ordersToastStatusChanged.replace('{status}', translatedStatus),
-      type: 'success'
-    });
+  const handleStatusChange = async (order: Order, newStatus: any) => {
+    try {
+      const updatedOrder = { ...order, status: newStatus };
+      if (currentStoreId) await updateOrder(updatedOrder, currentStoreId);
+      setOrders(orders.map(o => o.id === order.id ? updatedOrder : o));
+      
+      const translatedStatus = statusTranslations[language][newStatus] || newStatus;
+      toast({
+        title: t.admin.ordersToastStatusChanged.replace('{status}', translatedStatus),
+        type: 'success'
+      });
+    } catch (err: any) {
+      console.error('Failed to change status', err);
+      toast({
+        title: `Error: ${err?.message || 'No se pudo actualizar el estado'}`,
+        type: 'error'
+      });
+    }
   };
 
   const toggleExpandOrder = (id: string) => {
@@ -304,22 +325,31 @@ export default function AdminOrdersPage() {
                         )}
                       </div>
 
-                      {/* Status quick switcher dropdown */}
-                      <div className="space-y-1">
+                      {/* Status quick switcher — botones explícitos para evitar bubbling */}
+                      <div className="space-y-1.5">
                         <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 pl-1 block">
                           {t.admin.ordersDetailActions}
                         </label>
-                        <select
-                          value={order.status}
-                          onChange={(e) => handleStatusChange(order, e.target.value)}
-                          className="w-full bg-white border border-slate-200 rounded-xl py-2 px-3 text-xs font-bold text-slate-700 focus:outline-hidden focus:border-green-600"
-                        >
+                        <div className="flex flex-wrap gap-1.5">
                           {STATUS_OPTIONS.map((opt) => (
-                            <option key={opt} value={opt}>
+                            <button
+                              key={opt}
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (opt !== order.status) handleStatusChange(order, opt);
+                              }}
+                              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${
+                                order.status === opt
+                                  ? 'bg-green-600 text-white border-green-600 shadow-sm'
+                                  : 'bg-white text-slate-600 border-slate-200 hover:border-green-400 hover:text-green-700'
+                              }`}
+                            >
                               {statusTranslations[language][opt] || opt}
-                            </option>
+                            </button>
                           ))}
-                        </select>
+                        </div>
                       </div>
                     </div>
 

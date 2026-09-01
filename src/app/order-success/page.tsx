@@ -15,7 +15,7 @@ import {
   Send,
   MessageCircle
 } from 'lucide-react';
-import { getOrders, saveRating, saveMessage, Order } from '@/lib/db';
+import { getOrders, saveRating, saveMessage, Order } from '@/lib/supabase-api';
 import { useTranslation } from '@/hooks/useTranslation';
 import { translations } from '@/config/translations';
 import { brandConfig } from '@/config/brandConfig';
@@ -44,10 +44,16 @@ function OrderSuccessContent() {
 
   useEffect(() => {
     if (orderId) {
-      const orders = getOrders();
-      const found = orders.find(o => o.id === orderId);
-      if (found) {
-        setOrder(found);
+      const savedStr = sessionStorage.getItem('last_order');
+      if (savedStr) {
+        try {
+          const parsed = JSON.parse(savedStr);
+          if (parsed && parsed.id === orderId) {
+            setOrder(parsed);
+          }
+        } catch (e) {
+          console.error("Error reading last order from sessionStorage", e);
+        }
       }
     }
     setLoading(false);
@@ -85,9 +91,10 @@ function OrderSuccessContent() {
     }).format(val);
   };
 
-  const handleRatingSubmit = (e: React.FormEvent) => {
+  const handleRatingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    saveRating({
+    const storeId = '3d0bf0e9-057e-4fa1-9c23-d9d6527c01e1';
+    await saveRating({
       id: `RAT-${Math.floor(1000 + Math.random() * 9000)}`,
       orderId: order.id,
       customerName: order.customerName,
@@ -96,24 +103,25 @@ function OrderSuccessContent() {
       deliveryRating,
       comment: ratingComment.trim() || undefined,
       createdAt: new Date().toISOString()
-    });
+    }, storeId);
     setIsRatingSubmitted(true);
   };
 
-  const handleMessageSubmit = (e: React.FormEvent) => {
+  const handleMessageSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!customerMessage.trim()) {
       alert(t.success.messageInputError);
       return;
     }
-    saveMessage({
+    const storeId = '3d0bf0e9-057e-4fa1-9c23-d9d6527c01e1';
+    await saveMessage({
       id: `MSG-${Math.floor(1000 + Math.random() * 9000)}`,
       orderId: order.id,
       customerName: order.customerName,
       phone: order.phone,
       messageText: customerMessage.trim(),
       createdAt: new Date().toISOString()
-    });
+    }, storeId);
     setIsMessageSubmitted(true);
     setCustomerMessage('');
   };

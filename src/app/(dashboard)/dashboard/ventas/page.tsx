@@ -12,7 +12,7 @@ import {
   Users,
   Award
 } from 'lucide-react';
-import { getSalesMetrics, SalesMetrics } from '@/lib/db';
+import { getSalesMetrics, getCurrentStoreId, SalesMetrics } from '@/lib/supabase-api';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslation } from '@/hooks/useTranslation';
 import { translations } from '@/config/translations';
@@ -56,8 +56,21 @@ export default function AdminSalesPage() {
   const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
-    setMetrics(getSalesMetrics());
-    setLoading(false);
+    let active = true;
+    async function loadData() {
+      const storeId = await getCurrentStoreId();
+      if (!storeId || !active) {
+        setLoading(false);
+        return;
+      }
+      const data = await getSalesMetrics(storeId);
+      if (active) {
+        setMetrics(data);
+        setLoading(false);
+      }
+    }
+    loadData();
+    return () => { active = false; };
   }, []);
 
   const formatPrice = (val: number) => {
@@ -83,9 +96,9 @@ export default function AdminSalesPage() {
       });
       // Simulate file download
       const element = document.createElement("a");
-      const file = new Blob(["Reporte de Ventas MercadoExpress - Julio 2026\n\nTotal Ventas: " + formatPrice(metrics?.totalSales || 0)], {type: 'text/plain'});
+      const file = new Blob(["Reporte de Ventas Crisalap - Julio 2026\n\nTotal Ventas: " + formatPrice(metrics?.totalSales || 0)], {type: 'text/plain'});
       element.href = URL.createObjectURL(file);
-      element.download = "Reporte-Ventas-MercadoExpress.txt";
+      element.download = "Reporte-Ventas-Crisalap.txt";
       document.body.appendChild(element);
       element.click();
       document.body.removeChild(element);

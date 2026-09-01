@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Calendar, RefreshCw, ShoppingBag } from 'lucide-react';
-import { getOrders, getProducts, Order, Product } from '@/lib/db';
+import { getOrders, getProducts, getCurrentStoreId, Order, Product } from '@/lib/supabase-api';
 import { useTranslation } from '@/hooks/useTranslation';
 import { translations } from '@/config/translations';
 
@@ -23,10 +23,19 @@ export default function AdminPresalePage() {
   const [accumulated, setAccumulated] = useState<AccumulatedItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const loadPresaleData = () => {
+  const loadPresaleData = async () => {
     setLoading(true);
-    const orders = getOrders();
-    const products = getProducts();
+    const storeId = await getCurrentStoreId();
+    if (!storeId) {
+      setAccumulated([]);
+      setLoading(false);
+      return;
+    }
+
+    const [orders, products] = await Promise.all([
+      getOrders(storeId),
+      getProducts(storeId),
+    ]);
 
     // Filter weekly presale orders
     const weeklyOrders = orders.filter(o => o.deliveryType === 'weekly' && o.status !== 'Cancelado');

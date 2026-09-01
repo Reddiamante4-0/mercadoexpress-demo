@@ -16,7 +16,7 @@ export default function DashboardLayout({
 }) {
   const { language } = useTranslation();
   const router = useRouter();
-  const supabase = createClient();
+  const [supabase] = useState(() => createClient());
 
   // Desktop: collapsed sidebar (icons only) vs expanded
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -43,7 +43,7 @@ export default function DashboardLayout({
         const email = user.email || '';
         if (active) {
           setUserEmail(email);
-          // In MercadoExpress App, any user logged in via Supabase is authorized as admin
+          // In Crisalap App, any user logged in via Supabase is authorized as admin
           setIsAuthorized(true);
           setAuthLoading(false);
         }

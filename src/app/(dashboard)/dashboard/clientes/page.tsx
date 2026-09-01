@@ -11,7 +11,7 @@ import {
   ArrowRight,
   UserCheck
 } from 'lucide-react';
-import { getClients, Client } from '@/lib/db';
+import { getClients, getCurrentStoreId, Client } from '@/lib/supabase-api';
 import { useTranslation } from '@/hooks/useTranslation';
 import { translations } from '@/config/translations';
 
@@ -25,8 +25,22 @@ export default function AdminClientsPage() {
 
   // Load clients on mount
   useEffect(() => {
-    setClients(getClients());
-    setLoading(false);
+    let active = true;
+    async function loadData() {
+      const storeId = await getCurrentStoreId();
+      if (!storeId || !active) {
+        if (active) setClients([]);
+        setLoading(false);
+        return;
+      }
+      const data = await getClients(storeId);
+      if (active) {
+        setClients(data);
+        setLoading(false);
+      }
+    }
+    loadData();
+    return () => { active = false; };
   }, []);
 
   const formatPrice = (val: number) => {

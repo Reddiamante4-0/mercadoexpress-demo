@@ -1,6 +1,6 @@
 {
-  "name": "MercadoExpress App",
-  "short_name": "MercadoExpress",
+  "name": "Crisalap App",
+  "short_name": "Crisalap",
   "description": "Tu supermercado digital a domicilio",
   "start_url": "/",
   "display": "standalone",

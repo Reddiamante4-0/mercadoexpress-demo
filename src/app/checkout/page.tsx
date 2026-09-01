@@ -13,7 +13,7 @@ import {
   ShoppingCart,
   Globe
 } from 'lucide-react';
-import { getProducts, saveOrder, Order, OrderItem } from '@/lib/db';
+import { getProducts, saveOrder, Order, OrderItem } from '@/lib/supabase-api';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslation } from '@/hooks/useTranslation';
 import { translations } from '@/config/translations';
@@ -71,25 +71,29 @@ export default function CheckoutPage() {
   const [processingStep, setProcessingStep] = useState('');
 
   useEffect(() => {
-    const savedCart = localStorage.getItem('me_cart');
+    const storeId = '3d0bf0e9-057e-4fa1-9c23-d9d6527c01e1'; // Tienda demo
+    const cartKey = `carrito_${storeId}`;
+    const savedCart = localStorage.getItem(cartKey);
     if (savedCart) {
       try {
         const parsed = JSON.parse(savedCart);
-        const dbProducts = getProducts();
-        const syncedCart = parsed.map((item: any) => {
-          const dbProd = dbProducts.find(p => p.id === item.product.id);
-          if (dbProd) {
-            return { ...item, product: dbProd };
+        getProducts(storeId).then(dbProducts => {
+          const syncedCart = parsed.map((item: any) => {
+            const dbProd = dbProducts.find(p => p.id === item.product.id);
+            if (dbProd) {
+              return { ...item, product: dbProd };
+            }
+            return item;
+          }).filter((item: any) => {
+            const dbProd = dbProducts.find(p => p.id === item.product.id);
+            return dbProd !== undefined;
+          });
+          setCart(syncedCart);
+          if (syncedCart.length === 0) {
+            router.push('/');
           }
-          return item;
-        }).filter((item: any) => {
-          const dbProd = dbProducts.find(p => p.id === item.product.id);
-          return dbProd !== undefined;
+          setLoading(false);
         });
-        setCart(syncedCart);
-        if (syncedCart.length === 0) {
-          router.push('/');
-        }
       } catch (e) {
         console.error('Error parsing cart:', e);
         router.push('/');
@@ -97,7 +101,6 @@ export default function CheckoutPage() {
     } else {
       router.push('/');
     }
-    setLoading(false);
   }, [router]);
 
   const cartSubtotal = cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
@@ -157,7 +160,7 @@ export default function CheckoutPage() {
       await new Promise(resolve => setTimeout(resolve, 600));
 
       // Generate Order Details
-      const orderId = `ORD-${Math.floor(1000 + Math.random() * 9000)}`;
+      const orderId = crypto.randomUUID();
       
       const orderItems: OrderItem[] = cart.map(item => ({
         productId: item.product.id,
@@ -193,17 +196,21 @@ export default function CheckoutPage() {
         deliveryType
       };
 
-      // Save Order to LocalStorage Database
-      saveOrder(newOrder);
+      // Save Order to Supabase Database
+      const storeId = '3d0bf0e9-057e-4fa1-9c23-d9d6527c01e1'; // Tienda demo
+      await saveOrder(newOrder, storeId);
 
       // Clear Cart
-      localStorage.removeItem('me_cart');
+      const cartKey = `carrito_${storeId}`;
+      localStorage.removeItem(cartKey);
 
       toast({
         title: t.checkout.paymentSuccessToast,
         type: 'success'
       });
 
+      // Save to sessionStorage so the success page can read it without Supabase
+      sessionStorage.setItem('last_order', JSON.stringify(newOrder));
       router.push(`/order-success?orderId=${orderId}`);
 
     } catch (err) {

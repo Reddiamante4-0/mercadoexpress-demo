@@ -590,7 +590,7 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
             </button>
 
             <h3 className="text-sm font-black uppercase tracking-wider text-slate-800 mb-4">
-              {language === 'en' ? 'Business Settings' : 'Ajustes de MercadoExpress'}
+              {language === 'en' ? 'Business Settings' : 'Ajustes de Crisalap'}
             </h3>
 
             <form onSubmit={handleSaveSettings} className="space-y-4">
