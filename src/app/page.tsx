@@ -689,16 +689,16 @@ export default function CatalogPage() {
 
                     <div className="text-left space-y-1">
                       <h4 className="text-xs font-bold text-slate-800 truncate">{p.name}</h4>
-                      <div className="flex items-center justify-between gap-1.5 pt-1.5 border-t border-slate-100">
+                      <div className="flex flex-wrap items-center justify-between gap-1.5 pt-1.5 border-t border-slate-100">
                         <div>
-                          <span className="text-xs font-black text-slate-800 block leading-none">{formatPrice(p.price)}</span>
-                          {p.oldPrice && <span className="text-[10px] text-slate-400 line-through block mt-0.5 leading-none">{formatPrice(p.oldPrice)}</span>}
+                          <span className="text-[11px] sm:text-xs font-black text-slate-800 block leading-none">{formatPrice(p.price)}</span>
+                          {p.oldPrice && <span className="text-[9px] sm:text-[10px] text-slate-400 line-through block mt-0.5 leading-none">{formatPrice(p.oldPrice)}</span>}
                         </div>
                         {p.stock <= 0 ? (
                           <button
                             disabled
                             onClick={(e) => e.stopPropagation()}
-                            className="bg-slate-200 text-slate-400 font-extrabold text-[9px] uppercase tracking-wider px-2 py-1.5 rounded-lg cursor-not-allowed shrink-0"
+                            className="bg-slate-200 text-slate-400 font-extrabold text-[8px] sm:text-[9px] uppercase tracking-wider px-1.5 sm:px-2 py-1 sm:py-1.5 rounded-lg cursor-not-allowed shrink-0"
                           >
                             <span>{language === 'en' ? 'Out' : 'Agotado'}</span>
                           </button>
@@ -708,9 +708,9 @@ export default function CatalogPage() {
                               e.stopPropagation();
                               addToCart(p);
                             }}
-                            className="bg-green-600 hover:bg-green-700 text-white font-extrabold text-[9px] uppercase tracking-wider px-2.5 py-1.5 rounded-lg flex items-center gap-1 cursor-pointer active:scale-95 shadow-md shadow-green-600/10 transition-all shrink-0"
+                            className="bg-green-600 hover:bg-green-700 text-white font-extrabold text-[8px] sm:text-[9px] uppercase tracking-wider px-1.5 sm:px-2.5 py-1 sm:py-1.5 rounded-lg flex items-center gap-1 cursor-pointer active:scale-95 shadow-md shadow-green-600/10 transition-all shrink-0"
                           >
-                            <ShoppingCart className="w-3 h-3" />
+                            <ShoppingCart className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                             <span>{language === 'en' ? 'Add' : 'Agregar'}</span>
                           </button>
                         )}
@@ -836,14 +836,14 @@ export default function CatalogPage() {
                       </div>
 
                       {/* Pricing Row */}
-                      <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+                      <div className="flex flex-wrap items-center justify-between gap-y-2 gap-x-1 pt-3 border-t border-slate-100">
                         <div>
                           {product.oldPrice && (
-                            <span className="text-[9px] text-slate-400 line-through block leading-none mb-0.5">
+                            <span className="text-[8px] sm:text-[9px] text-slate-400 line-through block leading-none mb-0.5">
                               {formatPrice(product.oldPrice)}
                             </span>
                           )}
-                          <span className="text-sm font-black text-slate-800 block leading-none">
+                          <span className="text-xs sm:text-sm font-black text-slate-800 block leading-none">
                             {formatPrice(product.price)}
                           </span>
                         </div>
@@ -852,17 +852,17 @@ export default function CatalogPage() {
                         {isOutOfStock ? (
                           <button
                             disabled
-                            className="bg-slate-200 text-slate-400 font-extrabold text-[10px] uppercase tracking-wider px-3 py-2 rounded-xl flex items-center gap-1 cursor-not-allowed shrink-0"
+                            className="bg-slate-200 text-slate-400 font-extrabold text-[9px] sm:text-[10px] uppercase tracking-wider px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl flex items-center gap-1 cursor-not-allowed shrink-0 w-full sm:w-auto justify-center sm:justify-start"
                           >
                             <span>{language === 'en' ? 'Out of stock' : 'Agotado'}</span>
                           </button>
                         ) : (
                           <button
                             onClick={() => addToCart(product)}
-                            className="bg-green-600 hover:bg-green-700 text-white font-extrabold text-[10px] uppercase tracking-wider px-3 py-2 rounded-xl flex items-center gap-1 cursor-pointer active:scale-95 shadow-md shadow-green-600/10 transition-all shrink-0"
+                            className="bg-green-600 hover:bg-green-700 text-white font-extrabold text-[9px] sm:text-[10px] uppercase tracking-wider px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl flex items-center justify-center sm:justify-start gap-1 cursor-pointer active:scale-95 shadow-md shadow-green-600/10 transition-all shrink-0 w-full sm:w-auto"
                             title={t.store.addToCart}
                           >
-                            <ShoppingCart className="w-3.5 h-3.5" />
+                            <ShoppingCart className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                             <span>{language === 'en' ? 'Add' : 'Agregar'}</span>
                           </button>
                         )}
