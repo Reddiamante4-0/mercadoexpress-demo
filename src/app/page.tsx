@@ -304,7 +304,7 @@ export default function CatalogPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100/40 text-slate-800 flex flex-col font-sans pb-16 antialiased">
+    <div className="min-h-screen bg-slate-100/40 text-slate-800 flex flex-col font-sans pb-32 antialiased">
       
       {/* ── HIGH FIDELITY HEADER ── */}
       <header className="sticky top-0 z-40 backdrop-blur-lg bg-white/95 border-b border-slate-200/50 shadow-xs transition-all">

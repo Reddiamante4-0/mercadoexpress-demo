@@ -182,46 +182,46 @@ export default function DashboardAdminPage() {
           </div>
           <div>
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">{t.admin.statSales}</span>
-            <span className="text-base font-black text-slate-800 mt-0.5 block">{formatPrice(metrics.totalSales)}</span>
+            <span className="text-sm md:text-base font-black text-slate-800 mt-0.5 block truncate">{formatPrice(metrics.totalSales)}</span>
           </div>
         </div>
 
         {/* Stat 2: Total Orders */}
-        <div className="bg-white rounded-2xl border border-slate-200/60 p-4 shadow-xs flex items-center gap-3">
+        <div className="bg-white rounded-2xl border border-slate-200/60 p-4 shadow-xs flex items-center gap-3 overflow-hidden">
           <div className="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
             <ShoppingBag className="w-5 h-5" />
           </div>
-          <div>
+          <div className="min-w-0">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">{t.admin.statOrders}</span>
-            <span className="text-base font-black text-slate-800 mt-0.5 block">
+            <span className="text-sm md:text-base font-black text-slate-800 mt-0.5 block truncate">
               {metrics.totalOrders} {t.admin.statOrdersUnit}
             </span>
           </div>
         </div>
 
         {/* Stat 3: Active Clients */}
-        <div className="bg-white rounded-2xl border border-slate-200/60 p-4 shadow-xs flex items-center gap-3">
+        <div className="bg-white rounded-2xl border border-slate-200/60 p-4 shadow-xs flex items-center gap-3 overflow-hidden">
           <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
             <Users className="w-5 h-5" />
           </div>
-          <div>
+          <div className="min-w-0">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">{t.admin.statClients}</span>
-            <span className="text-base font-black text-slate-800 mt-0.5 block">
+            <span className="text-sm md:text-base font-black text-slate-800 mt-0.5 block truncate">
               {metrics.activeClients} {t.admin.statClientsUnit}
             </span>
           </div>
         </div>
 
         {/* Stat 4: Low Stock Alerts */}
-        <div className="bg-white rounded-2xl border border-slate-200/60 p-4 shadow-xs flex items-center gap-3">
+        <div className="bg-white rounded-2xl border border-slate-200/60 p-4 shadow-xs flex items-center gap-3 overflow-hidden">
           <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
             metrics.lowStockCount > 0 ? 'bg-red-100 text-red-600 animate-pulse' : 'bg-slate-100 text-slate-400'
           }`}>
             <AlertTriangle className="w-5 h-5" />
           </div>
-          <div>
+          <div className="min-w-0">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">{t.admin.statStockAlerts}</span>
-            <span className="text-base font-black text-slate-800 mt-0.5 block">
+            <span className="text-sm md:text-base font-black text-slate-800 mt-0.5 block truncate">
               {metrics.lowStockCount} {t.admin.statStockAlertsUnit}
             </span>
           </div>
