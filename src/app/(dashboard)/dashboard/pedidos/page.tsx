@@ -20,6 +20,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { translations } from '@/config/translations';
 
 const STATUS_OPTIONS = [
+  'Pendiente de pago',
+  'Pago fallido',
   'Recibido',
   'En preparación',
   'En camino',
@@ -29,6 +31,8 @@ const STATUS_OPTIONS = [
 
 const statusTranslations: Record<string, Record<string, string>> = {
   es: {
+    'Pendiente de pago': 'Pendiente de pago',
+    'Pago fallido': 'Pago fallido',
     'Recibido': 'Recibido',
     'En preparación': 'En preparación',
     'En camino': 'En camino',
@@ -37,6 +41,8 @@ const statusTranslations: Record<string, Record<string, string>> = {
     'Todos': 'Todos los estados'
   },
   en: {
+    'Pendiente de pago': 'Pending payment',
+    'Pago fallido': 'Payment failed',
     'Recibido': 'Received',
     'En preparación': 'Preparing',
     'En camino': 'On the way',
@@ -113,6 +119,10 @@ export default function AdminOrdersPage() {
 
   const getStatusStyle = (status: string) => {
     switch (status) {
+      case 'Pendiente de pago':
+        return 'bg-slate-100 text-slate-600 border-slate-200';
+      case 'Pago fallido':
+        return 'bg-rose-100 text-rose-800 border-rose-200';
       case 'Recibido':
         return 'bg-amber-100 text-amber-800 border-amber-200';
       case 'En preparación':

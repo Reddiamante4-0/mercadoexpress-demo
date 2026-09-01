@@ -41,7 +41,7 @@ export interface Order {
   subtotal: number;
   shippingFee: number;
   total: number;
-  status: 'Recibido' | 'En preparación' | 'En camino' | 'Entregado' | 'Cancelado';
+  status: 'Pendiente de pago' | 'Pago fallido' | 'Recibido' | 'En preparación' | 'En camino' | 'Entregado' | 'Cancelado';
   createdAt: string;
   deliveryType?: 'daily' | 'weekly';
   store_id?: string;
