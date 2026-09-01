@@ -82,14 +82,14 @@ export const translations = {
       paymentCompleteError: "¡Por favor completa los detalles del pago!",
       walletError: "¡Por favor ingresa tu celular de Nequi o DaviPlata!",
       paymentSuccessToast: "¡Pago aprobado con éxito!",
-      processingGateway: "Simulando pasarela de pago seguro...",
+      processingGateway: "Conectando con pasarela de pago seguro...",
       processingBank: "Confirmando transacción con el banco...",
       processingOrder: "Creando tu pedido en Crisalap...",
       processingStock: "Validando disponibilidad de productos...",
       summaryTitle: "🛒 Resumen de Compra",
       cartTotalItems: "Cant: {qty} x {price}",
       processingModalTitle: "Transacción Segura",
-      processingModalDesc: "No cierres esta ventana. Estamos simulando el protocolo 3D Secure y la sincronización con el inventario de la app."
+      processingModalDesc: "No cierres esta ventana. Estamos generando tu orden de pago seguro en Wompi."
     },
     success: {
       title: "¡Pedido Confirmado!",
