@@ -4,10 +4,9 @@ import { updateSession } from './lib/supabase/proxy';
 export async function proxy(request: NextRequest) {
   try {
     const { user, response } = await updateSession(request);
-
     const path = request.nextUrl.pathname;
 
-    // Static files and internal Next.js assets bypass routing rules
+    // 1. Omitir archivos estáticos y APIs (Protección del Webhook)
     if (
       path.startsWith('/_next') ||
       path.includes('/api/') ||
@@ -16,38 +15,44 @@ export async function proxy(request: NextRequest) {
       return response;
     }
 
+    const isDashboardRoute = path.startsWith('/dashboard');
     const isAuthRoute = path.startsWith('/login') || path.startsWith('/signup') || path.startsWith('/forgot-password');
-    const isCallbackRoute = path.startsWith('/auth');
-    const isPublicRoute = path === '/' || path.startsWith('/checkout') || path.startsWith('/order-success');
 
-    if (!user && !isAuthRoute && !isCallbackRoute && !isPublicRoute) {
+    // 2. Si intenta entrar a /dashboard sin estar logueado -> Login
+    if (isDashboardRoute && !user) {
       const url = request.nextUrl.clone();
       url.pathname = '/login';
       const redirectResponse = NextResponse.redirect(url);
+      
+      // Propagar cookies actualizadas
       response.cookies.getAll().forEach((cookie) => {
         redirectResponse.cookies.set(cookie.name, cookie.value, cookie);
       });
       return redirectResponse;
     }
 
-    if (user && isAuthRoute) {
+    // 3. Si ya está logueado e intenta entrar al Login -> Dashboard
+    if (isAuthRoute && user) {
       const url = request.nextUrl.clone();
       url.pathname = '/dashboard';
       const redirectResponse = NextResponse.redirect(url);
+      
       response.cookies.getAll().forEach((cookie) => {
         redirectResponse.cookies.set(cookie.name, cookie.value, cookie);
       });
       return redirectResponse;
     }
 
+    // 4. Todo lo demás (incluyendo /[store_slug]) pasa libremente
     return response;
+    
   } catch (error) {
     console.error('Error in proxy middleware:', error);
     const path = request.nextUrl.pathname;
-    const isAuthRoute = path.startsWith('/login') || path.startsWith('/signup') || path.startsWith('/forgot-password');
-    const isPublicRoute = path === '/' || path.startsWith('/checkout') || path.startsWith('/order-success');
+    const isDashboardRoute = path.startsWith('/dashboard');
     
-    if (!isAuthRoute && !isPublicRoute) {
+    // Si el middleware falla, fallamos de forma segura protegiendo el dashboard
+    if (isDashboardRoute) {
       const url = request.nextUrl.clone();
       url.pathname = '/login';
       return NextResponse.redirect(url);
