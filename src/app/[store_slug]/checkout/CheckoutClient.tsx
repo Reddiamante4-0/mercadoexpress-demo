@@ -39,7 +39,7 @@ const COLOMBIAN_BANKS = [
   'Lulo Bank'
 ];
 
-export default function CheckoutPage({ storeId, storeName }: { storeId: string; storeName: string }) {
+export default function CheckoutPage({ storeId, storeName, storeSlug }: { storeId: string; storeName: string; storeSlug: string }) {
   const router = useRouter();
   const { toast } = useToast();
   const { language, setLanguage } = useTranslation();
@@ -82,16 +82,16 @@ export default function CheckoutPage({ storeId, storeName }: { storeId: string; 
           });
           setCart(syncedCart);
           if (syncedCart.length === 0) {
-            router.push('/');
+            router.push(`/${storeSlug}`);
           }
           setLoading(false);
         });
       } catch (e) {
         console.error('Error parsing cart:', e);
-        router.push('/');
+        router.push(`/${storeSlug}`);
       }
     } else {
-      router.push('/');
+      router.push(`/${storeSlug}`);
     }
   }, [router]);
 
@@ -187,7 +187,7 @@ export default function CheckoutPage({ storeId, storeName }: { storeId: string; 
           });
 
           sessionStorage.setItem('last_order', JSON.stringify(newOrder));
-          router.push(`/order-success?orderId=${orderId}`);
+          router.push(`/${storeSlug}/order-success?orderId=${orderId}`);
         } else {
           // El usuario cerró el widget sin terminar
           toast({
@@ -223,7 +223,7 @@ export default function CheckoutPage({ storeId, storeName }: { storeId: string; 
         <div className="max-w-4xl mx-auto px-4 py-3.5 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <button 
-              onClick={() => router.push('/')}
+              onClick={() => router.push(`/${storeSlug}`)}
               className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />

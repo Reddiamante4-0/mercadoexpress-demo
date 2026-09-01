@@ -94,7 +94,7 @@ interface CartItem {
   quantity: number;
 }
 
-export default function CatalogPage({ storeId, storeName }: { storeId: string; storeName: string }) {
+export default function CatalogPage({ storeId, storeName, storeSlug }: { storeId: string; storeName: string; storeSlug: string }) {
   const router = useRouter();
   const { toast } = useToast();
   const { language, setLanguage } = useTranslation();
@@ -298,7 +298,7 @@ export default function CatalogPage({ storeId, storeName }: { storeId: string; s
       });
       return;
     }
-    router.push('/checkout');
+    router.push(`/${storeSlug}/checkout`);
   };
 
   return (

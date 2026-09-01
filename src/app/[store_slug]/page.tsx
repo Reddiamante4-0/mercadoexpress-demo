@@ -17,5 +17,5 @@ export default async function StorePage({ params }: { params: Promise<{ store_sl
     notFound();
   }
 
-  return <StorefrontClient storeId={store.id} storeName={store.name} />;
+  return <StorefrontClient storeId={store.id} storeName={store.name} storeSlug={store_slug} />;
 }

@@ -17,5 +17,5 @@ export default async function OrderSuccessServerPage({ params }: { params: Promi
     notFound();
   }
 
-  return <OrderSuccessClient storeId={store.id} storeName={store.name} />;
+  return <OrderSuccessClient storeId={store.id} storeName={store.name} storeSlug={store_slug} />;
 }

@@ -20,7 +20,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { translations } from '@/config/translations';
 import { brandConfig } from '@/config/brandConfig';
 
-function OrderSuccessContent({ storeId, storeName }: { storeId: string; storeName: string }) {
+function OrderSuccessContent({ storeId, storeName, storeSlug }: { storeId: string; storeName: string; storeSlug: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
@@ -73,7 +73,7 @@ function OrderSuccessContent({ storeId, storeName }: { storeId: string; storeNam
         <div className="bg-white rounded-3xl p-8 max-w-md w-full text-center space-y-4 border border-slate-200/60 shadow-md">
           <p className="text-sm font-bold text-slate-600">{t.success.notFound}</p>
           <button 
-            onClick={() => router.push('/')}
+            onClick={() => router.push(`/${storeSlug}`)}
             className="w-full py-3 bg-green-600 text-white rounded-xl font-bold text-xs uppercase"
           >
             {t.success.notFoundButton}
@@ -349,7 +349,7 @@ function OrderSuccessContent({ storeId, storeName }: { storeId: string; storeNam
         {/* Bottom Actions */}
         <div className="flex flex-col gap-2">
           <button
-            onClick={() => router.push('/')}
+            onClick={() => router.push(`/${storeSlug}`)}
             className="w-full py-3.5 bg-green-600 hover:bg-green-700 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-98 flex items-center justify-center gap-2 cursor-pointer"
           >
             <ShoppingBag className="w-4 h-4" />
@@ -363,14 +363,14 @@ function OrderSuccessContent({ storeId, storeName }: { storeId: string; storeNam
   );
 }
 
-export default function OrderSuccessPage({ storeId, storeName }: { storeId: string; storeName: string }) {
+export default function OrderSuccessPage({ storeId, storeName, storeSlug }: { storeId: string; storeName: string; storeSlug: string }) {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-green-600 animate-spin" />
       </div>
     }>
-      <OrderSuccessContent storeId={storeId} storeName={storeName} />
+      <OrderSuccessContent storeId={storeId} storeName={storeName} storeSlug={storeSlug} />
     </Suspense>
   );
 }

@@ -18,5 +18,5 @@ export default async function CheckoutServerPage({ params }: { params: Promise<{
     notFound();
   }
 
-  return <CheckoutClient storeId={store.id} storeName={store.name} />;
+  return <CheckoutClient storeId={store.id} storeName={store.name} storeSlug={store_slug} />;
 }
