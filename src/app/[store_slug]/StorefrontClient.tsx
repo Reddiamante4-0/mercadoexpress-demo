@@ -546,6 +546,7 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
         </section>
 
         {/* HIGH CONVERTING SAVINGS COMBOS BLOCK [NEW] */}
+        {false && (
         <section className="w-full">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 text-left">
@@ -666,6 +667,7 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
             </div>
           </div>
         </section>
+        )}
 
         {/* DYNAMIC HOT DEALS ROW (IF AVAILABLE) [NEW] */}
         {dealsProducts.length > 0 && (
