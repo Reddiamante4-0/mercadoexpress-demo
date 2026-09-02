@@ -71,6 +71,15 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
   const supabase = createClient();
 
   const [storeSlug, setStoreSlug] = useState('demo');
+  const [storeId, setStoreId] = useState<string | null>(null);
+  const [tagline, setTagline] = useState('');
+  const [whatsappNumber, setWhatsappNumber] = useState(brandConfig.whatsappNumber);
+  const [logoUrl, setLogoUrl] = useState('');
+  const [heroDescription, setHeroDescription] = useState('');
+  const [heroImageUrl, setHeroImageUrl] = useState('');
+  const [heroBadgeText, setHeroBadgeText] = useState('');
+  const [heroTitleText, setHeroTitleText] = useState('');
+  const [heroSubtitleText, setHeroSubtitleText] = useState('');
   const [userName, setUserName] = useState('');
   const [userInitials, setUserInitials] = useState('A');
   const [userEmail, setUserEmail] = useState('');
@@ -160,12 +169,22 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
         
         const { data, error } = await supabase
           .from('stores')
-          .select('slug')
+          .select('id, brand_name, tagline, whatsapp_number, logo_url, slug, hero_description, hero_image_url, hero_badge_text, hero_title_text, hero_subtitle_text')
           .eq('owner_id', user.id)
           .single();
           
-        if (!error && data && data.slug) {
-          setStoreSlug(data.slug);
+        if (!error && data) {
+          if (data.slug) setStoreSlug(data.slug);
+          setStoreId(data.id);
+          if (data.brand_name) setBusinessName(data.brand_name);
+          if (data.tagline) setTagline(data.tagline);
+          if (data.whatsapp_number) setWhatsappNumber(data.whatsapp_number);
+          if (data.logo_url) setLogoUrl(data.logo_url);
+          if (data.hero_description) setHeroDescription(data.hero_description);
+          if (data.hero_image_url) setHeroImageUrl(data.hero_image_url);
+          if (data.hero_badge_text) setHeroBadgeText(data.hero_badge_text);
+          if (data.hero_title_text) setHeroTitleText(data.hero_title_text);
+          if (data.hero_subtitle_text) setHeroSubtitleText(data.hero_subtitle_text);
         }
       } catch (err) {
         console.error('Error fetching store slug:', err);
@@ -268,9 +287,23 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
     setIsSavingSettings(true);
 
     try {
-      // Mock saving to a config table or LocalStorage
-      localStorage.setItem('me_business_name', businessName);
-      localStorage.setItem('me_min_order_free_shipping', minOrderFreeShipping.toString());
+      if (storeId) {
+        const { error } = await supabase
+          .from('stores')
+          .update({
+            brand_name: businessName,
+            tagline: tagline,
+            whatsapp_number: whatsappNumber,
+            logo_url: logoUrl,
+            hero_description: heroDescription,
+            hero_image_url: heroImageUrl,
+            hero_badge_text: heroBadgeText,
+            hero_title_text: heroTitleText,
+            hero_subtitle_text: heroSubtitleText,
+          })
+          .eq('id', storeId);
+        if (error) throw error;
+      }
 
       toast({
         title: language === 'en' ? 'Settings updated successfully!' : '¡Configuración guardada con éxito!',
@@ -604,7 +637,7 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
       {/* ── SETTINGS MODAL ── */}
       {settingsModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="relative w-full max-w-md bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl my-auto text-left">
+          <div className="relative w-full max-w-md bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl my-auto text-left max-h-[85vh] overflow-y-auto">
             <button 
               onClick={() => setSettingsModalOpen(false)}
               className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center hover:bg-slate-200 transition-colors cursor-pointer"
@@ -633,6 +666,88 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
                   type="number"
                   value={minOrderFreeShipping}
                   onChange={(e) => setMinOrderFreeShipping(Number(e.target.value))}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Tagline / Frase del Negocio</label>
+                <input
+                  type="text"
+                  value={tagline}
+                  onChange={(e) => setTagline(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Número de WhatsApp</label>
+                <input
+                  type="text"
+                  value={whatsappNumber}
+                  onChange={(e) => setWhatsappNumber(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">URL del Logo</label>
+                <input
+                  type="text"
+                  value={logoUrl}
+                  onChange={(e) => setLogoUrl(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
+                />
+                <p className="text-[9px] text-slate-400 pl-1 mt-1">Sube tu logo en la sección Fotos y pega aquí la URL</p>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Descripción del Negocio (debajo del lema)</label>
+                <textarea
+                  value={heroDescription}
+                  onChange={(e) => setHeroDescription(e.target.value)}
+                  rows={3}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600 resize-none"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">URL de Imagen Destacada</label>
+                <input
+                  type="text"
+                  value={heroImageUrl}
+                  onChange={(e) => setHeroImageUrl(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
+                />
+                <p className="text-[9px] text-slate-400 pl-1 mt-1">Sube tu imagen en la sección Fotos y pega aquí la URL</p>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Etiqueta sobre la Imagen (ej: 100% Certificado)</label>
+                <input
+                  type="text"
+                  value={heroBadgeText}
+                  onChange={(e) => setHeroBadgeText(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Título sobre la Imagen</label>
+                <input
+                  type="text"
+                  value={heroTitleText}
+                  onChange={(e) => setHeroTitleText(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Subtítulo sobre la Imagen</label>
+                <input
+                  type="text"
+                  value={heroSubtitleText}
+                  onChange={(e) => setHeroSubtitleText(e.target.value)}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
                 />
               </div>
