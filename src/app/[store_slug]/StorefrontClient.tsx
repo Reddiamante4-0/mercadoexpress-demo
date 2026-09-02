@@ -94,9 +94,10 @@ interface CartItem {
   quantity: number;
 }
 
-export default function CatalogPage({ storeId, storeName, storeSlug, brandName, tagline, logoUrl, whatsappNumber }: { storeId: string; storeName: string; storeSlug: string; brandName?: string | null; tagline?: string | null; logoUrl?: string | null; whatsappNumber?: string | null }) {
+export default function CatalogPage({ storeId, storeName, storeSlug, brandName, tagline, logoUrl, whatsappNumber, heroDescription, heroImageUrl, heroBadgeText, heroTitleText, heroSubtitleText }: { storeId: string; storeName: string; storeSlug: string; brandName?: string | null; tagline?: string | null; logoUrl?: string | null; whatsappNumber?: string | null; heroDescription?: string | null; heroImageUrl?: string | null; heroBadgeText?: string | null; heroTitleText?: string | null; heroSubtitleText?: string | null }) {
   const displayBrandName = brandName || 'Crisalap';
   const displayWhatsapp = whatsappNumber || brandConfig.whatsappNumber;
+  const displayHeroImage = heroImageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=80';
   const router = useRouter();
   const { toast } = useToast();
   const { language, setLanguage } = useTranslation();
@@ -413,9 +414,9 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
               )}
 
               <p className="text-xs sm:text-sm text-green-100 font-medium max-w-lg leading-relaxed">
-                {language === 'en'
+                {heroDescription ? heroDescription : (language === 'en'
                   ? "Forget the lines! Order the tenderest meats, fresh vegetables harvested today, groceries, and cleaning products at the best market price."
-                  : "¡Olvídate de las filas! Pide las carnes más tiernas, verduras frescas recolectadas hoy, abarrotes y aseo al mejor precio del mercado."}
+                  : "¡Olvídate de las filas! Pide las carnes más tiernas, verduras frescas recolectadas hoy, abarrotes y aseo al mejor precio del mercado.")}
               </p>
 
               {/* Badges block */}
@@ -476,19 +477,19 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
               <div className="absolute inset-0 bg-gradient-to-tr from-green-500 to-emerald-400 rounded-3xl blur-2xl opacity-30 scale-95 pointer-events-none" />
               <div className="w-full max-w-sm aspect-1.2 rounded-3xl overflow-hidden border-4 border-white/15 shadow-2xl relative">
                 <img 
-                  src="https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=80" 
-                  alt="Mercado de alimentos frescos" 
+                  src={displayHeroImage}
+                  alt={displayBrandName}
                   className="object-cover w-full h-full"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent flex flex-col justify-end p-5 text-left">
                   <span className="text-[9px] font-black uppercase tracking-wider text-yellow-300">
-                    {language === 'en' ? '100% Hand-Harvested' : '100% Cosechados a Mano'}
+                    {heroBadgeText ? heroBadgeText : (language === 'en' ? '100% Hand-Harvested' : '100% Cosechados a Mano')}
                   </span>
                   <h4 className="text-sm font-black text-white mt-1">
-                    {language === 'en' ? 'Organic Fruits & Vegetables' : 'Frutas y Verduras Orgánicas'}
+                    {heroTitleText ? heroTitleText : (language === 'en' ? 'Organic Fruits & Vegetables' : 'Frutas y Verduras Orgánicas')}
                   </h4>
                   <p className="text-[10px] text-slate-300 mt-0.5">
-                    {language === 'en' ? 'Freshness from the field direct to your door.' : 'Frescura del campo directo a tu puerta.'}
+                    {heroSubtitleText ? heroSubtitleText : (language === 'en' ? 'Freshness from the field direct to your door.' : 'Frescura del campo directo a tu puerta.')}
                   </p>
                 </div>
               </div>
