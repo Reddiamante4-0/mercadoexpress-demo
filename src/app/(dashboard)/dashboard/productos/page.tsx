@@ -13,8 +13,11 @@ import {
   X,
   PlusCircle,
   Sparkles,
-  TrendingDown
+  TrendingDown,
+  Download,
+  Upload
 } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { getProducts, saveProduct, deleteProduct, getCurrentStoreId, Product } from '@/lib/supabase-api';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -86,6 +89,10 @@ export default function AdminProductsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todas');
   
+  // Excel Import
+  const [isImporting, setIsImporting] = useState(false);
+  const excelInputRef = React.useRef<HTMLInputElement>(null);
+
   // Modals
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -162,6 +169,91 @@ export default function AdminProductsPage() {
       title: language === 'en' ? 'Stock updated.' : 'Inventario actualizado.',
       type: 'success'
     });
+  };
+
+  const downloadExcelTemplate = () => {
+    const ws_data = [
+      ['name', 'name_en', 'category', 'price', 'old_price', 'stock', 'image', 'description', 'description_en', 'unit', 'unit_en'],
+      ['Lomo de Res', 'Beef Loin', 'Carnes', 25000, 30000, 10, 'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop&q=60', 'Lomo fresco', 'Fresh beef loin', 'lb', 'lb']
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(ws_data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Plantilla_Productos");
+    XLSX.writeFile(wb, "plantilla_productos.xlsx");
+  };
+
+  const handleExcelImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !currentStoreId) return;
+
+    setIsImporting(true);
+    const reader = new FileReader();
+    
+    reader.onload = async (evt) => {
+      try {
+        const bstr = evt.target?.result;
+        const wb = XLSX.read(bstr, { type: 'binary' });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        const data = XLSX.utils.sheet_to_json<any>(ws);
+
+        let createdCount = 0;
+        let updatedCount = 0;
+        let errorCount = 0;
+
+        const newProductsList = [...products];
+
+        for (const row of data) {
+          if (!row.name || !row.price || isNaN(Number(row.price)) || Number(row.price) <= 0) {
+            errorCount++;
+            continue;
+          }
+
+          const existingProduct = newProductsList.find(p => p.name.toLowerCase() === row.name.toLowerCase().trim());
+          
+          const parsedProduct: Product = {
+            id: existingProduct ? existingProduct.id : crypto.randomUUID(),
+            name: row.name.toString().trim(),
+            nameEn: row.name_en?.toString().trim() || undefined,
+            category: row.category?.toString().trim() || CATEGORIES[0],
+            price: Number(row.price),
+            oldPrice: row.old_price ? Number(row.old_price) : undefined,
+            stock: row.stock !== undefined ? Number(row.stock) : 10,
+            image: row.image?.toString().trim() || DEFAULT_IMAGE,
+            description: row.description?.toString().trim() || 'Sin descripción',
+            descriptionEn: row.description_en?.toString().trim() || undefined,
+            unit: row.unit?.toString().trim() || 'lb',
+            unitEn: row.unit_en?.toString().trim() || undefined,
+            active: true
+          };
+
+          await saveProduct(parsedProduct, currentStoreId);
+
+          if (existingProduct) {
+            const index = newProductsList.findIndex(p => p.id === parsedProduct.id);
+            if (index !== -1) newProductsList[index] = parsedProduct;
+            updatedCount++;
+          } else {
+            newProductsList.push(parsedProduct);
+            createdCount++;
+          }
+        }
+
+        setProducts(newProductsList);
+        toast({
+          title: `Importación finalizada. ${createdCount} creados, ${updatedCount} actualizados, ${errorCount} ignorados.`,
+          type: createdCount > 0 || updatedCount > 0 ? 'success' : 'error'
+        });
+      } catch (error) {
+        console.error("Error importing Excel:", error);
+        toast({ title: 'Error procesando el archivo Excel', type: 'error' });
+      } finally {
+        setIsImporting(false);
+        if (excelInputRef.current) excelInputRef.current.value = '';
+      }
+    };
+    
+    reader.readAsBinaryString(file);
   };
 
   // Load products on mount
@@ -316,13 +408,38 @@ export default function AdminProductsPage() {
             {t.admin.productsSubtitle}
           </p>
         </div>
-        <button
-          onClick={openNewProductModal}
-          className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-green-600 hover:bg-green-700 text-white transition-all shadow-xs cursor-pointer active:scale-95 shrink-0"
-        >
-          <Plus className="w-4.5 h-4.5" />
-          <span>{t.admin.addProductBtn}</span>
-        </button>
+        <div className="flex items-center flex-wrap gap-2">
+          <input
+            type="file"
+            accept=".xlsx, .xls"
+            className="hidden"
+            ref={excelInputRef}
+            onChange={handleExcelImport}
+          />
+          <button
+            onClick={downloadExcelTemplate}
+            className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition-all shadow-xs cursor-pointer active:scale-95 shrink-0"
+            title="Descargar plantilla Excel en blanco"
+          >
+            <Download className="w-4 h-4 text-slate-500" />
+            <span className="hidden sm:inline">Plantilla Excel</span>
+          </button>
+          <button
+            onClick={() => excelInputRef.current?.click()}
+            disabled={isImporting}
+            className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition-all shadow-xs cursor-pointer active:scale-95 shrink-0 disabled:opacity-50"
+          >
+            <Upload className="w-4 h-4 text-slate-500" />
+            <span className="hidden sm:inline">{isImporting ? 'Importando...' : 'Importar Excel'}</span>
+          </button>
+          <button
+            onClick={openNewProductModal}
+            className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-green-600 hover:bg-green-700 text-white transition-all shadow-xs cursor-pointer active:scale-95 shrink-0"
+          >
+            <Plus className="w-4.5 h-4.5" />
+            <span>{t.admin.addProductBtn}</span>
+          </button>
+        </div>
       </div>
 
       {/* Filters & Search Row */}
