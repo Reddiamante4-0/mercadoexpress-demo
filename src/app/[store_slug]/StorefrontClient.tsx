@@ -94,7 +94,9 @@ interface CartItem {
   quantity: number;
 }
 
-export default function CatalogPage({ storeId, storeName, storeSlug }: { storeId: string; storeName: string; storeSlug: string }) {
+export default function CatalogPage({ storeId, storeName, storeSlug, brandName, tagline, logoUrl, whatsappNumber }: { storeId: string; storeName: string; storeSlug: string; brandName?: string | null; tagline?: string | null; logoUrl?: string | null; whatsappNumber?: string | null }) {
+  const displayBrandName = brandName || 'Crisalap';
+  const displayWhatsapp = whatsappNumber || brandConfig.whatsappNumber;
   const router = useRouter();
   const { toast } = useToast();
   const { language, setLanguage } = useTranslation();
@@ -313,12 +315,16 @@ export default function CatalogPage({ storeId, storeName, storeSlug }: { storeId
             className="flex items-center gap-2.5 cursor-pointer select-none group shrink-0" 
             onClick={() => { setSelectedCategory('Todas'); setSearchQuery(''); }}
           >
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-green-600 via-emerald-500 to-yellow-400 text-white flex items-center justify-center shadow-lg shadow-green-600/20 group-hover:scale-105 transition-transform duration-200">
-              <span className="font-black text-lg tracking-tighter">ME</span>
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-green-600 via-emerald-500 to-yellow-400 text-white flex items-center justify-center shadow-lg shadow-green-600/20 group-hover:scale-105 transition-transform duration-200 overflow-hidden">
+              {logoUrl ? (
+                <img src={logoUrl} alt={displayBrandName} className="w-full h-full object-cover" />
+              ) : (
+                <span className="font-black text-lg tracking-tighter">ME</span>
+              )}
             </div>
             <div className="hidden sm:block">
               <h1 className="text-base font-black text-slate-900 tracking-tight leading-none">
-                Crisalap
+                {displayBrandName}
               </h1>
               <span className="text-[9px] text-orange-600 font-extrabold tracking-widest uppercase mt-1 block">
                 {language === 'en' ? 'Express Delivery' : 'Envíos Express'}
@@ -384,23 +390,27 @@ export default function CatalogPage({ storeId, storeName, storeSlug }: { storeId
                 <span>{language === 'en' ? 'Delivery in 45 minutes' : 'Envíos en 45 minutos'}</span>
               </div>
 
-              <h2 className="text-3xl sm:text-5xl font-black tracking-tight leading-none">
-                {language === 'en' ? (
-                  <>
-                    Your fresh market <br />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-amber-400">
-                      direct to your door
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    Tu mercado fresco <br />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-amber-400">
-                      directo a tu hogar
-                    </span>
-                  </>
-                )}
-              </h2>
+              {tagline ? (
+                <h2 className="text-3xl sm:text-5xl font-black tracking-tight leading-none">{tagline}</h2>
+              ) : (
+                <h2 className="text-3xl sm:text-5xl font-black tracking-tight leading-none">
+                  {language === 'en' ? (
+                    <>
+                      Your fresh market <br />
+                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-amber-400">
+                        direct to your door
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      Tu mercado fresco <br />
+                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-amber-400">
+                        directo a tu hogar
+                      </span>
+                    </>
+                  )}
+                </h2>
+              )}
 
               <p className="text-xs sm:text-sm text-green-100 font-medium max-w-lg leading-relaxed">
                 {language === 'en'
@@ -1109,7 +1119,7 @@ export default function CatalogPage({ storeId, storeName, storeSlug }: { storeId
       {/* ── FLOATING WHATSAPP BUTTON ── */}
       {!isCartOpen && !selectedProduct && (
         <a
-          href={`https://wa.me/${brandConfig.whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(t.store.whatsappHello)}`}
+          href={`https://wa.me/${displayWhatsapp.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(t.store.whatsappHello)}`}
           target="_blank"
           rel="noopener noreferrer"
           className="fixed bottom-6 right-6 z-40 p-4 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-full shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center group"
