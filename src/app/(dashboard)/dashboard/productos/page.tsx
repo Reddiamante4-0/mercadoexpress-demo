@@ -196,6 +196,7 @@ export default function AdminProductsPage() {
         const wsname = wb.SheetNames[0];
         const ws = wb.Sheets[wsname];
         const data = XLSX.utils.sheet_to_json<any>(ws);
+        console.log("Datos parseados del Excel:", data);
 
         let createdCount = 0;
         let updatedCount = 0;
@@ -204,6 +205,7 @@ export default function AdminProductsPage() {
         const newProductsList = [...products];
 
         for (const row of data) {
+          console.log("Procesando fila:", row);
           if (!row.name || !row.price || isNaN(Number(row.price)) || Number(row.price) <= 0) {
             errorCount++;
             continue;
