@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { brandConfig } from '@/config/brandConfig';
@@ -169,6 +170,30 @@ function SidebarContent({
   showCloseButton?: boolean;
 }) {
   const { language } = useTranslation();
+  const [supabase] = useState(() => createClient());
+  const [businessName, setBusinessName] = useState(brandConfig.appName);
+
+  useEffect(() => {
+    async function loadBusinessName() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data, error } = await supabase
+          .from('stores')
+          .select('brand_name')
+          .eq('owner_id', user.id)
+          .single();
+
+        if (!error && data && data.brand_name) {
+          setBusinessName(data.brand_name);
+        }
+      } catch (err) {
+        console.error('Error fetching business name:', err);
+      }
+    }
+    loadBusinessName();
+  }, [supabase]);
 
   return (
     <div className="flex flex-col h-full bg-white text-slate-800">
@@ -185,7 +210,7 @@ function SidebarContent({
         {!collapsed && (
           <div className="flex flex-col min-w-0 text-left">
             <span className="text-sm font-black text-green-600 truncate leading-none">
-              {brandConfig.appName}
+              {businessName}
             </span>
             <span className="text-[9px] text-slate-400 font-bold mt-1 truncate">
               Admin Panel
