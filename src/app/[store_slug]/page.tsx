@@ -17,6 +17,12 @@ export default async function StorePage({ params }: { params: Promise<{ store_sl
     notFound();
   }
 
+  const { data: categories } = await supabase
+    .from('store_categories')
+    .select('name, emoji, display_order')
+    .eq('store_id', store.id)
+    .order('display_order', { ascending: true });
+
   return <StorefrontClient
     storeId={store.id}
     storeName={store.name}
@@ -30,5 +36,6 @@ export default async function StorePage({ params }: { params: Promise<{ store_sl
     heroBadgeText={store.hero_badge_text}
     heroTitleText={store.hero_title_text}
     heroSubtitleText={store.hero_subtitle_text}
+    categories={categories || []}
   />;
 }

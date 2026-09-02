@@ -94,10 +94,18 @@ interface CartItem {
   quantity: number;
 }
 
-export default function CatalogPage({ storeId, storeName, storeSlug, brandName, tagline, logoUrl, whatsappNumber, heroDescription, heroImageUrl, heroBadgeText, heroTitleText, heroSubtitleText }: { storeId: string; storeName: string; storeSlug: string; brandName?: string | null; tagline?: string | null; logoUrl?: string | null; whatsappNumber?: string | null; heroDescription?: string | null; heroImageUrl?: string | null; heroBadgeText?: string | null; heroTitleText?: string | null; heroSubtitleText?: string | null }) {
+export default function CatalogPage({ storeId, storeName, storeSlug, brandName, tagline, logoUrl, whatsappNumber, heroDescription, heroImageUrl, heroBadgeText, heroTitleText, heroSubtitleText, categories }: { storeId: string; storeName: string; storeSlug: string; brandName?: string | null; tagline?: string | null; logoUrl?: string | null; whatsappNumber?: string | null; heroDescription?: string | null; heroImageUrl?: string | null; heroBadgeText?: string | null; heroTitleText?: string | null; heroSubtitleText?: string | null; categories?: { name: string; emoji: string; display_order: number }[] }) {
   const displayBrandName = brandName || 'Crisalap';
   const displayWhatsapp = whatsappNumber || brandConfig.whatsappNumber;
   const displayHeroImage = heroImageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=80';
+
+  const dynamicCategories = categories && categories.length > 0
+    ? [
+        { name: 'Todas', emoji: '🛒' },
+        ...categories.map(c => ({ name: c.name, emoji: c.emoji || '📦' })),
+        { name: 'Ofertas', emoji: '🔥' }
+      ]
+    : CATEGORIES;
   const router = useRouter();
   const { toast } = useToast();
   const { language, setLanguage } = useTranslation();
@@ -511,7 +519,7 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
           </div>
           
           <div className="flex items-center gap-3.5 overflow-x-auto pb-4 pt-1 scrollbar-thin select-none scroll-smooth">
-            {CATEGORIES.map((cat) => {
+            {dynamicCategories.map((cat) => {
               const isSelected = selectedCategory === cat.name;
               const style = CATEGORY_STYLES[cat.name] || CATEGORY_STYLES['Todas'];
 
