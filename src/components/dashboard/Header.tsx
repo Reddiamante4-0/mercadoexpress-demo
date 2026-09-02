@@ -70,6 +70,7 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
   const router = useRouter();
   const supabase = createClient();
 
+  const [storeSlug, setStoreSlug] = useState('demo');
   const [userName, setUserName] = useState('');
   const [userInitials, setUserInitials] = useState('A');
   const [userEmail, setUserEmail] = useState('');
@@ -149,6 +150,28 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
     return () => {
       active = false;
     };
+  }, [supabase]);
+
+  useEffect(() => {
+    async function loadStoreSlug() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        
+        const { data, error } = await supabase
+          .from('stores')
+          .select('slug')
+          .eq('owner_id', user.id)
+          .single();
+          
+        if (!error && data && data.slug) {
+          setStoreSlug(data.slug);
+        }
+      } catch (err) {
+        console.error('Error fetching store slug:', err);
+      }
+    }
+    loadStoreSlug();
   }, [supabase]);
 
   const handleOpenProfileModal = () => {
@@ -303,7 +326,7 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
 
         {/* View Client Store button */}
         <button
-          onClick={() => router.push('/')}
+          onClick={() => router.push(`/${storeSlug}`)}
           className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-slate-600 transition-all"
         >
           <Store className="w-4 h-4 text-green-600" />
