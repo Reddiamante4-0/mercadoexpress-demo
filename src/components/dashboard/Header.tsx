@@ -372,6 +372,7 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
           <LanguageSwitcher />
 
           {/* Notifications */}
+          {false && (
           <div ref={notifRef} className="relative">
             <button
               id="header-notifications-btn"
@@ -433,6 +434,7 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
               </div>
             )}
           </div>
+          )}
 
           {/* User avatar */}
           <div ref={avatarRef} className="relative">
