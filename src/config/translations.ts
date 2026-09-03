@@ -197,14 +197,14 @@ export const translations = {
       clientsEmpty: "No se encontraron clientes registrados.",
       
       salesTitle: "Reporte de Facturación",
-      salesSubtitle: "Analiza los ingresos, ticket promedio por pedido y rendimiento financiero del supermercado.",
+      salesSubtitle: "Analiza los ingresos, ticket promedio por pedido y rendimiento financiero de tu negocio.",
       salesExport: "Exportar Reporte",
       salesAvgTicket: "Ticket Promedio por Pedido",
       salesAvgTicketDesc: "Valor medio gastado por carrito",
       salesBestCategory: "Sección Más Vendida",
       salesBestCategoryDesc: "Sección con mayores ingresos",
       salesDistributionTitle: "Rendimiento por Categoría",
-      salesDistributionSubtitle: "Ventas itemizadas por cada departamento del supermercado",
+      salesDistributionSubtitle: "Ventas itemizadas por cada categoría de tu negocio",
       salesToastExporting: "Generando reporte de ventas...",
       salesToastExported: "¡Reporte exportado exitosamente!",
       
@@ -238,7 +238,7 @@ export const translations = {
       messagesEmpty: "No hay mensajes o consultas internas pendientes.",
 
       productsTitle: "Gestión de Inventario",
-      productsSubtitle: "Crea, edita, desactiva y monitorea el stock de los productos del supermercado.",
+      productsSubtitle: "Crea, edita, desactiva y monitorea el stock de los productos de tu negocio.",
       productsSearch: "Buscar por nombre o descripción...",
       productsCategoryLabel: "Categoría",
       productsCategoryAll: "Todas las categorías",
@@ -499,7 +499,7 @@ export const translations = {
       messagesEmpty: "No pending customer queries found.",
 
       productsTitle: "Inventory Management",
-      productsSubtitle: "Create, edit, deactivate, and monitor supermarket product stock.",
+      productsSubtitle: "Create, edit, deactivate, and monitor your store's product stock.",
       productsSearch: "Search by name or description...",
       productsCategoryLabel: "Category",
       productsCategoryAll: "All Categories",
