@@ -6,6 +6,28 @@ export async function proxy(request: NextRequest) {
     const { user, response } = await updateSession(request);
     const path = request.nextUrl.pathname;
 
+    const hostname = request.headers.get('host') || '';
+    const rootDomain = 'crisalap.com';
+    let subdomain: string | null = null;
+
+    if (hostname.endsWith(`.${rootDomain}`)) {
+      const candidate = hostname.replace(`.${rootDomain}`, '');
+      if (candidate && candidate !== 'www') {
+        subdomain = candidate;
+      }
+    }
+
+    const isStorefrontPath =
+      path === '/' ||
+      path.startsWith('/checkout') ||
+      path.startsWith('/order-success');
+
+    if (subdomain && isStorefrontPath && !path.startsWith('/dashboard')) {
+      const url = request.nextUrl.clone();
+      url.pathname = path === '/' ? `/${subdomain}` : `/${subdomain}${path}`;
+      return NextResponse.rewrite(url);
+    }
+
     // 1. Omitir archivos estáticos y APIs (Protección del Webhook)
     if (
       path.startsWith('/_next') ||
