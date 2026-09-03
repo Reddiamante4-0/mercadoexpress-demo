@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import QRCode from 'qrcode';
 import {
   Menu,
   Search,
@@ -15,7 +16,10 @@ import {
   AlertTriangle,
   X,
   Store,
-  Loader2
+  Loader2,
+  Share2,
+  Copy,
+  Download
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -71,7 +75,11 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
   const supabase = createClient();
 
   const [storeSlug, setStoreSlug] = useState('demo');
+  const storeUrl = `https://${storeSlug}.crisalap.com`;
   const [storeId, setStoreId] = useState<string | null>(null);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState('');
+  const [linkCopied, setLinkCopied] = useState(false);
   const [tagline, setTagline] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState(brandConfig.whatsappNumber);
   const [logoUrl, setLogoUrl] = useState('');
@@ -344,6 +352,27 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
     }
   };
 
+  useEffect(() => {
+    if (shareModalOpen) {
+      QRCode.toDataURL(storeUrl, { width: 300, margin: 2 })
+        .then(setQrDataUrl)
+        .catch((err) => console.error('Error generando QR:', err));
+    }
+  }, [shareModalOpen, storeUrl]);
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(storeUrl);
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2000);
+  };
+
+  const handleDownloadQr = () => {
+    const link = document.createElement('a');
+    link.href = qrDataUrl;
+    link.download = `qr-${storeSlug}.png`;
+    link.click();
+  };
+
   return (
     <>
       <header className="shrink-0 h-16 w-full border-b border-slate-200 bg-white flex items-center px-4 sm:px-6 lg:px-8 gap-4 relative z-30 shadow-xs">
@@ -364,6 +393,14 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
         >
           <Store className="w-4 h-4 text-green-600" />
           <span>Ver Tienda Pública</span>
+        </button>
+
+        <button
+          onClick={() => setShareModalOpen(true)}
+          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-slate-600 transition-all"
+        >
+          <Share2 className="w-4 h-4 text-green-600" />
+          <span>Compartir Tienda</span>
         </button>
 
         {/* Right section */}
@@ -771,6 +808,57 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {shareModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="relative w-full max-w-sm bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl my-auto text-left">
+            <button
+              onClick={() => setShareModalOpen(false)}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center hover:bg-slate-200 transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <h3 className="text-sm font-black uppercase tracking-wider text-slate-800 mb-4">
+              Comparte tu Tienda
+            </h3>
+
+            <div className="flex justify-center mb-4">
+              {qrDataUrl && (
+                <img src={qrDataUrl} alt="Código QR de la tienda" className="w-48 h-48 rounded-xl border border-slate-200" />
+              )}
+            </div>
+
+            <div className="space-y-1 mb-3">
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Enlace de tu tienda</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={storeUrl}
+                  readOnly
+                  className="flex-1 bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800"
+                />
+                <button
+                  onClick={handleCopyLink}
+                  className="p-2 rounded-xl bg-green-600 hover:bg-green-700 text-white transition-all cursor-pointer shrink-0"
+                >
+                  <Copy className="w-4 h-4" />
+                </button>
+              </div>
+              {linkCopied && (
+                <p className="text-[10px] text-green-600 font-bold pl-1">¡Enlace copiado!</p>
+              )}
+            </div>
+
+            <button
+              onClick={handleDownloadQr}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all cursor-pointer"
+            >
+              <Download className="w-4 h-4" />
+              Descargar Código QR
+            </button>
           </div>
         </div>
       )}
