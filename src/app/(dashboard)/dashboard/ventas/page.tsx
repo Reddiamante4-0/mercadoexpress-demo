@@ -150,9 +150,6 @@ export default function AdminSalesPage() {
           <div className="flex items-baseline gap-2 mt-2">
             <span className="text-2xl font-black text-slate-800">{formatPrice(metrics.totalSales)}</span>
           </div>
-          <span className="text-[9px] text-green-600 font-bold mt-2">
-            {language === 'en' ? '🚀 +15% vs previous month' : '🚀 +15% vs el mes anterior'}
-          </span>
         </div>
 
         {/* Metric 2 */}
@@ -185,7 +182,7 @@ export default function AdminSalesPage() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         
         {/* Left: Category Breakdown Table (Col Span 3) */}
-        <div className="bg-white rounded-2xl border border-slate-200/60 p-5 shadow-xs lg:col-span-3 space-y-4">
+        <div className="bg-white rounded-2xl border border-slate-200/60 p-5 shadow-xs lg:col-span-5 space-y-4">
           <div>
             <h3 className="text-xs font-black uppercase tracking-widest text-slate-700">{t.admin.salesDistributionTitle}</h3>
             <p className="text-[10px] text-slate-400 mt-0.5">{t.admin.salesDistributionSubtitle}</p>
@@ -224,53 +221,57 @@ export default function AdminSalesPage() {
           </div>
         </div>
 
-        {/* Right: Insights card (Col Span 2) */}
-        <div className="bg-white rounded-2xl border border-slate-200/60 p-5 shadow-xs lg:col-span-2 space-y-4 flex flex-col justify-between">
-          <div>
-            <h3 className="text-xs font-black uppercase tracking-widest text-slate-700">
-              {language === 'en' ? 'Financial Insights' : 'Perspectivas Financieras'}
-            </h3>
-            <p className="text-[10px] text-slate-400 mt-0.5">
-              {language === 'en' ? 'Automatically generated analysis' : 'Análisis generado automáticamente'}
-            </p>
-          </div>
-
-          <div className="space-y-4 flex-1 mt-4">
-            <div className="flex gap-2.5 items-start p-3 bg-slate-50 rounded-xl border border-slate-100">
-              <Award className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+        {false && (
+          <>
+            {/* Right: Insights card (Col Span 2) */}
+            <div className="bg-white rounded-2xl border border-slate-200/60 p-5 shadow-xs lg:col-span-2 space-y-4 flex flex-col justify-between">
               <div>
-                <p className="text-xs font-bold text-slate-700">
-                  {language === 'en' ? 'High Performance' : 'Rendimiento Alto'}
-                </p>
-                <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
-                  {language === 'en'
-                    ? 'Fresh proteins (meats and fish) represent the highest percentage of your sales. Make sure to keep consistent inventory.'
-                    : 'Las proteínas frescas (carnes y pescados) representan el mayor porcentaje de tus ventas. Asegúrate de mantener un stock constante.'}
+                <h3 className="text-xs font-black uppercase tracking-widest text-slate-700">
+                  {language === 'en' ? 'Financial Insights' : 'Perspectivas Financieras'}
+                </h3>
+                <p className="text-[10px] text-slate-400 mt-0.5">
+                  {language === 'en' ? 'Automatically generated analysis' : 'Análisis generado automáticamente'}
                 </p>
               </div>
-            </div>
 
-            <div className="flex gap-2.5 items-start p-3 bg-slate-50 rounded-xl border border-slate-100">
-              <Calendar className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs font-bold text-slate-700">
-                  {language === 'en' ? 'Peak Order Days' : 'Días Pico de Pedidos'}
-                </p>
-                <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
-                  {language === 'en'
-                    ? 'Weekends are projected to see a 35% increase in orders. Plan shipments to keep delivery times low.'
-                    : 'Los fines de semana se proyecta un aumento del 35% en pedidos. Planifica los despachos para mantener los tiempos de entrega bajos.'}
-                </p>
+              <div className="space-y-4 flex-1 mt-4">
+                <div className="flex gap-2.5 items-start p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <Award className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs font-bold text-slate-700">
+                      {language === 'en' ? 'High Performance' : 'Rendimiento Alto'}
+                    </p>
+                    <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
+                      {language === 'en'
+                        ? 'Fresh proteins (meats and fish) represent the highest percentage of your sales. Make sure to keep consistent inventory.'
+                        : 'Las proteínas frescas (carnes y pescados) representan el mayor porcentaje de tus ventas. Asegúrate de mantener un stock constante.'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-2.5 items-start p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <Calendar className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs font-bold text-slate-700">
+                      {language === 'en' ? 'Peak Order Days' : 'Días Pico de Pedidos'}
+                    </p>
+                    <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
+                      {language === 'en'
+                        ? 'Weekends are projected to see a 35% increase in orders. Plan shipments to keep delivery times low.'
+                        : 'Los fines de semana se proyecta un aumento del 35% en pedidos. Planifica los despachos para mantener los tiempos de entrega bajos.'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-3 bg-green-50 rounded-xl border border-green-200/50 text-[10px] text-green-800 text-center font-medium">
+                {language === 'en'
+                  ? '💡 Tip: Add more "Offers" family combos to increase the average ticket above $70,000.'
+                  : '💡 Consejo: Agrega más combos familiares de "Ofertas" para incrementar el ticket promedio por encima de $70.000.'}
               </div>
             </div>
-          </div>
-
-          <div className="p-3 bg-green-50 rounded-xl border border-green-200/50 text-[10px] text-green-800 text-center font-medium">
-            {language === 'en'
-              ? '💡 Tip: Add more "Offers" family combos to increase the average ticket above $70,000.'
-              : '💡 Consejo: Agrega más combos familiares de "Ofertas" para incrementar el ticket promedio por encima de $70.000.'}
-          </div>
-        </div>
+          </>
+        )}
 
       </div>
 
