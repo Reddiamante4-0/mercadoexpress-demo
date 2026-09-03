@@ -140,7 +140,7 @@ export const translations = {
       menuBackToShop: "Ir a la Tienda",
       
       overviewTitle: "👋 ¡Hola de nuevo, Administrador!",
-      overviewSubtitle: "Aquí tienes el resumen del inventario y las ventas de Crisalap hoy.",
+      overviewSubtitle: "Aquí tienes el resumen del inventario y las ventas de tu negocio hoy.",
       addProductBtn: "Agregar Producto",
       viewOrdersBtn: "Ver Pedidos",
       statSales: "Ventas Totales",
@@ -401,7 +401,7 @@ export const translations = {
       menuBackToShop: "Back to Shop",
       
       overviewTitle: "👋 Welcome back, Administrator!",
-      overviewSubtitle: "Here is your summary of stock levels and sales in Crisalap today.",
+      overviewSubtitle: "Here is your summary of stock levels and sales in your store today.",
       addProductBtn: "Add Product",
       viewOrdersBtn: "View Orders",
       statSales: "Total Sales",
