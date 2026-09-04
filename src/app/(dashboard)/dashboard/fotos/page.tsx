@@ -3,6 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { Upload, Copy, CheckCircle, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { supabase, getCurrentStoreId } from '@/lib/supabase-api';
+import imageCompression from 'browser-image-compression';
 import { useToast } from '@/components/ui/ToastProvider';
 
 interface UploadedFile {
@@ -52,15 +53,28 @@ export default function AdminFotosPage() {
         continue;
       }
 
-      const fileExt = file.name.split('.').pop();
+      let fileToUpload = file;
+      try {
+        fileToUpload = await imageCompression(file, {
+          maxSizeMB: 0.3,
+          maxWidthOrHeight: 1600,
+          useWebWorker: true,
+          fileType: 'image/webp',
+        });
+      } catch (compressionError) {
+        console.error('Error comprimiendo imagen, se sube el original:', compressionError);
+        // Si la compresión falla por cualquier razón, seguir con el archivo original
+        // en vez de bloquear la subida.
+      }
+
       const uuid = crypto.randomUUID();
-      const fileName = `${uuid}.${fileExt}`;
+      const fileName = `${uuid}.webp`;
       const filePath = `${storeId}/${fileName}`;
 
       try {
         const { error: uploadError } = await supabase.storage
           .from('product-images')
-          .upload(filePath, file, {
+          .upload(filePath, fileToUpload, {
             cacheControl: '3600',
             upsert: false
           });
