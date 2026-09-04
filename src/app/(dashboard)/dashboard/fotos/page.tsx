@@ -54,6 +54,7 @@ export default function AdminFotosPage() {
       }
 
       let fileToUpload = file;
+      let fileExtension = file.name.split('.').pop() || 'jpg';
       try {
         fileToUpload = await imageCompression(file, {
           maxSizeMB: 0.3,
@@ -61,6 +62,7 @@ export default function AdminFotosPage() {
           useWebWorker: true,
           fileType: 'image/webp',
         });
+        fileExtension = 'webp';
       } catch (compressionError) {
         console.error('Error comprimiendo imagen, se sube el original:', compressionError);
         // Si la compresión falla por cualquier razón, seguir con el archivo original
@@ -68,7 +70,7 @@ export default function AdminFotosPage() {
       }
 
       const uuid = crypto.randomUUID();
-      const fileName = `${uuid}.webp`;
+      const fileName = `${uuid}.${fileExtension}`;
       const filePath = `${storeId}/${fileName}`;
 
       try {
