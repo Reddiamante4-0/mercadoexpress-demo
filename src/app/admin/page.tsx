@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
+import { markStoreAsPaid } from './actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,6 +28,7 @@ export default async function AdminPage() {
             <th style={{ padding: '8px' }}>Activa</th>
             <th style={{ padding: '8px' }}>Último Pago</th>
             <th style={{ padding: '8px' }}>Próximo Vencimiento</th>
+            <th style={{ padding: '8px' }}>Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -37,6 +39,23 @@ export default async function AdminPage() {
               <td style={{ padding: '8px' }}>{store.is_active ? '✅ Activa' : '⛔ Suspendida'}</td>
               <td style={{ padding: '8px' }}>{store.last_payment_date || '—'}</td>
               <td style={{ padding: '8px' }}>{store.next_payment_date || '—'}</td>
+              <td style={{ padding: '8px' }}>
+                <form action={markStoreAsPaid.bind(null, store.id)}>
+                  <button
+                    type="submit"
+                    style={{
+                      padding: '6px 12px',
+                      backgroundColor: '#16a34a',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Marcar como pagado
+                  </button>
+                </form>
+              </td>
             </tr>
           ))}
         </tbody>
