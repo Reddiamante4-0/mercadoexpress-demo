@@ -221,6 +221,68 @@ export async function getProductsByIds(storeId: string, ids: string[]): Promise<
   return data.map(productFromDb);
 }
 
+export interface PaginatedProducts {
+  products: Product[];
+  total: number;
+}
+
+export async function getProductsPaginated(
+  storeId: string,
+  options: { page: number; pageSize: number; category?: string; search?: string }
+): Promise<PaginatedProducts> {
+  const { page, pageSize, category, search } = options;
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  let query = supabase
+    .from('products')
+    .select('*', { count: 'exact' })
+    .eq('store_id', storeId)
+    .eq('active', true);
+
+  if (category && category !== 'Todas') {
+    if (category === 'Ofertas') {
+      query = query.not('old_price', 'is', null);
+    } else {
+      query = query.eq('category', category);
+    }
+  }
+
+  if (search && search.trim() !== '') {
+    const term = search.trim().replace(/[,()%]/g, '');
+    query = query.or(
+      `name.ilike.%${term}%,description.ilike.%${term}%,category.ilike.%${term}%,name_en.ilike.%${term}%,description_en.ilike.%${term}%`
+    );
+  }
+
+  const { data, error, count } = await query
+    .order('name', { ascending: true })
+    .range(from, to);
+
+  if (error) {
+    console.error('Error fetching paginated products:', error);
+    return { products: [], total: 0 };
+  }
+  return { products: data.map(productFromDb), total: count || 0 };
+}
+
+export async function getDiscountedProducts(storeId: string, limit: number = 4): Promise<Product[]> {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .eq('store_id', storeId)
+    .eq('active', true)
+    .not('old_price', 'is', null)
+    .order('name', { ascending: true })
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching discounted products:', error);
+    return [];
+  }
+  return data.map(productFromDb);
+}
+
 export async function saveProduct(product: Product, storeId: string): Promise<void> {
   const productToSave = productToDb(product, storeId);
   
