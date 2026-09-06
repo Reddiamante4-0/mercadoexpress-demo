@@ -23,7 +23,7 @@ import {
   Globe,
   MessageCircle
 } from 'lucide-react';
-import { getProductsByIds, getProductsPaginated, Product } from '@/lib/supabase-api';
+import { getProductsByIds, getProductsPaginated, getDiscountedProducts, Product } from '@/lib/supabase-api';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslation } from '@/hooks/useTranslation';
 import { translations } from '@/config/translations';
@@ -122,6 +122,7 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
   const [totalCount, setTotalCount] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [dealsProducts, setDealsProducts] = useState<Product[]>([]);
 
   // Cart State
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -129,6 +130,12 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
   
   // Wishlist simulation
   const [wishlist, setWishlist] = useState<string[]>([]);
+
+  // Load discounted products for the "Ofertas" section (independent of
+  // category/search filters and of pagination)
+  useEffect(() => {
+    getDiscountedProducts(storeId, 4).then(setDealsProducts);
+  }, [storeId]);
 
   // Debounce search input (waits 400ms after typing stops before querying)
   useEffect(() => {
@@ -315,9 +322,6 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
 
   // El filtro por categoría y búsqueda ya se hace en el servidor (getProductsPaginated)
   const filteredProducts = products;
-
-  // Hot/Discounted deals
-  const dealsProducts = products.filter(p => p.active && p.oldPrice !== undefined).slice(0, 4);
 
   // Best sellers
   const bestSellers = products.filter(p => p.active).slice(2, 6);
