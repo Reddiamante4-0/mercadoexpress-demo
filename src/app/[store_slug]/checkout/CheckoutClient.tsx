@@ -13,7 +13,7 @@ import {
   ShoppingCart,
   Globe
 } from 'lucide-react';
-import { getProducts, saveOrder, Order, OrderItem } from '@/lib/supabase-api';
+import { getProductsByIds, saveOrder, Order, OrderItem } from '@/lib/supabase-api';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslation } from '@/hooks/useTranslation';
 import { translations } from '@/config/translations';
@@ -69,7 +69,8 @@ export default function CheckoutPage({ storeId, storeName, storeSlug }: { storeI
     if (savedCart) {
       try {
         const parsed = JSON.parse(savedCart);
-        getProducts(storeId).then(dbProducts => {
+        const productIds = parsed.map((item: any) => item.product.id);
+        getProductsByIds(storeId, productIds).then(dbProducts => {
           const syncedCart = parsed.map((item: any) => {
             const dbProd = dbProducts.find(p => p.id === item.product.id);
             if (dbProd) {
