@@ -205,6 +205,22 @@ export async function getProducts(storeId: string): Promise<Product[]> {
   return data.map(productFromDb);
 }
 
+export async function getProductsByIds(storeId: string, ids: string[]): Promise<Product[]> {
+  if (ids.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .eq('store_id', storeId)
+    .in('id', ids);
+
+  if (error) {
+    console.error('Error fetching products by ids:', error);
+    return [];
+  }
+  return data.map(productFromDb);
+}
+
 export async function saveProduct(product: Product, storeId: string): Promise<void> {
   const productToSave = productToDb(product, storeId);
   
