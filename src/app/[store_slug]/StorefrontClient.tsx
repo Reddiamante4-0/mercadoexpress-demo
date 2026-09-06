@@ -23,7 +23,7 @@ import {
   Globe,
   MessageCircle
 } from 'lucide-react';
-import { getProducts, Product } from '@/lib/supabase-api';
+import { getProductsByIds, getProductsPaginated, Product } from '@/lib/supabase-api';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslation } from '@/hooks/useTranslation';
 import { translations } from '@/config/translations';
@@ -112,10 +112,16 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
   const t = translations[language];
 
   // Catalog State
+  const PAGE_SIZE = 24;
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('Todas');
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   // Cart State
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -124,35 +130,69 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
   // Wishlist simulation
   const [wishlist, setWishlist] = useState<string[]>([]);
 
-  // Load products & cart from localStorage
+  // Debounce search input (waits 400ms after typing stops before querying)
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Sync cart from localStorage against current DB data (only fetches the
+  // specific products already in the cart, not the whole catalog)
   useEffect(() => {
     const cartKey = `carrito_${storeId}`;
+    const savedCart = localStorage.getItem(cartKey);
+    if (!savedCart) return;
 
-    getProducts(storeId).then(dbProducts => {
-      setProducts(dbProducts);
-      
-      const savedCart = localStorage.getItem(cartKey);
-      if (savedCart) {
-        try {
-          const parsed = JSON.parse(savedCart) as CartItem[];
-          const syncedCart = parsed.map(item => {
-            const dbProd = dbProducts.find(p => p.id === item.product.id);
-            if (dbProd) {
-              return { ...item, product: dbProd };
-            }
-            return item;
-          }).filter(item => {
-            const dbProd = dbProducts.find(p => p.id === item.product.id);
-            return dbProd !== undefined;
-          });
-          setCart(syncedCart);
-          localStorage.setItem(cartKey, JSON.stringify(syncedCart));
-        } catch (e) {
-          console.error('Error loading cart:', e);
-        }
-      }
+    try {
+      const parsed = JSON.parse(savedCart) as CartItem[];
+      const ids = parsed.map(item => item.product.id);
+      getProductsByIds(storeId, ids).then(dbProducts => {
+        const syncedCart = parsed.map(item => {
+          const dbProd = dbProducts.find(p => p.id === item.product.id);
+          return dbProd ? { ...item, product: dbProd } : item;
+        }).filter(item => dbProducts.some(p => p.id === item.product.id));
+        setCart(syncedCart);
+        localStorage.setItem(cartKey, JSON.stringify(syncedCart));
+      });
+    } catch (e) {
+      console.error('Error loading cart:', e);
+    }
+  }, [storeId]);
+
+  // Load first page of the catalog whenever category or debounced search changes
+  useEffect(() => {
+    setPage(1);
+    getProductsPaginated(storeId, {
+      page: 1,
+      pageSize: PAGE_SIZE,
+      category: selectedCategory,
+      search: debouncedSearch,
+    }).then(result => {
+      setProducts(result.products);
+      setTotalCount(result.total);
+      setHasMore(result.products.length < result.total);
     });
-  }, []);
+  }, [storeId, selectedCategory, debouncedSearch]);
+
+  // Fetch and append the next page
+  const loadMoreProducts = () => {
+    const nextPage = page + 1;
+    setLoadingMore(true);
+    getProductsPaginated(storeId, {
+      page: nextPage,
+      pageSize: PAGE_SIZE,
+      category: selectedCategory,
+      search: debouncedSearch,
+    }).then(result => {
+      setProducts(prev => {
+        const updated = [...prev, ...result.products];
+        setHasMore(updated.length < totalCount);
+        return updated;
+      });
+      setPage(nextPage);
+      setLoadingMore(false);
+    });
+  };
 
   // Save cart to localStorage
   const saveCartToStorage = (updatedCart: CartItem[]) => {
@@ -273,22 +313,8 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
     }).format(val);
   };
 
-  // Filter products
-  const filteredProducts = products.filter(p => {
-    if (!p.active) return false;
-    
-    const matchesCategory = selectedCategory === 'Todas' || 
-                            (selectedCategory === 'Ofertas' ? p.oldPrice !== undefined : p.category === selectedCategory);
-    
-    const term = searchQuery.toLowerCase();
-    const matchesSearch = p.name.toLowerCase().includes(term) ||
-                          p.description.toLowerCase().includes(term) ||
-                          p.category.toLowerCase().includes(term) ||
-                          (p.nameEn?.toLowerCase().includes(term) || false) ||
-                          (p.descriptionEn?.toLowerCase().includes(term) || false);
-    
-    return matchesCategory && matchesSearch;
-  });
+  // El filtro por categoría y búsqueda ya se hace en el servidor (getProductsPaginated)
+  const filteredProducts = products;
 
   // Hot/Discounted deals
   const dealsProducts = products.filter(p => p.active && p.oldPrice !== undefined).slice(0, 4);
@@ -754,7 +780,7 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
                 </span>
               </h3>
               <p className="text-xs text-slate-400 text-left mt-0.5 font-medium">
-                {t.store.catalogSubtitle.replace('{count}', String(filteredProducts.length))}
+                {t.store.catalogSubtitle.replace('{count}', String(totalCount))}
               </p>
             </div>
           </div>
@@ -890,6 +916,20 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {hasMore && filteredProducts.length > 0 && (
+            <div className="flex justify-center mt-8">
+              <button
+                onClick={loadMoreProducts}
+                disabled={loadingMore}
+                className="px-6 py-3 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-black text-slate-600 transition-all disabled:opacity-50 cursor-pointer"
+              >
+                {loadingMore
+                  ? (language === 'en' ? 'Loading...' : 'Cargando...')
+                  : (language === 'en' ? 'Load more products' : 'Cargar más productos')}
+              </button>
             </div>
           )}
         </section>
