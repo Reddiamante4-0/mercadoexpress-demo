@@ -389,18 +389,18 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
         {/* View Client Store button */}
         <button
           onClick={() => router.push(`/${storeSlug}`)}
-          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-slate-600 transition-all"
+          className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-slate-600 transition-all"
         >
           <Store className="w-4 h-4 text-green-600" />
-          <span>Ver Tienda Pública</span>
+          <span className="hidden sm:inline">Ver Tienda Pública</span>
         </button>
 
         <button
           onClick={() => setShareModalOpen(true)}
-          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-slate-600 transition-all"
+          className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-slate-600 transition-all"
         >
           <Share2 className="w-4 h-4 text-green-600" />
-          <span>Compartir Tienda</span>
+          <span className="hidden sm:inline">Compartir Tienda</span>
         </button>
 
         {/* Right section */}
