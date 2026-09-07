@@ -283,6 +283,22 @@ export async function getDiscountedProducts(storeId: string, limit: number = 4):
   return data.map(productFromDb);
 }
 
+export async function getLowStockProducts(storeId: string, threshold: number = 5): Promise<Product[]> {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .eq('store_id', storeId)
+    .eq('active', true)
+    .lte('stock', threshold)
+    .order('stock', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching low stock products:', error);
+    return [];
+  }
+  return data.map(productFromDb);
+}
+
 export async function saveProduct(product: Product, storeId: string): Promise<void> {
   const productToSave = productToDb(product, storeId);
   
