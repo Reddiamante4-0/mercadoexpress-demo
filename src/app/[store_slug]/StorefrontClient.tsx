@@ -94,7 +94,7 @@ interface CartItem {
   quantity: number;
 }
 
-export default function CatalogPage({ storeId, storeName, storeSlug, brandName, tagline, logoUrl, whatsappNumber, heroDescription, heroImageUrl, heroBadgeText, heroTitleText, heroSubtitleText, categories }: { storeId: string; storeName: string; storeSlug: string; brandName?: string | null; tagline?: string | null; logoUrl?: string | null; whatsappNumber?: string | null; heroDescription?: string | null; heroImageUrl?: string | null; heroBadgeText?: string | null; heroTitleText?: string | null; heroSubtitleText?: string | null; categories?: { name: string; emoji: string; display_order: number }[] }) {
+export default function CatalogPage({ storeId, storeName, storeSlug, brandName, tagline, logoUrl, whatsappNumber, heroDescription, heroImageUrl, heroBadgeText, heroTitleText, heroSubtitleText, categories, shippingFee, freeShippingThreshold }: { storeId: string; storeName: string; storeSlug: string; brandName?: string | null; tagline?: string | null; logoUrl?: string | null; whatsappNumber?: string | null; heroDescription?: string | null; heroImageUrl?: string | null; heroBadgeText?: string | null; heroTitleText?: string | null; heroSubtitleText?: string | null; categories?: { name: string; emoji: string; display_order: number }[]; shippingFee: number; freeShippingThreshold: number }) {
   const displayBrandName = brandName || 'Crisalap';
   const displayWhatsapp = whatsappNumber || brandConfig.whatsappNumber;
   const displayHeroImage = heroImageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=80';
@@ -327,8 +327,8 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
   const bestSellers = products.filter(p => p.active).slice(2, 6);
 
   const cartSubtotal = cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
-  const shippingFee = cartSubtotal > 80000 || cartSubtotal === 0 ? 0 : 5000;
-  const cartTotal = cartSubtotal + shippingFee;
+  const shippingFeeAmount = cartSubtotal > freeShippingThreshold || cartSubtotal === 0 ? 0 : shippingFee;
+  const cartTotal = cartSubtotal + shippingFeeAmount;
   const totalItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   const handleCheckout = () => {
@@ -1049,15 +1049,15 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
                 <div className="flex justify-between items-center">
                   <span className="flex items-center gap-1">
                     {t.store.shipping}
-                    {shippingFee === 0 && <span className="bg-green-100 text-green-700 font-black text-[9px] px-1.5 py-0.5 rounded-md">{language === 'en' ? 'FREE' : 'GRATIS'}</span>}
+                    {shippingFeeAmount === 0 && <span className="bg-green-100 text-green-700 font-black text-[9px] px-1.5 py-0.5 rounded-md">{language === 'en' ? 'FREE' : 'GRATIS'}</span>}
                   </span>
-                  <span className="font-bold text-slate-800">{shippingFee === 0 ? t.store.shippingFree : formatPrice(shippingFee)}</span>
+                  <span className="font-bold text-slate-800">{shippingFeeAmount === 0 ? t.store.shippingFree : formatPrice(shippingFeeAmount)}</span>
                 </div>
-                {shippingFee > 0 && (
+                {shippingFeeAmount > 0 && (
                   <p className="text-[10px] text-green-600 font-bold text-left">
                     {language === 'en' 
-                      ? <>💡 Add <b>{formatPrice(80000 - cartSubtotal)}</b> more to get <b>FREE</b> shipping.</>
-                      : <>💡 Agrega <b>{formatPrice(80000 - cartSubtotal)}</b> más para tener envío <b>GRATIS</b>.</>}
+                      ? <>💡 Add <b>{formatPrice(freeShippingThreshold - cartSubtotal)}</b> more to get <b>FREE</b> shipping.</>
+                      : <>💡 Agrega <b>{formatPrice(freeShippingThreshold - cartSubtotal)}</b> más para tener envío <b>GRATIS</b>.</>}
                   </p>
                 )}
                 <div className="border-t border-slate-200 pt-2.5 flex justify-between text-sm font-black text-slate-800">
