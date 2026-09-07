@@ -56,8 +56,8 @@ export default function DashboardLayout({
           } else if (store.next_payment_date) {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            const nextPayment = new Date(store.next_payment_date);
-            nextPayment.setHours(0, 0, 0, 0);
+            const [year, month, day] = store.next_payment_date.split('-').map(Number);
+            const nextPayment = new Date(year, month - 1, day);
             const daysOverdue = Math.floor((today.getTime() - nextPayment.getTime()) / (1000 * 60 * 60 * 24));
             if (daysOverdue > 0 && active) {
               setDaysUntilSuspension(Math.max(0, 5 - daysOverdue));
