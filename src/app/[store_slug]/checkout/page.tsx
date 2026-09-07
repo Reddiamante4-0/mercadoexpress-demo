@@ -8,7 +8,7 @@ export default async function CheckoutServerPage({ params }: { params: Promise<{
   
   const { data: store, error } = await supabase
     .from('stores')
-    .select('id, name')
+    .select('id, name, whatsapp_number, nequi_number, wompi_enabled')
     .eq('slug', store_slug)
     .eq('is_active', true)
     .single();
@@ -18,5 +18,14 @@ export default async function CheckoutServerPage({ params }: { params: Promise<{
     notFound();
   }
 
-  return <CheckoutClient storeId={store.id} storeName={store.name} storeSlug={store_slug} />;
+  return (
+    <CheckoutClient
+      storeId={store.id}
+      storeName={store.name}
+      storeSlug={store_slug}
+      whatsappNumber={store.whatsapp_number}
+      nequiNumber={store.nequi_number}
+      wompiEnabled={store.wompi_enabled}
+    />
+  );
 }
