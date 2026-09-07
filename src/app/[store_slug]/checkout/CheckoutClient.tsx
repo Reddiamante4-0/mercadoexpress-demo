@@ -137,7 +137,7 @@ export default function CheckoutPage({
     }
 
     setIsProcessing(true);
-    setProcessingStep('Generando orden de pago segura...');
+    setProcessingStep('Generando orden...');
     
     try {
       const orderId = crypto.randomUUID();
@@ -148,6 +148,41 @@ export default function CheckoutPage({
         price: item.product.price,
         quantity: item.quantity
       }));
+
+      if (paymentOption === 'nequi') {
+        const newOrder: Order = {
+          id: orderId,
+          customerName,
+          phone,
+          address: `${address}, Barrio: ${barrio}`,
+          notes: notes || undefined,
+          paymentMethod: 'nequi',
+          paymentDetails: `Transferencia por Nequi a ${nequiNumber}, pendiente de confirmación`,
+          items: orderItems,
+          subtotal: cartSubtotal,
+          shippingFee,
+          total: cartTotal,
+          status: 'Pendiente de pago',
+          createdAt: new Date().toISOString(),
+          deliveryType
+        };
+
+        setProcessingStep('Guardando pedido...');
+        await saveOrder(newOrder, storeId);
+
+        const cartKey = `carrito_${storeId}`;
+        localStorage.removeItem(cartKey);
+
+        toast({
+          title: 'Pedido guardado. Confirma tu pago enviando el comprobante por WhatsApp.',
+          type: 'success'
+        });
+
+        sessionStorage.setItem('last_order', JSON.stringify(newOrder));
+        router.push(`/${storeSlug}/order-success?orderId=${orderId}`);
+        setIsProcessing(false);
+        return;
+      }
 
       const newOrder: Order = {
         id: orderId,
@@ -195,7 +230,6 @@ export default function CheckoutPage({
 
       checkout.open(function (result: any) {
         if (result && result.transaction && result.transaction.id) {
-          // El usuario completó el flujo (aunque haya sido rechazado, Wompi lo procesó)
           const cartKey = `carrito_${storeId}`;
           localStorage.removeItem(cartKey);
 
@@ -207,7 +241,6 @@ export default function CheckoutPage({
           sessionStorage.setItem('last_order', JSON.stringify(newOrder));
           router.push(`/${storeSlug}/order-success?orderId=${orderId}`);
         } else {
-          // El usuario cerró el widget sin terminar
           toast({
             title: 'Cancelaste el pago. Tu carrito sigue intacto.',
             type: 'error'
@@ -216,9 +249,9 @@ export default function CheckoutPage({
       });
 
     } catch (err: any) {
-      console.error('Error durante el pago con Wompi:', err);
+      console.error('Error durante el pago:', err);
       toast({
-        title: err.message || 'Error inicializando el pago.',
+        title: err.message || 'Error procesando el pedido.',
         type: 'error'
       });
       setIsProcessing(false);
