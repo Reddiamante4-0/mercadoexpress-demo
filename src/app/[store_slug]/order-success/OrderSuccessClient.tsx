@@ -171,6 +171,14 @@ function OrderSuccessContent({ storeId, storeName, storeSlug }: { storeId: strin
             </span>
           </div>
 
+          {order.paymentMethod === 'nequi' && (
+            <div className="mt-3 p-3 bg-blue-50 rounded-xl border border-blue-200/50 text-left">
+              <p className="text-[11px] text-blue-800 leading-snug">
+                <span className="font-black">Gracias por tu pago.</span> En cuanto confirmemos tu transferencia por Nequi, comenzaremos a alistar tu pedido.
+              </p>
+            </div>
+          )}
+
           {/* Delivery progress simulation bar */}
           <div className="pt-4 pb-2 space-y-3">
             <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-wider">
