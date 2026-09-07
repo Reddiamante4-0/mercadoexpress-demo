@@ -27,6 +27,8 @@ export default function DashboardLayout({
   const [authLoading, setAuthLoading] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [userEmail, setUserEmail] = useState('');
+  const [isSuspended, setIsSuspended] = useState(false);
+  const [daysUntilSuspension, setDaysUntilSuspension] = useState<number | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -41,6 +43,28 @@ export default function DashboardLayout({
         }
 
         const email = user.email || '';
+
+        const { data: store } = await supabase
+          .from('stores')
+          .select('is_active, next_payment_date')
+          .eq('owner_id', user.id)
+          .single();
+
+        if (store) {
+          if (store.is_active === false) {
+            if (active) setIsSuspended(true);
+          } else if (store.next_payment_date) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const nextPayment = new Date(store.next_payment_date);
+            nextPayment.setHours(0, 0, 0, 0);
+            const daysOverdue = Math.floor((today.getTime() - nextPayment.getTime()) / (1000 * 60 * 60 * 24));
+            if (daysOverdue > 0 && active) {
+              setDaysUntilSuspension(Math.max(0, 5 - daysOverdue));
+            }
+          }
+        }
+
         if (active) {
           setUserEmail(email);
           // In Crisalap App, any user logged in via Supabase is authorized as admin
