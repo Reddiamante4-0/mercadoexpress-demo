@@ -8,7 +8,7 @@ export default async function StorePage({ params }: { params: Promise<{ store_sl
   
   const { data: store } = await supabase
     .from('stores')
-    .select('id, name, brand_name, tagline, logo_url, whatsapp_number, hero_description, hero_image_url, hero_badge_text, hero_title_text, hero_subtitle_text')
+    .select('id, name, brand_name, tagline, logo_url, whatsapp_number, hero_description, hero_image_url, hero_badge_text, hero_title_text, hero_subtitle_text, shipping_fee, free_shipping_threshold')
     .eq('slug', store_slug)
     .eq('is_active', true)
     .single();
@@ -37,5 +37,7 @@ export default async function StorePage({ params }: { params: Promise<{ store_sl
     heroTitleText={store.hero_title_text}
     heroSubtitleText={store.hero_subtitle_text}
     categories={categories || []}
+    shippingFee={store.shipping_fee}
+    freeShippingThreshold={store.free_shipping_threshold}
   />;
 }
