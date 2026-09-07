@@ -12,7 +12,7 @@ import {
   Plus,
   Package
 } from 'lucide-react';
-import { getSalesMetrics, getOrders, getProducts, getCurrentStoreId, Order, Product, SalesMetrics } from '@/lib/supabase-api';
+import { getSalesMetrics, getOrders, getLowStockProducts, getCurrentStoreId, Order, Product, SalesMetrics } from '@/lib/supabase-api';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslation } from '@/hooks/useTranslation';
 import { translations } from '@/config/translations';
@@ -83,16 +83,16 @@ export default function DashboardAdminPage() {
         return;
       }
 
-      const [salesMetrics, allOrders, allProducts] = await Promise.all([
+      const [salesMetrics, allOrders, lowStock] = await Promise.all([
         getSalesMetrics(storeId),
         getOrders(storeId),
-        getProducts(storeId)
+        getLowStockProducts(storeId, 5)
       ]);
 
       if (active) {
         setMetrics(salesMetrics);
         setRecentOrders(allOrders.slice(0, 5)); // Last 5 orders
-        setLowStockItems(allProducts.filter(p => p.stock <= 5 && p.active));
+        setLowStockItems(lowStock);
         setLoading(false);
       }
     };
