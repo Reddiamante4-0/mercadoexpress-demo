@@ -206,8 +206,52 @@ export default function DashboardLayout({
 
           {/* Actual page content — above the orbs */}
           <div className="relative z-10">
-            {isAuthorized ? (
-              children
+            {isSuspended ? (
+              <div className="w-full max-w-xl mx-auto my-12 relative z-10 text-left">
+                <div className="glass-panel p-8 text-center space-y-6 relative overflow-hidden bg-white shadow-md">
+                  <div className="absolute top-0 left-0 w-full h-[4px] bg-red-500" />
+
+                  <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center mx-auto text-red-500 animate-pulse">
+                    <ShieldAlert className="w-8 h-8" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <h2 className="text-xl md:text-2xl font-extrabold text-slate-800">
+                      {language === 'en' ? 'Account Suspended' : 'Cuenta Suspendida'}
+                    </h2>
+                  </div>
+
+                  <p className="text-sm text-slate-500 leading-relaxed font-sans font-medium">
+                    {language === 'en'
+                      ? 'Your store has been suspended due to a pending payment. Contact us to reactivate it.'
+                      : 'Tu tienda fue suspendida por un pago pendiente. Contáctanos para reactivarla.'}
+                  </p>
+
+                  <div className="pt-4 flex flex-col sm:flex-row gap-3 justify-center">
+                    <button
+                      onClick={handleLogout}
+                      className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-xs font-bold bg-green-600 hover:bg-green-700 text-white hover:scale-102 active:scale-98 transition-all duration-300 cursor-pointer uppercase tracking-wider"
+                    >
+                      <LogOut className="w-4.5 h-4.5" />
+                      {language === 'en' ? 'Sign Out' : 'Cerrar Sesión'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : isAuthorized ? (
+              <>
+                {daysUntilSuspension !== null && (
+                  <div className="mb-4 p-4 rounded-xl bg-amber-50 border border-amber-300 flex items-start gap-3">
+                    <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                    <p className="text-xs text-amber-800 font-semibold leading-relaxed">
+                      {language === 'en'
+                        ? `Your payment is overdue. Your store will be automatically suspended in ${daysUntilSuspension} day(s) if not confirmed.`
+                        : `Tu pago está vencido. Tu tienda quedará suspendida automáticamente en ${daysUntilSuspension} día(s) si no se confirma.`}
+                    </p>
+                  </div>
+                )}
+                {children}
+              </>
             ) : (
               <div className="w-full max-w-xl mx-auto my-12 relative z-10 text-left">
                 <div className="glass-panel p-8 text-center space-y-6 relative overflow-hidden bg-white shadow-md">
