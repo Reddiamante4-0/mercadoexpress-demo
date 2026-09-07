@@ -45,7 +45,9 @@ export default function CheckoutPage({
   storeSlug,
   whatsappNumber,
   nequiNumber,
-  wompiEnabled
+  wompiEnabled,
+  shippingFee,
+  freeShippingThreshold
 }: {
   storeId: string;
   storeName: string;
@@ -53,6 +55,8 @@ export default function CheckoutPage({
   whatsappNumber?: string;
   nequiNumber?: string;
   wompiEnabled: boolean;
+  shippingFee: number;
+  freeShippingThreshold: number;
 }) {
   const router = useRouter();
   const { toast } = useToast();
@@ -114,8 +118,8 @@ export default function CheckoutPage({
   }, [router]);
 
   const cartSubtotal = cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
-  const shippingFee = cartSubtotal > 80000 ? 0 : 5000;
-  const cartTotal = cartSubtotal + shippingFee;
+  const shippingFeeAmount = cartSubtotal > freeShippingThreshold ? 0 : shippingFee;
+  const cartTotal = cartSubtotal + shippingFeeAmount;
 
   const formatPrice = (val: number) => {
     return new Intl.NumberFormat('es-CO', {
@@ -160,7 +164,7 @@ export default function CheckoutPage({
           paymentDetails: `Transferencia por Nequi a ${nequiNumber}, pendiente de confirmación`,
           items: orderItems,
           subtotal: cartSubtotal,
-          shippingFee,
+          shippingFee: shippingFeeAmount,
           total: cartTotal,
           status: 'Pendiente de pago',
           createdAt: new Date().toISOString(),
@@ -194,7 +198,7 @@ export default function CheckoutPage({
         paymentDetails: 'Pago a través de Wompi',
         items: orderItems,
         subtotal: cartSubtotal,
-        shippingFee,
+        shippingFee: shippingFeeAmount,
         total: cartTotal,
         status: 'Pendiente de pago',
         createdAt: new Date().toISOString(),
@@ -577,7 +581,7 @@ export default function CheckoutPage({
               
               <div className="flex justify-between">
                 <span>{t.store.shipping}</span>
-                <span className="font-bold text-slate-700">{shippingFee === 0 ? t.store.shippingFree : formatPrice(shippingFee)}</span>
+                <span className="font-bold text-slate-700">{shippingFeeAmount === 0 ? t.store.shippingFree : formatPrice(shippingFeeAmount)}</span>
               </div>
 
               <div className="border-t border-slate-200/60 pt-2.5 flex justify-between text-sm font-black text-slate-800">
