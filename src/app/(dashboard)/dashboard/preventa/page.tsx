@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Calendar, RefreshCw, ShoppingBag } from 'lucide-react';
-import { getOrders, getProducts, getCurrentStoreId, Order, Product } from '@/lib/supabase-api';
+import { getOrders, getProductsByIds, getCurrentStoreId, Order, Product } from '@/lib/supabase-api';
 import { useTranslation } from '@/hooks/useTranslation';
 import { translations } from '@/config/translations';
 
@@ -32,10 +32,7 @@ export default function AdminPresalePage() {
       return;
     }
 
-    const [orders, products] = await Promise.all([
-      getOrders(storeId),
-      getProducts(storeId),
-    ]);
+    const orders = await getOrders(storeId);
 
     // Filter weekly presale orders
     const weeklyOrders = orders.filter(o => o.deliveryType === 'weekly' && o.status !== 'Cancelado');
@@ -51,6 +48,8 @@ export default function AdminPresalePage() {
         totals[item.productId].orderIds.add(order.id);
       });
     });
+
+    const products = await getProductsByIds(storeId, Object.keys(totals));
 
     // Match with product units
     const list: AccumulatedItem[] = Object.entries(totals).map(([productId, data]) => {
