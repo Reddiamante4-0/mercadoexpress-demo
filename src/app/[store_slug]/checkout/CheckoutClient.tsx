@@ -420,29 +420,103 @@ export default function CheckoutPage({
             </div>
 
             {/* Payment Method Info Card */}
-            <div className="bg-white rounded-2xl border border-slate-200/60 p-5 shadow-xs space-y-4 text-left">
-              <div>
+            {(wompiEnabled || nequiNumber) ? (
+              <div className="bg-white rounded-2xl border border-slate-200/60 p-5 shadow-xs space-y-4 text-left">
                 <h2 className="text-xs font-black uppercase tracking-widest text-green-600 flex items-center gap-1.5">
                   {t.checkout.paymentTitle}
                 </h2>
-                <p className="text-[10px] text-slate-400 mt-2">
-                  Tu pago será procesado de forma segura a través de Wompi. Podrás elegir pagar con Tarjeta, PSE, Bancolombia o Billeteras Digitales en el siguiente paso.
-                </p>
-              </div>
 
-              {/* Secure Transaction badge */}
-              <div className="flex items-center gap-2 p-3 bg-green-50 rounded-xl border border-green-200/50">
-                <ShieldCheck className="w-5 h-5 text-green-600 shrink-0" />
-                <p className="text-[9px] text-green-700 leading-snug font-medium">
-                  {t.checkout.secureBadge}
+                {wompiEnabled && nequiNumber && (
+                  <div className="space-y-2">
+                    <label className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-start gap-3 ${
+                      paymentOption === 'online'
+                        ? 'border-green-600 bg-green-50/30'
+                        : 'border-slate-200 hover:border-slate-300'
+                    }`}>
+                      <input
+                        type="radio"
+                        name="paymentOption"
+                        checked={paymentOption === 'online'}
+                        onChange={() => setPaymentOption('online')}
+                        className="mt-1 text-green-600 focus:ring-green-600"
+                      />
+                      <div>
+                        <span className="text-xs font-bold text-slate-800 block">Pagar en línea</span>
+                        <span className="text-[10px] text-slate-400 block mt-0.5 leading-normal">Tarjeta, PSE, Bancolombia o Billeteras Digitales, vía Wompi.</span>
+                      </div>
+                    </label>
+
+                    <label className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-start gap-3 ${
+                      paymentOption === 'nequi'
+                        ? 'border-green-600 bg-green-50/30'
+                        : 'border-slate-200 hover:border-slate-300'
+                    }`}>
+                      <input
+                        type="radio"
+                        name="paymentOption"
+                        checked={paymentOption === 'nequi'}
+                        onChange={() => setPaymentOption('nequi')}
+                        className="mt-1 text-green-600 focus:ring-green-600"
+                      />
+                      <div>
+                        <span className="text-xs font-bold text-slate-800 block">Transferir por Nequi</span>
+                        <span className="text-[10px] text-slate-400 block mt-0.5 leading-normal">Transfieres y confirmas por WhatsApp.</span>
+                      </div>
+                    </label>
+                  </div>
+                )}
+
+                {paymentOption === 'online' ? (
+                  <>
+                    <p className="text-[10px] text-slate-400">
+                      Tu pago será procesado de forma segura a través de Wompi. Podrás elegir pagar con Tarjeta, PSE, Bancolombia o Billeteras Digitales en el siguiente paso.
+                    </p>
+                    <div className="flex items-center gap-2 p-3 bg-green-50 rounded-xl border border-green-200/50">
+                      <ShieldCheck className="w-5 h-5 text-green-600 shrink-0" />
+                      <p className="text-[9px] text-green-700 leading-snug font-medium">
+                        {t.checkout.secureBadge}
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <div className="p-3 bg-blue-50 rounded-xl border border-blue-200/50 space-y-2">
+                    <p className="text-[11px] text-slate-700 leading-snug">
+                      1. Transfiere <span className="font-black">{formatPrice(cartTotal)}</span> a este Nequi: <span className="font-black">{nequiNumber}</span>
+                    </p>
+                    <p className="text-[11px] text-slate-700 leading-snug">
+                      2. Envíanos el comprobante por WhatsApp.
+                    </p>
+                    <p className="text-[11px] text-slate-700 leading-snug">
+                      3. Confirma tu pedido con el botón de abajo.
+                    </p>
+                    {whatsappNumber && (
+                      <a
+                        href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`Hola, quiero confirmar mi pedido en ${storeName} por ${formatPrice(cartTotal)}. Aquí está mi comprobante:`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 w-full py-2.5 bg-[#25D366] hover:bg-[#1EBE57] text-white text-[11px] font-black rounded-xl transition-all"
+                      >
+                        Enviar comprobante por WhatsApp
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="bg-amber-50 rounded-2xl border border-amber-200 p-5 text-center">
+                <p className="text-xs font-bold text-amber-800">
+                  Este negocio no tiene métodos de pago configurados todavía.
+                </p>
+                <p className="text-[10px] text-amber-700 mt-1">
+                  Contáctalo directamente para completar tu pedido.
                 </p>
               </div>
-            </div>
+            )}
 
             {/* Pay Button (Visible on mobile/desktop inside form) */}
             <button
               type="submit"
-              disabled={isProcessing}
+              disabled={isProcessing || (!wompiEnabled && !nequiNumber)}
               className="w-full py-3.5 bg-green-600 hover:bg-green-700 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-md active:scale-98 flex items-center justify-center gap-2 cursor-pointer disabled:bg-slate-300 disabled:cursor-not-allowed"
             >
               {isProcessing ? (
@@ -450,6 +524,8 @@ export default function CheckoutPage({
                   <Loader2 className="w-4 h-4 animate-spin" />
                   <span>{t.checkout.processingPayment}</span>
                 </>
+              ) : paymentOption === 'nequi' ? (
+                <span>Confirmar pedido: {formatPrice(cartTotal)}</span>
               ) : (
                 <span>{t.checkout.payButton}: {formatPrice(cartTotal)}</span>
               )}
