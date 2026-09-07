@@ -39,7 +39,21 @@ const COLOMBIAN_BANKS = [
   'Lulo Bank'
 ];
 
-export default function CheckoutPage({ storeId, storeName, storeSlug }: { storeId: string; storeName: string; storeSlug: string }) {
+export default function CheckoutPage({
+  storeId,
+  storeName,
+  storeSlug,
+  whatsappNumber,
+  nequiNumber,
+  wompiEnabled
+}: {
+  storeId: string;
+  storeName: string;
+  storeSlug: string;
+  whatsappNumber?: string;
+  nequiNumber?: string;
+  wompiEnabled: boolean;
+}) {
   const router = useRouter();
   const { toast } = useToast();
   const { language, setLanguage } = useTranslation();
@@ -57,7 +71,10 @@ export default function CheckoutPage({ storeId, storeName, storeSlug }: { storeI
   const [notes, setNotes] = useState('');
   const [deliveryType, setDeliveryType] = useState<'daily' | 'weekly'>('daily');
 
-  // Payment is handled by Wompi Widget
+  // Payment method: 'online' (Wompi) or 'nequi' (transferencia + comprobante por WhatsApp)
+  const [paymentOption, setPaymentOption] = useState<'online' | 'nequi'>(
+    wompiEnabled ? 'online' : 'nequi'
+  );
 
   // Processing State
   const [isProcessing, setIsProcessing] = useState(false);
