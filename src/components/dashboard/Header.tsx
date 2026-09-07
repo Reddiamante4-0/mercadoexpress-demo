@@ -82,6 +82,7 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
   const [linkCopied, setLinkCopied] = useState(false);
   const [tagline, setTagline] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState(brandConfig.whatsappNumber);
+  const [wompiEnabled, setWompiEnabled] = useState(true);
   const [logoUrl, setLogoUrl] = useState('');
   const [heroDescription, setHeroDescription] = useState('');
   const [heroImageUrl, setHeroImageUrl] = useState('');
@@ -177,7 +178,7 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
         
         const { data, error } = await supabase
           .from('stores')
-          .select('id, brand_name, tagline, whatsapp_number, logo_url, slug, hero_description, hero_image_url, hero_badge_text, hero_title_text, hero_subtitle_text')
+          .select('id, brand_name, tagline, whatsapp_number, logo_url, slug, hero_description, hero_image_url, hero_badge_text, hero_title_text, hero_subtitle_text, wompi_enabled')
           .eq('owner_id', user.id)
           .single();
           
@@ -187,6 +188,7 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
           if (data.brand_name) setBusinessName(data.brand_name);
           if (data.tagline) setTagline(data.tagline);
           if (data.whatsapp_number) setWhatsappNumber(data.whatsapp_number);
+          if (data.wompi_enabled !== null && data.wompi_enabled !== undefined) setWompiEnabled(data.wompi_enabled);
           if (data.logo_url) setLogoUrl(data.logo_url);
           if (data.hero_description) setHeroDescription(data.hero_description);
           if (data.hero_image_url) setHeroImageUrl(data.hero_image_url);
@@ -308,6 +310,7 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
             hero_badge_text: heroBadgeText,
             hero_title_text: heroTitleText,
             hero_subtitle_text: heroSubtitleText,
+            wompi_enabled: wompiEnabled,
           })
           .eq('id', storeId);
         if (error) throw error;
