@@ -174,7 +174,7 @@ export default function CheckoutPage({
         localStorage.removeItem(cartKey);
 
         toast({
-          title: 'Pedido guardado. Confirma tu pago enviando el comprobante por WhatsApp.',
+          title: 'Gracias por tu pedido. En cuanto confirmemos tu pago por Nequi, lo alistaremos y enviaremos.',
           type: 'success'
         });
 
