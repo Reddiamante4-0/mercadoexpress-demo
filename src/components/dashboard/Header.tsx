@@ -732,6 +732,19 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
                 />
               </div>
 
+              <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-xl border border-slate-100">
+                <input
+                  type="checkbox"
+                  id="wompi-toggle"
+                  checked={wompiEnabled}
+                  onChange={(e) => setWompiEnabled(e.target.checked)}
+                  className="w-4 h-4 text-green-600 border-slate-300 rounded focus:ring-green-500"
+                />
+                <label htmlFor="wompi-toggle" className="text-xs font-bold text-slate-700 cursor-pointer select-none">
+                  Aceptar pagos en línea con Wompi
+                </label>
+              </div>
+
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">URL del Logo</label>
                 <input
