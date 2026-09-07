@@ -398,18 +398,24 @@ export async function getClients(storeId: string): Promise<Client[]> {
 
 // --- MÉTRICAS DE VENTAS (Cálculo interno igual pero asíncrono) ---
 export async function getSalesMetrics(storeId: string): Promise<SalesMetrics> {
-  const products = await getProducts(storeId);
   const orders = await getOrders(storeId);
   const clients = await getClients(storeId);
 
   const completedOrders = orders.filter((o) => o.status !== 'Cancelado');
   const totalSales = completedOrders.reduce((sum, o) => sum + o.total, 0);
-  const lowStockCount = products.filter((p) => p.stock <= 5 && p.active).length;
+
+  const lowStockProducts = await getLowStockProducts(storeId, 5);
+  const lowStockCount = lowStockProducts.length;
+
+  const orderedProductIds = [...new Set(
+    completedOrders.flatMap((o) => o.items.map((item) => item.productId))
+  )];
+  const orderedProducts = await getProductsByIds(storeId, orderedProductIds);
 
   const categorySalesMap: Record<string, number> = {};
   completedOrders.forEach((o) => {
     o.items.forEach((item) => {
-      const prod = products.find((p) => p.id === item.productId);
+      const prod = orderedProducts.find((p) => p.id === item.productId);
       const cat = prod ? prod.category : 'Otros';
       categorySalesMap[cat] = (categorySalesMap[cat] || 0) + (item.price * item.quantity);
     });
