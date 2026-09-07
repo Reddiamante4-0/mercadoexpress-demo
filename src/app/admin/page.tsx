@@ -32,32 +32,53 @@ export default async function AdminPage() {
           </tr>
         </thead>
         <tbody>
-          {stores?.map((store) => (
-            <tr key={store.id} style={{ borderBottom: '1px solid #eee' }}>
-              <td style={{ padding: '8px' }}>{store.brand_name || store.name}</td>
-              <td style={{ padding: '8px' }}>{store.slug}</td>
-              <td style={{ padding: '8px' }}>{store.is_active ? '✅ Activa' : '⛔ Suspendida'}</td>
-              <td style={{ padding: '8px' }}>{store.last_payment_date || '—'}</td>
-              <td style={{ padding: '8px' }}>{store.next_payment_date || '—'}</td>
-              <td style={{ padding: '8px' }}>
-                <form action={markStoreAsPaid.bind(null, store.id)}>
-                  <button
-                    type="submit"
-                    style={{
-                      padding: '6px 12px',
-                      backgroundColor: '#16a34a',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Marcar como pagado
-                  </button>
-                </form>
-              </td>
-            </tr>
-          ))}
+          {stores?.map((store) => {
+            let daysUntilDue: number | null = null;
+            if (store.is_active && store.next_payment_date) {
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              const dueDate = new Date(store.next_payment_date);
+              dueDate.setHours(0, 0, 0, 0);
+              daysUntilDue = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+            }
+            const isNearDue = daysUntilDue !== null && daysUntilDue <= 5;
+
+            return (
+              <tr key={store.id} style={{ borderBottom: '1px solid #eee', backgroundColor: isNearDue ? '#fef3c7' : 'transparent' }}>
+                <td style={{ padding: '8px' }}>{store.brand_name || store.name}</td>
+                <td style={{ padding: '8px' }}>{store.slug}</td>
+                <td style={{ padding: '8px' }}>{store.is_active ? '✅ Activa' : '⛔ Suspendida'}</td>
+                <td style={{ padding: '8px' }}>{store.last_payment_date || '—'}</td>
+                <td style={{ padding: '8px' }}>
+                  {store.next_payment_date || '—'}
+                  {isNearDue && (
+                    <span style={{ marginLeft: '8px', color: '#b45309', fontWeight: 'bold', fontSize: '0.8rem' }}>
+                      {daysUntilDue! >= 0
+                        ? `⚠️ Vence en ${daysUntilDue} día${daysUntilDue === 1 ? '' : 's'}`
+                        : `⚠️ Vencido hace ${Math.abs(daysUntilDue!)} día${Math.abs(daysUntilDue!) === 1 ? '' : 's'}`}
+                    </span>
+                  )}
+                </td>
+                <td style={{ padding: '8px' }}>
+                  <form action={markStoreAsPaid.bind(null, store.id)}>
+                    <button
+                      type="submit"
+                      style={{
+                        padding: '6px 12px',
+                        backgroundColor: '#16a34a',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Marcar como pagado
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
