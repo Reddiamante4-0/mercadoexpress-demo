@@ -173,8 +173,8 @@ export default function AdminProductsPage() {
 
   const downloadExcelTemplate = () => {
     const ws_data = [
-      ['name', 'name_en', 'category', 'price', 'old_price', 'stock', 'image', 'description', 'description_en', 'unit', 'unit_en'],
-      ['Lomo de Res', 'Beef Loin', 'Carnes', 25000, 30000, 10, 'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop&q=60', 'Lomo fresco', 'Fresh beef loin', 'lb', 'lb']
+      ['nombre', 'categoria', 'precio', 'precio_anterior', 'stock', 'imagen', 'descripcion', 'unidad', 'nombre_ingles', 'descripcion_ingles', 'unidad_ingles'],
+      ['Lomo de Res', 'Carnes', 25000, 30000, 10, 'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop&q=60', 'Lomo fresco', 'lb', 'Beef Loin', 'Fresh beef loin', 'lb']
     ];
     const ws = XLSX.utils.aoa_to_sheet(ws_data);
     const wb = XLSX.utils.book_new();
@@ -206,26 +206,26 @@ export default function AdminProductsPage() {
 
         for (const row of data) {
           console.log("Procesando fila:", row);
-          if (!row.name || !row.price || isNaN(Number(row.price)) || Number(row.price) <= 0) {
+          if (!row.nombre || !row.precio || isNaN(Number(row.precio)) || Number(row.precio) <= 0) {
             errorCount++;
             continue;
           }
 
-          const existingProduct = newProductsList.find(p => p.name.toLowerCase() === row.name.toLowerCase().trim());
+          const existingProduct = newProductsList.find(p => p.name.toLowerCase() === row.nombre.toLowerCase().trim());
           
           const parsedProduct: Product = {
             id: existingProduct ? existingProduct.id : crypto.randomUUID(),
-            name: row.name.toString().trim(),
-            nameEn: row.name_en?.toString().trim() || undefined,
-            category: row.category?.toString().trim() || CATEGORIES[0],
-            price: Number(row.price),
-            oldPrice: row.old_price ? Number(row.old_price) : undefined,
+            name: row.nombre.toString().trim(),
+            nameEn: row.nombre_ingles?.toString().trim() || undefined,
+            category: row.categoria?.toString().trim() || CATEGORIES[0],
+            price: Number(row.precio),
+            oldPrice: row.precio_anterior ? Number(row.precio_anterior) : undefined,
             stock: row.stock !== undefined ? Number(row.stock) : 10,
-            image: row.image?.toString().trim() || DEFAULT_IMAGE,
-            description: row.description?.toString().trim() || 'Sin descripción',
-            descriptionEn: row.description_en?.toString().trim() || undefined,
-            unit: row.unit?.toString().trim() || 'lb',
-            unitEn: row.unit_en?.toString().trim() || undefined,
+            image: row.imagen?.toString().trim() || DEFAULT_IMAGE,
+            description: row.descripcion?.toString().trim() || 'Sin descripción',
+            descriptionEn: row.descripcion_ingles?.toString().trim() || undefined,
+            unit: row.unidad?.toString().trim() || 'lb',
+            unitEn: row.unidad_ingles?.toString().trim() || undefined,
             active: true
           };
 
