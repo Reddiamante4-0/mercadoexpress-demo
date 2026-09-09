@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import StorefrontClient from './StorefrontClient';
 
+export const dynamic = 'force-dynamic';
+
 export default async function StorePage({ params }: { params: Promise<{ store_slug: string }> }) {
   const { store_slug } = await params;
   const supabase = await createClient();
