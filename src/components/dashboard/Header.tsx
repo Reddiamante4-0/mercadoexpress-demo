@@ -24,6 +24,7 @@ import {
 import { createClient } from '@/lib/supabase/client';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useToast } from '@/components/ui/ToastProvider';
+import { resetStoreSalesHistory } from '@/app/(dashboard)/dashboard/actions';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { cn } from '@/lib/utils';
 import { brandConfig } from '@/config/brandConfig';
@@ -95,6 +96,9 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
   const [heroDiscountText, setHeroDiscountText] = useState('');
   const [heroCtaPrimary, setHeroCtaPrimary] = useState('');
   const [heroCtaSecondary, setHeroCtaSecondary] = useState('');
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [resetConfirmText, setResetConfirmText] = useState('');
+  const [resetting, setResetting] = useState(false);
   const [userName, setUserName] = useState('');
   const [userInitials, setUserInitials] = useState('A');
   const [userEmail, setUserEmail] = useState('');
@@ -301,6 +305,21 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
       });
     } finally {
       setIsSavingProfile(false);
+    }
+  };
+
+  const handleResetSalesHistory = async () => {
+    if (resetConfirmText !== businessName) return;
+    setResetting(true);
+    try {
+      await resetStoreSalesHistory(storeId);
+      toast({ title: 'Historial de ventas reiniciado correctamente', type: 'success' });
+      setShowResetConfirm(false);
+      setResetConfirmText('');
+    } catch (err: any) {
+      toast({ title: err.message || 'Error reiniciando el historial', type: 'error' });
+    } finally {
+      setResetting(false);
     }
   };
 
@@ -883,6 +902,55 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
                   onChange={(e) => setHeroCtaSecondary(e.target.value)}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
                 />
+              </div>
+
+              <div className="mt-4 p-4 rounded-xl border-2 border-red-200 bg-red-50/50 space-y-3">
+                <div>
+                  <h3 className="text-xs font-black text-red-700 uppercase tracking-wider">Zona de Peligro</h3>
+                  <p className="text-[10px] text-red-600 mt-1">
+                    Esto borra permanentemente todos los pedidos y el historial de ventas de tu tienda.
+                    Tu catálogo de productos y categorías NO se ven afectados. Esta acción no se puede deshacer.
+                  </p>
+                </div>
+
+                {!showResetConfirm ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowResetConfirm(true)}
+                    className="px-4 py-2 rounded-xl text-xs font-bold bg-white border border-red-300 text-red-700 hover:bg-red-100 transition-all cursor-pointer"
+                  >
+                    Reiniciar historial de ventas
+                  </button>
+                ) : (
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-bold text-red-700">
+                      Escribe el nombre exacto de tu negocio (<span className="font-mono">{businessName}</span>) para confirmar:
+                    </p>
+                    <input
+                      type="text"
+                      value={resetConfirmText}
+                      onChange={(e) => setResetConfirmText(e.target.value)}
+                      className="w-full bg-white border border-red-300 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-red-600 focus:ring-1 focus:ring-red-600"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={handleResetSalesHistory}
+                        disabled={resetConfirmText !== businessName || resetting}
+                        className="px-4 py-2 rounded-xl text-xs font-bold bg-red-600 text-white hover:bg-red-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-all cursor-pointer"
+                      >
+                        {resetting ? 'Reiniciando...' : 'Confirmar reinicio permanente'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setShowResetConfirm(false); setResetConfirmText(''); }}
+                        className="px-4 py-2 rounded-xl text-xs font-bold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all cursor-pointer"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-end gap-2 pt-2">
