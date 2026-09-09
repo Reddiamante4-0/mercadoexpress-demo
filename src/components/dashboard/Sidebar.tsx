@@ -56,6 +56,12 @@ const NAV_SECTIONS = [
         labelEs: 'Productos',
       },
       {
+        href: '/dashboard/mostrador',
+        icon: <Store className="w-5 h-5 shrink-0" />,
+        labelEn: 'Counter Sales',
+        labelEs: 'Cierre de Mostrador',
+      },
+      {
         href: '/dashboard/fotos',
         icon: <ImageIcon className="w-5 h-5 shrink-0" />,
         labelEn: 'Photos',
