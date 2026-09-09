@@ -102,7 +102,7 @@ export default function AdminSalesPage() {
         ['Total ventas', metrics?.totalSales || 0],
         ['Ventas de hoy', metrics?.todaySales || 0],
         ['Total pedidos', metrics?.totalOrders || 0],
-        ['Ticket promedio', avgOrderValue],
+        ['Ticket promedio', Math.round(avgOrderValue)],
       ];
       const resumenSheet = XLSX.utils.aoa_to_sheet(resumenData);
 
