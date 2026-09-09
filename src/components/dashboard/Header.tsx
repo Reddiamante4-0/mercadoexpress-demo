@@ -89,6 +89,12 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
   const [heroBadgeText, setHeroBadgeText] = useState('');
   const [heroTitleText, setHeroTitleText] = useState('');
   const [heroSubtitleText, setHeroSubtitleText] = useState('');
+  const [heroHeaderSubtitle, setHeroHeaderSubtitle] = useState('');
+  const [heroDeliveryBadge, setHeroDeliveryBadge] = useState('');
+  const [heroGuaranteeText, setHeroGuaranteeText] = useState('');
+  const [heroDiscountText, setHeroDiscountText] = useState('');
+  const [heroCtaPrimary, setHeroCtaPrimary] = useState('');
+  const [heroCtaSecondary, setHeroCtaSecondary] = useState('');
   const [userName, setUserName] = useState('');
   const [userInitials, setUserInitials] = useState('A');
   const [userEmail, setUserEmail] = useState('');
@@ -178,7 +184,7 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
         
         const { data, error } = await supabase
           .from('stores')
-          .select('id, brand_name, tagline, whatsapp_number, logo_url, slug, hero_description, hero_image_url, hero_badge_text, hero_title_text, hero_subtitle_text, wompi_enabled')
+          .select('id, brand_name, tagline, whatsapp_number, logo_url, slug, hero_description, hero_image_url, hero_badge_text, hero_title_text, hero_subtitle_text, wompi_enabled, hero_header_subtitle, hero_delivery_badge, hero_guarantee_text, hero_discount_text, hero_cta_primary, hero_cta_secondary')
           .eq('owner_id', user.id)
           .single();
           
@@ -195,6 +201,12 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
           if (data.hero_badge_text) setHeroBadgeText(data.hero_badge_text);
           if (data.hero_title_text) setHeroTitleText(data.hero_title_text);
           if (data.hero_subtitle_text) setHeroSubtitleText(data.hero_subtitle_text);
+          if (data.hero_header_subtitle) setHeroHeaderSubtitle(data.hero_header_subtitle);
+          if (data.hero_delivery_badge) setHeroDeliveryBadge(data.hero_delivery_badge);
+          if (data.hero_guarantee_text) setHeroGuaranteeText(data.hero_guarantee_text);
+          if (data.hero_discount_text) setHeroDiscountText(data.hero_discount_text);
+          if (data.hero_cta_primary) setHeroCtaPrimary(data.hero_cta_primary);
+          if (data.hero_cta_secondary) setHeroCtaSecondary(data.hero_cta_secondary);
         }
       } catch (err) {
         console.error('Error fetching store slug:', err);
@@ -311,6 +323,12 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
             hero_title_text: heroTitleText,
             hero_subtitle_text: heroSubtitleText,
             wompi_enabled: wompiEnabled,
+            hero_header_subtitle: heroHeaderSubtitle,
+            hero_delivery_badge: heroDeliveryBadge,
+            hero_guarantee_text: heroGuaranteeText,
+            hero_discount_text: heroDiscountText,
+            hero_cta_primary: heroCtaPrimary,
+            hero_cta_secondary: heroCtaSecondary,
           })
           .eq('id', storeId);
         if (error) throw error;
