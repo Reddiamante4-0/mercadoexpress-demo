@@ -65,7 +65,7 @@ export default function MostradorPage() {
         subtotal: totalRevenue,
         shippingFee: 0,
         total: totalRevenue,
-        status: 'Entregado',
+        status: 'Recibido',
         createdAt: today.toISOString(),
       };
       await saveOrder(newOrder, storeId);
