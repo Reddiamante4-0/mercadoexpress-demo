@@ -94,7 +94,7 @@ interface CartItem {
   quantity: number;
 }
 
-export default function CatalogPage({ storeId, storeName, storeSlug, brandName, tagline, logoUrl, whatsappNumber, heroDescription, heroImageUrl, heroBadgeText, heroTitleText, heroSubtitleText, categories, shippingFee, freeShippingThreshold }: { storeId: string; storeName: string; storeSlug: string; brandName?: string | null; tagline?: string | null; logoUrl?: string | null; whatsappNumber?: string | null; heroDescription?: string | null; heroImageUrl?: string | null; heroBadgeText?: string | null; heroTitleText?: string | null; heroSubtitleText?: string | null; categories?: { name: string; emoji: string; display_order: number }[]; shippingFee: number; freeShippingThreshold: number }) {
+export default function CatalogPage({ storeId, storeName, storeSlug, brandName, tagline, logoUrl, whatsappNumber, heroDescription, heroImageUrl, heroBadgeText, heroTitleText, heroSubtitleText, categories, shippingFee, freeShippingThreshold, heroHeaderSubtitle, heroDeliveryBadge, heroGuaranteeText, heroDiscountText, heroCtaPrimary, heroCtaSecondary }: { storeId: string; storeName: string; storeSlug: string; brandName?: string | null; tagline?: string | null; logoUrl?: string | null; whatsappNumber?: string | null; heroDescription?: string | null; heroImageUrl?: string | null; heroBadgeText?: string | null; heroTitleText?: string | null; heroSubtitleText?: string | null; categories?: { name: string; emoji: string; display_order: number }[]; shippingFee: number; freeShippingThreshold: number; heroHeaderSubtitle?: string | null; heroDeliveryBadge?: string | null; heroGuaranteeText?: string | null; heroDiscountText?: string | null; heroCtaPrimary?: string | null; heroCtaSecondary?: string | null }) {
   const displayBrandName = brandName || 'Crisalap';
   const displayWhatsapp = whatsappNumber || brandConfig.whatsappNumber;
   const displayHeroImage = heroImageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=80';
@@ -366,7 +366,7 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
                 {displayBrandName}
               </h1>
               <span className="text-[9px] text-orange-600 font-extrabold tracking-widest uppercase mt-1 block">
-                {language === 'en' ? 'Express Delivery' : 'Envíos Express'}
+                {heroHeaderSubtitle ? heroHeaderSubtitle : (language === 'en' ? 'Express Delivery' : 'Envíos Express')}
               </span>
             </div>
           </div>
@@ -426,7 +426,7 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
             <div className="md:col-span-7 space-y-6">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500 text-white text-[10px] font-black uppercase tracking-widest shadow-xs">
                 <Truck className="w-3.5 h-3.5 fill-white text-orange-500" />
-                <span>{language === 'en' ? 'Delivery in 45 minutes' : 'Envíos en 45 minutos'}</span>
+                <span>{heroDeliveryBadge ? heroDeliveryBadge : (language === 'en' ? 'Delivery in 45 minutes' : 'Envíos en 45 minutos')}</span>
               </div>
 
               {tagline ? (
@@ -468,7 +468,7 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
                       {language === 'en' ? 'Guarantee' : 'Garantía'}
                     </h4>
                     <p className="text-[9px] text-green-200">
-                      {language === 'en' ? 'Refund if not satisfied' : 'Reembolso si no te gusta'}
+                      {heroGuaranteeText ? heroGuaranteeText : (language === 'en' ? 'Refund if not satisfied' : 'Reembolso si no te gusta')}
                     </p>
                   </div>
                 </div>
@@ -482,7 +482,7 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
                       {language === 'en' ? 'Discounts' : 'Descuentos'}
                     </h4>
                     <p className="text-[9px] text-green-200">
-                      {language === 'en' ? 'Real daily offers' : 'Ofertas reales a diario'}
+                      {heroDiscountText ? heroDiscountText : (language === 'en' ? 'Real daily offers' : 'Ofertas reales a diario')}
                     </p>
                   </div>
                 </div>
@@ -496,7 +496,7 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
                   }}
                   className="bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-slate-900 px-7 py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-lg shadow-orange-500/15 cursor-pointer active:scale-95 flex items-center gap-2"
                 >
-                  <span>{language === 'en' ? 'Order Now' : 'Pedir Ahora'}</span>
+                  <span>{heroCtaPrimary ? heroCtaPrimary : (language === 'en' ? 'Order Now' : 'Pedir Ahora')}</span>
                   <ArrowRight className="w-4 h-4 stroke-[3px]" />
                 </button>
 
@@ -505,7 +505,7 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
                   className="bg-white/15 hover:bg-white/20 text-white border border-white/10 px-7 py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   <Flame className="w-4.5 h-4.5 text-orange-400 fill-orange-400" />
-                  <span>{language === 'en' ? 'Hot Deals Section' : 'Sección de Ofertas'}</span>
+                  <span>{heroCtaSecondary ? heroCtaSecondary : (language === 'en' ? 'Hot Deals Section' : 'Sección de Ofertas')}</span>
                 </button>
               </div>
             </div>
