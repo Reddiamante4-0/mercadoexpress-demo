@@ -16,6 +16,7 @@ import {
   TrendingUp,
   Store,
   Calendar,
+  Sparkles,
   Star,
   MessageSquare,
   CreditCard,
@@ -60,6 +61,12 @@ const NAV_SECTIONS = [
         icon: <Store className="w-5 h-5 shrink-0" />,
         labelEn: 'Counter Sales',
         labelEs: 'Cierre de Mostrador',
+      },
+      {
+        href: '/dashboard/combos',
+        icon: <Sparkles className="w-5 h-5 shrink-0" />,
+        labelEn: 'Savings Combos',
+        labelEs: 'Combos de Ahorro',
       },
       {
         href: '/dashboard/fotos',
