@@ -309,7 +309,7 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
   };
 
   const handleResetSalesHistory = async () => {
-    if (resetConfirmText !== businessName) return;
+    if (resetConfirmText !== businessName || !storeId) return;
     setResetting(true);
     try {
       await resetStoreSalesHistory(storeId);
