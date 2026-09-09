@@ -18,7 +18,7 @@ import {
   Upload
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import { getProducts, saveProduct, deleteProduct, getCurrentStoreId, Product } from '@/lib/supabase-api';
+import { getProducts, saveProduct, deleteProduct, getCurrentStoreId, supabase, Product } from '@/lib/supabase-api';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslation } from '@/hooks/useTranslation';
 import { translations } from '@/config/translations';
@@ -259,6 +259,9 @@ export default function AdminProductsPage() {
   };
 
   // Load products on mount
+  const [storeCategoryNames, setStoreCategoryNames] = useState<string[]>([]);
+  const categoryOptions = storeCategoryNames.length > 0 ? storeCategoryNames : CATEGORIES;
+
   useEffect(() => {
     let active = true;
     async function loadData() {
@@ -270,6 +273,15 @@ export default function AdminProductsPage() {
       setCurrentStoreId(storeId);
       const data = await getProducts(storeId);
       if (active) setProducts(data);
+
+      const { data: categoriesData } = await supabase
+        .from('store_categories')
+        .select('name')
+        .eq('store_id', storeId)
+        .order('display_order', { ascending: true });
+      if (active && categoriesData && categoriesData.length > 0) {
+        setStoreCategoryNames(categoriesData.map((c: any) => c.name));
+      }
     }
     loadData();
     return () => { active = false; };
@@ -472,7 +484,7 @@ export default function AdminProductsPage() {
             className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-700 font-bold"
           >
             <option value="Todas">{t.admin.productsCategoryAll}</option>
-            {Array.from(new Set([...CATEGORIES, ...products.map(p => p.category)])).map((cat) => (
+            {Array.from(new Set([...categoryOptions, ...products.map(p => p.category)])).map((cat) => (
               <option key={cat} value={cat}>
                 {categoryTranslations[language] && categoryTranslations[language][cat] ? categoryTranslations[language][cat] : cat}
               </option>
@@ -775,7 +787,7 @@ export default function AdminProductsPage() {
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600"
                   />
                   <datalist id="category-options">
-                    {Array.from(new Set([...CATEGORIES, ...products.map(p => p.category)])).map((cat) => (
+                    {Array.from(new Set([...categoryOptions, ...products.map(p => p.category)])).map((cat) => (
                       <option key={cat} value={cat}>
                         {categoryTranslations[language] && categoryTranslations[language][cat] ? categoryTranslations[language][cat] : cat}
                       </option>
