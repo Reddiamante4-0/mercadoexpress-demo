@@ -527,3 +527,87 @@ export async function saveMessage(msg: Message, storeId: string): Promise<void> 
   };
   await supabase.from('messages').insert(msgToSave);
 }
+
+export interface Combo {
+  id: string;
+  storeId?: string;
+  name: string;
+  description?: string;
+  badgeText?: string;
+  productIds: string[];
+  comboPrice: number;
+  active: boolean;
+  displayOrder: number;
+}
+
+function comboFromDb(row: any): Combo {
+  return {
+    id: row.id,
+    storeId: row.store_id,
+    name: row.name,
+    description: row.description,
+    badgeText: row.badge_text,
+    productIds: row.product_ids || [],
+    comboPrice: row.combo_price,
+    active: row.active,
+    displayOrder: row.display_order,
+  };
+}
+
+export async function getActiveCombos(storeId: string): Promise<Combo[]> {
+  const { data, error } = await supabase
+    .from('store_combos')
+    .select('*')
+    .eq('store_id', storeId)
+    .eq('active', true)
+    .order('display_order', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching active combos:', error);
+    return [];
+  }
+  return data.map(comboFromDb);
+}
+
+export async function getAllCombos(storeId: string): Promise<Combo[]> {
+  const { data, error } = await supabase
+    .from('store_combos')
+    .select('*')
+    .eq('store_id', storeId)
+    .order('display_order', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching combos:', error);
+    return [];
+  }
+  return data.map(comboFromDb);
+}
+
+export async function saveCombo(combo: Combo, storeId: string): Promise<void> {
+  const comboToSave = {
+    id: combo.id,
+    store_id: storeId,
+    name: combo.name,
+    description: combo.description || null,
+    badge_text: combo.badgeText || null,
+    product_ids: combo.productIds,
+    combo_price: combo.comboPrice,
+    active: combo.active,
+    display_order: combo.displayOrder,
+  };
+
+  const { error } = await supabase
+    .from('store_combos')
+    .upsert(comboToSave);
+
+  if (error) throw error;
+}
+
+export async function deleteCombo(comboId: string): Promise<void> {
+  const { error } = await supabase
+    .from('store_combos')
+    .delete()
+    .eq('id', comboId);
+
+  if (error) throw error;
+}
