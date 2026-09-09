@@ -80,6 +80,7 @@ export interface Message {
 
 export interface SalesMetrics {
   totalSales: number;
+  todaySales: number;
   totalOrders: number;
   activeClients: number;
   lowStockCount: number;
@@ -426,14 +427,29 @@ export async function getSalesMetrics(storeId: string): Promise<SalesMetrics> {
     amount
   })).sort((a, b) => b.amount - a.amount);
 
-  const monthlySales = [
-    { month: 'Mayo', amount: totalSales * 0.7 },
-    { month: 'Junio', amount: totalSales * 0.95 },
-    { month: 'Julio', amount: totalSales }
-  ];
+  const monthlySalesMap: Record<string, number> = {};
+  completedOrders.forEach((o) => {
+    const d = new Date(o.createdAt);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    monthlySalesMap[key] = (monthlySalesMap[key] || 0) + o.total;
+  });
+
+  const now = new Date();
+  const monthlySales: { month: string; amount: number }[] = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    monthlySales.push({ month: key, amount: monthlySalesMap[key] || 0 });
+  }
+
+  const todayStr = new Date().toDateString();
+  const todaySales = completedOrders
+    .filter((o) => new Date(o.createdAt).toDateString() === todayStr)
+    .reduce((sum, o) => sum + o.total, 0);
 
   return {
     totalSales,
+    todaySales,
     totalOrders: orders.length,
     activeClients: clients.length,
     lowStockCount,
