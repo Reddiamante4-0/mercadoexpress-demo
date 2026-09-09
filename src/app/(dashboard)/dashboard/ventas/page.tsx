@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import * as XLSX from 'xlsx';
 import { 
   TrendingUp, 
   Download, 
@@ -94,14 +95,36 @@ export default function AdminSalesPage() {
         title: t.admin.salesToastExported,
         type: 'success'
       });
-      // Simulate file download
-      const element = document.createElement("a");
-      const file = new Blob(["Reporte de Ventas Crisalap - Julio 2026\n\nTotal Ventas: " + formatPrice(metrics?.totalSales || 0)], {type: 'text/plain'});
-      element.href = URL.createObjectURL(file);
-      element.download = "Reporte-Ventas-Crisalap.txt";
-      document.body.appendChild(element);
-      element.click();
-      document.body.removeChild(element);
+      const resumenData = [
+        ['Reporte de Ventas', ''],
+        ['Fecha de generación', new Date().toLocaleDateString('es-CO')],
+        ['', ''],
+        ['Total ventas', metrics?.totalSales || 0],
+        ['Ventas de hoy', metrics?.todaySales || 0],
+        ['Total pedidos', metrics?.totalOrders || 0],
+        ['Ticket promedio', avgOrderValue],
+      ];
+      const resumenSheet = XLSX.utils.aoa_to_sheet(resumenData);
+
+      const categoriaData = [
+        ['Categoría', 'Ventas'],
+        ...(metrics?.categorySales || []).map((c) => [c.category, c.amount]),
+      ];
+      const categoriaSheet = XLSX.utils.aoa_to_sheet(categoriaData);
+
+      const mesData = [
+        ['Mes', 'Ventas'],
+        ...(metrics?.monthlySales || []).map((m) => [m.month, m.amount]),
+      ];
+      const mesSheet = XLSX.utils.aoa_to_sheet(mesData);
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, resumenSheet, 'Resumen');
+      XLSX.utils.book_append_sheet(wb, categoriaSheet, 'Por Categoría');
+      XLSX.utils.book_append_sheet(wb, mesSheet, 'Por Mes');
+
+      const fecha = new Date().toISOString().split('T')[0];
+      XLSX.writeFile(wb, `Reporte-Ventas-Crisalap-${fecha}.xlsx`);
     }, 2000);
   };
 
