@@ -183,6 +183,9 @@ export default function DashboardAdminPage() {
           <div>
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">{t.admin.statSales}</span>
             <span className="text-sm md:text-base font-black text-slate-800 mt-0.5 block truncate">{formatPrice(metrics.totalSales)}</span>
+            <span className="text-[10px] font-bold text-green-600 block mt-0.5">
+              {language === 'en' ? 'Today' : 'Hoy'}: {formatPrice(metrics.todaySales)}
+            </span>
           </div>
         </div>
 
@@ -244,11 +247,14 @@ export default function DashboardAdminPage() {
             {metrics.monthlySales.map((item, idx) => {
               const maxVal = Math.max(...metrics.monthlySales.map(m => m.amount));
               const heightPct = maxVal > 0 ? (item.amount / maxVal) * 85 : 0;
-              
-              // Localized month name
-              const monthDisplay = language === 'en' 
-                ? (item.month === 'Mayo' ? 'May' : item.month === 'Junio' ? 'June' : 'July') 
-                : item.month;
+
+              // Localized month name, built from the real "YYYY-MM" key
+              const [yearPart, monthPart] = item.month.split('-').map(Number);
+              const monthDate = new Date(yearPart, monthPart - 1, 1);
+              const monthDisplay = monthDate.toLocaleDateString(
+                language === 'en' ? 'en-US' : 'es-CO',
+                { month: 'short' }
+              );
 
               return (
                 <div key={item.month} className="flex flex-col items-center gap-2 w-16 group relative">
