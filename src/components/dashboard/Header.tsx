@@ -825,6 +825,66 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
                 />
               </div>
 
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Subtítulo del Encabezado (junto al nombre)</label>
+                <input
+                  type="text"
+                  value={heroHeaderSubtitle}
+                  onChange={(e) => setHeroHeaderSubtitle(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Insignia de Entrega (ej: Envíos en 45 minutos)</label>
+                <input
+                  type="text"
+                  value={heroDeliveryBadge}
+                  onChange={(e) => setHeroDeliveryBadge(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Texto de Garantía</label>
+                <input
+                  type="text"
+                  value={heroGuaranteeText}
+                  onChange={(e) => setHeroGuaranteeText(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Texto de Descuentos</label>
+                <input
+                  type="text"
+                  value={heroDiscountText}
+                  onChange={(e) => setHeroDiscountText(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Texto del Botón Principal (ej: Pedir Ahora)</label>
+                <input
+                  type="text"
+                  value={heroCtaPrimary}
+                  onChange={(e) => setHeroCtaPrimary(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Texto del Botón Secundario (ej: Sección de Ofertas)</label>
+                <input
+                  type="text"
+                  value={heroCtaSecondary}
+                  onChange={(e) => setHeroCtaSecondary(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
+                />
+              </div>
+
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
