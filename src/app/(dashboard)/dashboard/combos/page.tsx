@@ -1,26 +1,30 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getProducts, getAllCombos, saveCombo, deleteCombo, getCurrentStoreId, Product, Combo } from '@/lib/supabase-api';
+import { getProducts, saveProduct, deleteProduct, getCurrentStoreId, Product } from '@/lib/supabase-api';
 import { useToast } from '@/components/ui/ToastProvider';
 import { Sparkles, Plus, Trash2, Edit2, X } from 'lucide-react';
+
+const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1607082349566-187342175e2f?w=600&auto=format&fit=crop&q=60';
 
 export default function CombosPage() {
   const { toast } = useToast();
   const [storeId, setStoreId] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
-  const [combos, setCombos] = useState<Combo[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [editingCombo, setEditingCombo] = useState<Combo | null>(null);
+  const [editingCombo, setEditingCombo] = useState<Product | null>(null);
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [badgeText, setBadgeText] = useState('');
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
   const [comboPrice, setComboPrice] = useState(0);
+  const [comboStock, setComboStock] = useState(0);
   const [active, setActive] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  const combos = products.filter(p => p.isCombo);
+  const regularProducts = products.filter(p => !p.isCombo);
 
   useEffect(() => {
     let mounted = true;
@@ -31,13 +35,9 @@ export default function CombosPage() {
         return;
       }
       setStoreId(id);
-      const [productsData, combosData] = await Promise.all([
-        getProducts(id),
-        getAllCombos(id),
-      ]);
+      const data = await getProducts(id);
       if (mounted) {
-        setProducts(productsData.filter(p => p.active));
-        setCombos(combosData);
+        setProducts(data);
         setLoading(false);
       }
     }
@@ -52,20 +52,20 @@ export default function CombosPage() {
     setEditingCombo(null);
     setName('');
     setDescription('');
-    setBadgeText('');
     setSelectedProductIds([]);
     setComboPrice(0);
+    setComboStock(0);
     setActive(true);
     setShowModal(true);
   };
 
-  const openEditComboModal = (combo: Combo) => {
+  const openEditComboModal = (combo: Product) => {
     setEditingCombo(combo);
     setName(combo.name);
     setDescription(combo.description || '');
-    setBadgeText(combo.badgeText || '');
-    setSelectedProductIds(combo.productIds);
-    setComboPrice(combo.comboPrice);
+    setSelectedProductIds(combo.comboProductIds || []);
+    setComboPrice(combo.price);
+    setComboStock(combo.stock);
     setActive(combo.active);
     setShowModal(true);
   };
@@ -76,7 +76,7 @@ export default function CombosPage() {
     );
   };
 
-  const regularPrice = products
+  const regularPrice = regularProducts
     .filter(p => selectedProductIds.includes(p.id))
     .reduce((sum, p) => sum + p.price, 0);
 
@@ -89,21 +89,25 @@ export default function CombosPage() {
     }
     setSaving(true);
     try {
-      const combo: Combo = {
+      const comboProduct: Product = {
         id: editingCombo ? editingCombo.id : crypto.randomUUID(),
         name,
-        description,
-        badgeText,
-        productIds: selectedProductIds,
-        comboPrice,
+        category: 'Combos',
+        price: comboPrice,
+        oldPrice: regularPrice > comboPrice ? regularPrice : undefined,
+        stock: comboStock,
+        image: editingCombo ? editingCombo.image : DEFAULT_IMAGE,
+        description: description || 'Combo especial de ahorro',
         active,
-        displayOrder: editingCombo ? editingCombo.displayOrder : combos.length,
+        unit: 'combo',
+        isCombo: true,
+        comboProductIds: selectedProductIds,
       };
-      await saveCombo(combo, storeId);
+      await saveProduct(comboProduct, storeId);
       toast({ title: editingCombo ? 'Combo actualizado' : 'Combo creado', type: 'success' });
       setShowModal(false);
-      const updated = await getAllCombos(storeId);
-      setCombos(updated);
+      const updated = await getProducts(storeId);
+      setProducts(updated);
     } catch (err: any) {
       toast({ title: err.message || 'Error guardando el combo', type: 'error' });
     } finally {
@@ -114,19 +118,20 @@ export default function CombosPage() {
   const handleDeleteCombo = async (comboId: string) => {
     if (!confirm('¿Borrar este combo? Esta acción no se puede deshacer.')) return;
     try {
-      await deleteCombo(comboId);
-      setCombos(prev => prev.filter(c => c.id !== comboId));
+      await deleteProduct(comboId);
+      setProducts(prev => prev.filter(p => p.id !== comboId));
       toast({ title: 'Combo eliminado', type: 'success' });
     } catch (err: any) {
       toast({ title: 'Error eliminando el combo', type: 'error' });
     }
   };
 
-  const handleToggleActive = async (combo: Combo) => {
+  const handleToggleActive = async (combo: Product) => {
     if (!storeId) return;
     try {
-      await saveCombo({ ...combo, active: !combo.active }, storeId);
-      setCombos(prev => prev.map(c => c.id === combo.id ? { ...c, active: !c.active } : c));
+      const updated = { ...combo, active: !combo.active };
+      await saveProduct(updated, storeId);
+      setProducts(prev => prev.map(p => p.id === combo.id ? updated : p));
     } catch (err: any) {
       toast({ title: 'Error actualizando el combo', type: 'error' });
     }
@@ -145,7 +150,7 @@ export default function CombosPage() {
           </div>
           <div>
             <h1 className="text-lg font-black text-slate-800">Combos de Ahorro</h1>
-            <p className="text-xs text-slate-400 font-medium">Agrupa productos con un precio especial para vender más por pedido.</p>
+            <p className="text-xs text-slate-400 font-medium">Arma paquetes de productos con un precio especial. Se venden como un producto más de tu catálogo.</p>
           </div>
         </div>
         <button
@@ -156,6 +161,10 @@ export default function CombosPage() {
         </button>
       </div>
 
+      <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-[11px] text-amber-800">
+        <strong>Importante:</strong> cuando armes un combo físico, recuerda bajar manualmente el stock de los productos que lo componen en "Productos", y ponerle stock al combo aquí — son inventarios separados.
+      </div>
+
       {combos.length === 0 ? (
         <div className="bg-white rounded-2xl border border-slate-200/60 p-10 text-center">
           <p className="text-sm text-slate-400">Todavía no tienes ningún combo creado. Los combos no aparecen en tu tienda hasta que crees el primero.</p>
@@ -163,22 +172,22 @@ export default function CombosPage() {
       ) : (
         <div className="bg-white rounded-2xl border border-slate-200/60 shadow-xs overflow-hidden divide-y divide-slate-100">
           {combos.map((combo) => {
-            const comboProducts = products.filter(p => combo.productIds.includes(p.id));
-            const regPrice = comboProducts.reduce((sum, p) => sum + p.price, 0);
+            const comboComponents = regularProducts.filter(p => (combo.comboProductIds || []).includes(p.id));
             return (
               <div key={combo.id} className="flex items-center justify-between px-5 py-4 gap-4 flex-wrap">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-bold text-slate-800">{combo.name}</p>
-                    {combo.badgeText && (
-                      <span className="bg-green-100 text-green-700 text-[9px] font-black uppercase px-2 py-0.5 rounded-md">{combo.badgeText}</span>
-                    )}
                     {!combo.active && (
                       <span className="bg-slate-100 text-slate-500 text-[9px] font-black uppercase px-2 py-0.5 rounded-md">Inactivo</span>
                     )}
                   </div>
                   <p className="text-[10px] text-slate-400 mt-1">
-                    {comboProducts.length} productos · {formatPrice(combo.comboPrice)} <span className="line-through text-slate-300">{formatPrice(regPrice)}</span>
+                    {comboComponents.length} productos · Stock: {combo.stock} ·{' '}
+                    <span className="font-bold text-green-700">{formatPrice(combo.price)}</span>
+                    {combo.oldPrice && (
+                      <span className="line-through text-slate-300 ml-1">{formatPrice(combo.oldPrice)}</span>
+                    )}
                   </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
@@ -228,14 +237,9 @@ export default function CombosPage() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Insignia (opcional, ej: Ahorra 15%)</label>
-              <input type="text" value={badgeText} onChange={(e) => setBadgeText(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs" />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Productos incluidos (elige 2 o más)</label>
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Productos incluidos (elige 2 o más, solo de referencia)</label>
               <div className="max-h-48 overflow-y-auto border border-slate-200 rounded-xl divide-y divide-slate-100">
-                {products.map((p) => (
+                {regularProducts.map((p) => (
                   <label key={p.id} className="flex items-center gap-2 px-3 py-2 text-xs cursor-pointer hover:bg-slate-50">
                     <input
                       type="checkbox"
@@ -249,14 +253,20 @@ export default function CombosPage() {
               </div>
             </div>
 
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Precio del combo</label>
-              <input type="number" value={comboPrice} onChange={(e) => setComboPrice(Number(e.target.value))} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs" />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Precio del combo</label>
+                <input type="number" value={comboPrice} onChange={(e) => setComboPrice(Number(e.target.value))} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Stock de combos armados</label>
+                <input type="number" value={comboStock} onChange={(e) => setComboStock(Number(e.target.value))} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs" />
+              </div>
             </div>
 
             {selectedProductIds.length > 0 && (
               <div className="p-3 bg-green-50 rounded-xl text-xs">
-                <p className="text-slate-600">Precio normal: <span className="font-bold">{formatPrice(regularPrice)}</span></p>
+                <p className="text-slate-600">Precio normal sumado: <span className="font-bold">{formatPrice(regularPrice)}</span></p>
                 <p className="text-green-700 font-bold">Ahorro para el cliente: {formatPrice(savings > 0 ? savings : 0)}</p>
               </div>
             )}
