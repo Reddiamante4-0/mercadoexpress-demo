@@ -20,6 +20,8 @@ export interface Product {
   unit?: string;
   unitEn?: string;
   store_id?: string;
+  isCombo?: boolean;
+  comboProductIds?: string[];
 }
 
 export interface OrderItem {
@@ -107,6 +109,8 @@ function productToDb(product: Product, storeId: string) {
     active: product.active,
     unit: product.unit,
     unit_en: product.unitEn,
+    is_combo: product.isCombo || false,
+    combo_product_ids: product.comboProductIds || null,
   };
 }
 
@@ -126,6 +130,8 @@ function productFromDb(row: any): Product {
     unit: row.unit,
     unitEn: row.unit_en,
     store_id: row.store_id,
+    isCombo: row.is_combo,
+    comboProductIds: row.combo_product_ids,
   };
 }
 
