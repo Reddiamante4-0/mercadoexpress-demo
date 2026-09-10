@@ -116,9 +116,9 @@ export default function CombosPage() {
   };
 
   const handleDeleteCombo = async (comboId: string) => {
-    if (!confirm('¿Borrar este combo? Esta acción no se puede deshacer.')) return;
+    if (!confirm('¿Borrar este combo? Esta acción no se puede deshacer.') || !storeId) return;
     try {
-      await deleteProduct(comboId);
+      await deleteProduct(comboId, storeId);
       setProducts(prev => prev.filter(p => p.id !== comboId));
       toast({ title: 'Combo eliminado', type: 'success' });
     } catch (err: any) {
