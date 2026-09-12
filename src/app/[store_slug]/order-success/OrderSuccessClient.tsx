@@ -365,6 +365,15 @@ function OrderSuccessContent({ storeId, storeName, storeSlug }: { storeId: strin
           </button>
         </div>
 
+        <a
+          href="https://tutienda.crisalap.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block text-center text-[10px] font-bold text-slate-400 hover:text-green-600 transition-colors pt-2"
+        >
+          Creado con Crisalap
+        </a>
+
       </main>
 
     </div>
