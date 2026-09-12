@@ -107,6 +107,7 @@ export default function AdminProductsPage() {
   const [name, setName] = useState('');
   const [nameEn, setNameEn] = useState('');
   const [category, setCategory] = useState(CATEGORIES[0]);
+  const [showCustomCategory, setShowCustomCategory] = useState(false);
   const [price, setPrice] = useState(0);
   const [oldPrice, setOldPrice] = useState<number | undefined>(undefined);
   const [stock, setStock] = useState(10);
@@ -777,22 +778,38 @@ export default function AdminProductsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">{t.admin.productsFieldCategory}</label>
-                  <input
-                    type="text"
+                  <select
                     required
-                    list="category-options"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    placeholder="Ej: Carnes"
+                    value={showCustomCategory ? 'Otra' : category}
+                    onChange={(e) => {
+                      if (e.target.value === 'Otra') {
+                        setShowCustomCategory(true);
+                        setCategory('');
+                      } else {
+                        setShowCustomCategory(false);
+                        setCategory(e.target.value);
+                      }
+                    }}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600"
-                  />
-                  <datalist id="category-options">
+                  >
                     {Array.from(new Set([...categoryOptions, ...products.map(p => p.category)])).map((cat) => (
                       <option key={cat} value={cat}>
                         {categoryTranslations[language] && categoryTranslations[language][cat] ? categoryTranslations[language][cat] : cat}
                       </option>
                     ))}
-                  </datalist>
+                    <option value="Otra">+ Otra categoría...</option>
+                  </select>
+                  {showCustomCategory && (
+                    <input
+                      type="text"
+                      required
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                      placeholder="Escribe el nombre de la nueva categoría"
+                      autoFocus
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600 mt-1"
+                    />
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
