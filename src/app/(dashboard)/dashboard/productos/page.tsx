@@ -203,7 +203,8 @@ export default function AdminProductsPage() {
         let updatedCount = 0;
         let errorCount = 0;
 
-        const newProductsList = [...products];
+        const allProducts = await getProducts(currentStoreId);
+        const newProductsList = [...allProducts];
 
         for (const row of data) {
           console.log("Procesando fila:", row);
@@ -242,7 +243,14 @@ export default function AdminProductsPage() {
           }
         }
 
-        setProducts(newProductsList);
+        const refreshed = await getProductsPaginated(currentStoreId, {
+          page,
+          pageSize: PAGE_SIZE,
+          category: selectedCategory === 'Todas' ? undefined : selectedCategory,
+          search: debouncedSearch,
+        });
+        setProducts(refreshed.products);
+        setTotalCount(refreshed.total);
         toast({
           title: `Importación finalizada. ${createdCount} creados, ${updatedCount} actualizados, ${errorCount} ignorados.`,
           type: createdCount > 0 || updatedCount > 0 ? 'success' : 'error'
@@ -522,7 +530,7 @@ export default function AdminProductsPage() {
             className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-700 font-bold"
           >
             <option value="Todas">{t.admin.productsCategoryAll}</option>
-            {Array.from(new Set([...categoryOptions, ...products.map(p => p.category)])).map((cat) => (
+            {categoryOptions.map((cat) => (
               <option key={cat} value={cat}>
                 {categoryTranslations[language] && categoryTranslations[language][cat] ? categoryTranslations[language][cat] : cat}
               </option>
@@ -829,7 +837,7 @@ export default function AdminProductsPage() {
                     }}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600"
                   >
-                    {Array.from(new Set([...categoryOptions, ...products.map(p => p.category)])).map((cat) => (
+                    {categoryOptions.map((cat) => (
                       <option key={cat} value={cat}>
                         {categoryTranslations[language] && categoryTranslations[language][cat] ? categoryTranslations[language][cat] : cat}
                       </option>
