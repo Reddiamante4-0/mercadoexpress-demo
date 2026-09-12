@@ -101,7 +101,7 @@ function productToDb(product: Product, storeId: string) {
     name_en: product.nameEn,
     category: product.category,
     price: product.price,
-    old_price: product.oldPrice,
+    old_price: product.oldPrice ?? null,
     stock: product.stock,
     image: product.image,
     description: product.description,
