@@ -513,7 +513,7 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
             {/* Right Large Market Image with custom glow frame */}
             <div className="md:col-span-5 flex justify-center relative">
               <div className="absolute inset-0 bg-gradient-to-tr from-green-500 to-emerald-400 rounded-3xl blur-2xl opacity-30 scale-95 pointer-events-none" />
-              <div className="w-full max-w-sm aspect-1.2 rounded-3xl overflow-hidden border-4 border-white/15 shadow-2xl relative">
+              <div className="w-full max-w-md aspect-1.2 rounded-3xl overflow-hidden border-4 border-white/15 shadow-2xl relative">
                 <img 
                   src={displayHeroImage}
                   alt={displayBrandName}
