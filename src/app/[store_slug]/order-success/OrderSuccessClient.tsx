@@ -152,7 +152,7 @@ function OrderSuccessContent({ storeId, storeName, storeSlug }: { storeId: strin
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans pb-16">
       
       {/* ── MAIN CONTAINER ── */}
-      <main className="max-w-xl mx-auto px-4 py-12 w-full space-y-6">
+      <main className="max-w-xl mx-auto px-4 py-12 pb-16 w-full space-y-6">
         
         {/* Success Card */}
         <div className="bg-white rounded-3xl border border-slate-200/60 p-6 text-center shadow-md space-y-4 relative overflow-hidden">
@@ -375,6 +375,17 @@ function OrderSuccessContent({ storeId, storeName, storeSlug }: { storeId: strin
         </a>
 
       </main>
+
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 py-2 text-center z-40">
+        <a
+          href="https://tutienda.crisalap.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[10px] font-bold text-slate-400 hover:text-green-600 transition-colors"
+        >
+          Creado con Crisalap
+        </a>
+      </div>
 
     </div>
   );
