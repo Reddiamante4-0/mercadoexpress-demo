@@ -744,14 +744,25 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Mínimo de Compra para Envío Gratis (COP)</label>
-                <input
-                  type="number"
-                  value={minOrderFreeShipping}
-                  onChange={(e) => setMinOrderFreeShipping(Number(e.target.value))}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Costo de Domicilio (COP)</label>
+                  <input
+                    type="number"
+                    value={shippingFee}
+                    onChange={(e) => setShippingFee(Number(e.target.value))}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Mínimo de Compra para Envío Gratis (COP)</label>
+                  <input
+                    type="number"
+                    value={freeShippingThreshold}
+                    onChange={(e) => setFreeShippingThreshold(Number(e.target.value))}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
+                  />
+                </div>
               </div>
 
               <div className="space-y-1">
