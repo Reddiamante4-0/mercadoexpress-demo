@@ -256,11 +256,23 @@ export default function CombosPage() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Precio del combo</label>
-                <input type="number" value={comboPrice} onChange={(e) => setComboPrice(Number(e.target.value))} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs" />
+                <input
+                  type="number"
+                  value={comboPrice === 0 ? '' : comboPrice}
+                  onChange={(e) => setComboPrice(e.target.value === '' ? 0 : Number(e.target.value))}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs"
+                  placeholder="0"
+                />
               </div>
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Stock de combos armados</label>
-                <input type="number" value={comboStock} onChange={(e) => setComboStock(Number(e.target.value))} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs" />
+                <input
+                  type="number"
+                  value={comboStock === 0 ? '' : comboStock}
+                  onChange={(e) => setComboStock(e.target.value === '' ? 0 : Number(e.target.value))}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs"
+                  placeholder="0"
+                />
               </div>
             </div>
 
