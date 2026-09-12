@@ -777,6 +777,31 @@ export default function AdminProductsPage() {
         </div>
       </div>
 
+      {/* Pagination controls */}
+      {totalCount > PAGE_SIZE && (
+        <div className="flex items-center justify-between px-2">
+          <p className="text-[11px] font-bold text-slate-400">
+            {language === 'en' ? 'Page' : 'Página'} {page} {language === 'en' ? 'of' : 'de'} {totalPages} · {totalCount} {language === 'en' ? 'products' : 'productos'}
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => goToPage(page - 1)}
+              disabled={page <= 1}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-[10px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            >
+              {language === 'en' ? 'Previous' : 'Anterior'}
+            </button>
+            <button
+              onClick={() => goToPage(page + 1)}
+              disabled={page >= totalPages}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-[10px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            >
+              {language === 'en' ? 'Next' : 'Siguiente'}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ── CREATE / EDIT PRODUCT MODAL ── */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
