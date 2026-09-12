@@ -380,7 +380,12 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
               type="text"
               placeholder={language === 'en' ? "Search steak, vegetables, snacks..." : "Encuentra carne de res, pollo, papas, frutas..."}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                if (e.target.value.trim() !== '' && selectedCategory !== 'Todas') {
+                  setSelectedCategory('Todas');
+                }
+              }}
               className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200/50 focus:bg-white border border-transparent focus:border-green-500/20 text-slate-800 placeholder-slate-400/80 transition-all text-xs focus:ring-1 focus:ring-green-500/10 focus:outline-hidden"
             />
           </div>
