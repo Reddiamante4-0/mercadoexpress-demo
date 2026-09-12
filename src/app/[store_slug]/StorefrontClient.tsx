@@ -944,6 +944,18 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
         </section>
       </main>
 
+      {/* ── FOOTER ── */}
+      <footer className="w-full py-6 text-center border-t border-slate-100 mt-4">
+        <a
+          href="https://tutienda.crisalap.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[10px] font-bold text-slate-400 hover:text-green-600 transition-colors"
+        >
+          {language === 'en' ? 'Made with Crisalap' : 'Creado con Crisalap'}
+        </a>
+      </footer>
+
       {/* ── SHOPPING CART DRAWER ── */}
       <div className={`fixed inset-0 z-50 transition-opacity duration-300 ${isCartOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
         {/* Backdrop */}
