@@ -18,7 +18,7 @@ import {
   Upload
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import { getProducts, saveProduct, deleteProduct, getCurrentStoreId, supabase, Product } from '@/lib/supabase-api';
+import { getProducts, getProductsPaginated, saveProduct, deleteProduct, getCurrentStoreId, supabase, Product } from '@/lib/supabase-api';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslation } from '@/hooks/useTranslation';
 import { translations } from '@/config/translations';
@@ -259,21 +259,23 @@ export default function AdminProductsPage() {
     reader.readAsBinaryString(file);
   };
 
-  // Load products on mount
+  // Load store info + categories once
   const [storeCategoryNames, setStoreCategoryNames] = useState<string[]>([]);
   const categoryOptions = storeCategoryNames.length > 0 ? storeCategoryNames : CATEGORIES;
+  const PAGE_SIZE = 30;
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   useEffect(() => {
     let active = true;
-    async function loadData() {
+    async function loadStoreInfo() {
       const storeId = await getCurrentStoreId();
       if (!storeId || !active) {
         if (active) setProducts([]);
         return;
       }
       setCurrentStoreId(storeId);
-      const data = await getProducts(storeId);
-      if (active) setProducts(data);
 
       const { data: categoriesData } = await supabase
         .from('store_categories')
@@ -284,9 +286,49 @@ export default function AdminProductsPage() {
         setStoreCategoryNames(categoriesData.map((c: any) => c.name));
       }
     }
-    loadData();
+    loadStoreInfo();
     return () => { active = false; };
   }, []);
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Load the first page whenever the store, category or search changes
+  useEffect(() => {
+    if (!currentStoreId) return;
+    let active = true;
+    setPage(1);
+    getProductsPaginated(currentStoreId, {
+      page: 1,
+      pageSize: PAGE_SIZE,
+      category: selectedCategory === 'Todas' ? undefined : selectedCategory,
+      search: debouncedSearch,
+    }).then((result) => {
+      if (active) {
+        setProducts(result.products);
+        setTotalCount(result.total);
+      }
+    });
+    return () => { active = false; };
+  }, [currentStoreId, selectedCategory, debouncedSearch]);
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+
+  const goToPage = async (newPage: number) => {
+    if (!currentStoreId || newPage < 1 || newPage > totalPages) return;
+    const result = await getProductsPaginated(currentStoreId, {
+      page: newPage,
+      pageSize: PAGE_SIZE,
+      category: selectedCategory === 'Todas' ? undefined : selectedCategory,
+      search: debouncedSearch,
+    });
+    setProducts(result.products);
+    setTotalCount(result.total);
+    setPage(newPage);
+  };
 
   const openNewProductModal = () => {
     setEditingProduct(null);
@@ -401,13 +443,8 @@ export default function AdminProductsPage() {
     }).format(val);
   };
 
-  // Filters
-  const filteredProducts = products.filter(p => {
-    const matchesCategory = selectedCategory === 'Todas' || p.category === selectedCategory;
-    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          p.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  // El filtro por categoría y búsqueda ya se hace en el servidor (getProductsPaginated)
+  const filteredProducts = products;
 
   return (
     <div className="w-full max-w-6xl mx-auto p-4 md:p-6 space-y-6 pb-12 text-left">
