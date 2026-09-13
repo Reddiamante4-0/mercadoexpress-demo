@@ -638,7 +638,7 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
             <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl border border-green-200/60 p-5 flex flex-col justify-between shadow-xs text-left relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-green-200/30 blur-xl pointer-events-none" />
               <div>
-                <span className="bg-green-600 text-white text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md">
+                <span className="bg-[var(--brand-primary)] text-white text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md">
                   {language === 'en' ? 'Healthy' : 'Saludable'}
                 </span>
                 <h4 className="text-sm font-black text-slate-800 mt-2">
@@ -664,7 +664,7 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
                 </span>
                 <button 
                   onClick={() => addComboToCart(language === 'en' ? 'Homemade Sancocho Combo' : 'Sancocho Casero', ['p7', 'p8', 'p9'])}
-                  className="bg-green-600 hover:bg-green-700 text-white text-[10px] font-black uppercase tracking-wider px-3.5 py-2 rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
+                  className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-white text-[10px] font-black uppercase tracking-wider px-3.5 py-2 rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
                 >
                   {t.store.addCombo}
                 </button>
@@ -806,7 +806,7 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
                               e.stopPropagation();
                               addToCart(p);
                             }}
-                            className="bg-green-600 hover:bg-green-700 text-white font-extrabold text-[8px] sm:text-[9px] uppercase tracking-wider px-1.5 sm:px-2.5 py-1 sm:py-1.5 rounded-lg flex items-center gap-1 cursor-pointer active:scale-95 shadow-md shadow-green-600/10 transition-all shrink-0"
+                            className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-white font-extrabold text-[8px] sm:text-[9px] uppercase tracking-wider px-1.5 sm:px-2.5 py-1 sm:py-1.5 rounded-lg flex items-center gap-1 cursor-pointer active:scale-95 shadow-md shadow-green-600/10 transition-all shrink-0"
                           >
                             <ShoppingCart className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                             <span>{language === 'en' ? 'Add' : 'Agregar'}</span>
@@ -849,7 +849,7 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
               </p>
               <button 
                 onClick={() => { setSelectedCategory('Todas'); setSearchQuery(''); }}
-                className="mt-5 px-4.5 py-2.5 rounded-xl text-xs font-black bg-green-600 text-white cursor-pointer active:scale-95 transition-all"
+                className="mt-5 px-4.5 py-2.5 rounded-xl text-xs font-black bg-[var(--brand-primary)] text-white cursor-pointer active:scale-95 transition-all"
               >
                 {language === 'en' ? 'Reset Filters' : 'Restaurar Filtros'}
               </button>
@@ -957,7 +957,7 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
                         ) : (
                           <button
                             onClick={() => addToCart(product)}
-                            className="bg-green-600 hover:bg-green-700 text-white font-extrabold text-[9px] sm:text-[10px] uppercase tracking-wider px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl flex items-center justify-center sm:justify-start gap-1 cursor-pointer active:scale-95 shadow-md shadow-green-600/10 transition-all shrink-0 w-full sm:w-auto"
+                            className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-white font-extrabold text-[9px] sm:text-[10px] uppercase tracking-wider px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl flex items-center justify-center sm:justify-start gap-1 cursor-pointer active:scale-95 shadow-md shadow-green-600/10 transition-all shrink-0 w-full sm:w-auto"
                             title={t.store.addToCart}
                           >
                             <ShoppingCart className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
@@ -1012,7 +1012,7 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
         >
           
           {/* Cart Header */}
-          <div className="p-4 border-b border-slate-100 bg-green-600 text-white flex items-center justify-between">
+          <div className="p-4 border-b border-slate-100 bg-[var(--brand-primary)] text-white flex items-center justify-between">
             <div className="flex items-center gap-2">
               <ShoppingCart className="w-5 h-5" />
               <h3 className="text-xs font-black uppercase tracking-wider">{t.store.cartTitle}</h3>
@@ -1034,7 +1034,7 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
                 <p className="text-xs text-slate-400 mt-1">{t.store.emptyCartDesc}</p>
                 <button 
                   onClick={() => setIsCartOpen(false)}
-                  className="mt-5 px-4.5 py-2.5 rounded-xl text-xs font-black bg-green-600 text-white cursor-pointer active:scale-95"
+                  className="mt-5 px-4.5 py-2.5 rounded-xl text-xs font-black bg-[var(--brand-primary)] text-white cursor-pointer active:scale-95"
                 >
                   {t.store.emptyCartButton}
                 </button>
@@ -1213,7 +1213,7 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
                   {selectedProduct.stock > 0 ? (
                     <button
                       onClick={() => { addToCart(selectedProduct); setSelectedProduct(null); }}
-                      className="px-5 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-md cursor-pointer active:scale-95"
+                      className="px-5 py-3 rounded-xl bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-md cursor-pointer active:scale-95"
                     >
                       <ShoppingCart className="w-4 h-4" />
                       <span>{t.store.addToCart}</span>
