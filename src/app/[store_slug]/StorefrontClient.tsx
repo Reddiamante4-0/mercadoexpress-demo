@@ -465,7 +465,10 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
 
       {/* ── HIGH CONTRAST DYNAMIC HERO SECTION ── */}
       <section className="px-4 py-6">
-        <div className="max-w-6xl mx-auto rounded-3xl bg-gradient-to-br from-green-800 via-emerald-700 to-green-950 text-white shadow-2xl relative overflow-hidden p-6 sm:p-12 text-left">
+        <div
+          className="max-w-6xl mx-auto rounded-3xl text-white shadow-2xl relative overflow-hidden p-6 sm:p-12 text-left"
+          style={{ background: `linear-gradient(to bottom right, ${palette.heroFrom}, ${palette.heroVia}, ${palette.heroTo})` }}
+        >
           {/* Accent radial glow overlay */}
           <div className="absolute top-0 right-0 w-[40rem] h-[40rem] rounded-full bg-radial from-orange-500/20 via-transparent to-transparent blur-3xl pointer-events-none -mr-40 -mt-40" />
 
