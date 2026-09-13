@@ -123,6 +123,7 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
   const [businessName, setBusinessName] = useState(brandConfig.appName);
   const [shippingFee, setShippingFee] = useState(5000);
   const [freeShippingThreshold, setFreeShippingThreshold] = useState(80000);
+  const [themeColor, setThemeColor] = useState('green');
   const [isSavingSettings, setIsSavingSettings] = useState(false);
 
   const notifRef = useRef<HTMLDivElement>(null);
@@ -189,7 +190,7 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
         
         const { data, error } = await supabase
           .from('stores')
-          .select('id, brand_name, tagline, whatsapp_number, logo_url, slug, hero_description, hero_image_url, hero_badge_text, hero_title_text, hero_subtitle_text, wompi_enabled, hero_header_subtitle, hero_delivery_badge, hero_guarantee_text, hero_discount_text, hero_cta_primary, hero_cta_secondary, shipping_fee, free_shipping_threshold')
+          .select('id, brand_name, tagline, whatsapp_number, logo_url, slug, hero_description, hero_image_url, hero_badge_text, hero_title_text, hero_subtitle_text, wompi_enabled, hero_header_subtitle, hero_delivery_badge, hero_guarantee_text, hero_discount_text, hero_cta_primary, hero_cta_secondary, shipping_fee, free_shipping_threshold, theme_color')
           .eq('owner_id', user.id)
           .single();
           
@@ -214,6 +215,7 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
           if (data.hero_cta_secondary) setHeroCtaSecondary(data.hero_cta_secondary);
           if (data.shipping_fee !== null && data.shipping_fee !== undefined) setShippingFee(data.shipping_fee);
           if (data.free_shipping_threshold !== null && data.free_shipping_threshold !== undefined) setFreeShippingThreshold(data.free_shipping_threshold);
+          if (data.theme_color) setThemeColor(data.theme_color);
         }
       } catch (err) {
         console.error('Error fetching store slug:', err);
@@ -353,6 +355,7 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
             hero_cta_secondary: heroCtaSecondary,
             shipping_fee: shippingFee,
             free_shipping_threshold: freeShippingThreshold,
+            theme_color: themeColor,
           })
           .eq('id', storeId);
         if (error) throw error;
