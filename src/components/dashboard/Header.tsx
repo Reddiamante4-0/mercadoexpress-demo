@@ -923,6 +923,29 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
                 />
               </div>
 
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Color de Marca</label>
+                <div className="flex gap-2 flex-wrap pt-1">
+                  {[
+                    { key: 'green', hex: '#16a34a', label: 'Verde' },
+                    { key: 'blue', hex: '#2563eb', label: 'Azul' },
+                    { key: 'gray', hex: '#475569', label: 'Gris' },
+                    { key: 'black', hex: '#27272a', label: 'Negro' },
+                    { key: 'purple', hex: '#9333ea', label: 'Morado' },
+                    { key: 'red', hex: '#dc2626', label: 'Rojo' },
+                  ].map((opt) => (
+                    <button
+                      key={opt.key}
+                      type="button"
+                      onClick={() => setThemeColor(opt.key)}
+                      title={opt.label}
+                      className={`w-9 h-9 rounded-full border-2 transition-all cursor-pointer ${themeColor === opt.key ? 'border-slate-800 scale-110' : 'border-transparent'}`}
+                      style={{ backgroundColor: opt.hex }}
+                    />
+                  ))}
+                </div>
+              </div>
+
               <div className="mt-4 p-4 rounded-xl border-2 border-red-200 bg-red-50/50 space-y-3">
                 <div>
                   <h3 className="text-xs font-black text-red-700 uppercase tracking-wider">Zona de Peligro</h3>
