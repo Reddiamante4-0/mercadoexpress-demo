@@ -94,7 +94,45 @@ interface CartItem {
   quantity: number;
 }
 
-export default function CatalogPage({ storeId, storeName, storeSlug, brandName, tagline, logoUrl, whatsappNumber, heroDescription, heroImageUrl, heroBadgeText, heroTitleText, heroSubtitleText, categories, shippingFee, freeShippingThreshold, heroHeaderSubtitle, heroDeliveryBadge, heroGuaranteeText, heroDiscountText, heroCtaPrimary, heroCtaSecondary }: { storeId: string; storeName: string; storeSlug: string; brandName?: string | null; tagline?: string | null; logoUrl?: string | null; whatsappNumber?: string | null; heroDescription?: string | null; heroImageUrl?: string | null; heroBadgeText?: string | null; heroTitleText?: string | null; heroSubtitleText?: string | null; categories?: { name: string; emoji: string; display_order: number }[]; shippingFee: number; freeShippingThreshold: number; heroHeaderSubtitle?: string | null; heroDeliveryBadge?: string | null; heroGuaranteeText?: string | null; heroDiscountText?: string | null; heroCtaPrimary?: string | null; heroCtaSecondary?: string | null }) {
+export default function CatalogPage({ storeId, storeName, storeSlug, brandName, tagline, logoUrl, whatsappNumber, heroDescription, heroImageUrl, heroBadgeText, heroTitleText, heroSubtitleText, categories, shippingFee, freeShippingThreshold, heroHeaderSubtitle, heroDeliveryBadge, heroGuaranteeText, heroDiscountText, heroCtaPrimary, heroCtaSecondary, themeColor }: { storeId: string; storeName: string; storeSlug: string; brandName?: string | null; tagline?: string | null; logoUrl?: string | null; whatsappNumber?: string | null; heroDescription?: string | null; heroImageUrl?: string | null; heroBadgeText?: string | null; heroTitleText?: string | null; heroSubtitleText?: string | null; categories?: { name: string; emoji: string; display_order: number }[]; shippingFee: number; freeShippingThreshold: number; heroHeaderSubtitle?: string | null; heroDeliveryBadge?: string | null; heroGuaranteeText?: string | null; heroDiscountText?: string | null; heroCtaPrimary?: string | null; heroCtaSecondary?: string | null; themeColor?: string | null }) {
+
+  const THEME_PALETTES: Record<string, {
+    primary: string; primaryHover: string; shadow: string;
+    heroFrom: string; heroVia: string; heroTo: string;
+    logoFrom: string; logoVia: string; logoTo: string;
+  }> = {
+    green: {
+      primary: '#16a34a', primaryHover: '#15803d', shadow: 'rgba(22,163,74,0.15)',
+      heroFrom: '#166534', heroVia: '#047857', heroTo: '#052e16',
+      logoFrom: '#16a34a', logoVia: '#10b981', logoTo: '#facc15',
+    },
+    blue: {
+      primary: '#2563eb', primaryHover: '#1d4ed8', shadow: 'rgba(37,99,235,0.15)',
+      heroFrom: '#1e40af', heroVia: '#1d4ed8', heroTo: '#172554',
+      logoFrom: '#2563eb', logoVia: '#0ea5e9', logoTo: '#facc15',
+    },
+    gray: {
+      primary: '#475569', primaryHover: '#334155', shadow: 'rgba(71,85,105,0.15)',
+      heroFrom: '#1e293b', heroVia: '#334155', heroTo: '#020617',
+      logoFrom: '#475569', logoVia: '#64748b', logoTo: '#facc15',
+    },
+    black: {
+      primary: '#27272a', primaryHover: '#18181b', shadow: 'rgba(0,0,0,0.2)',
+      heroFrom: '#171717', heroVia: '#262626', heroTo: '#000000',
+      logoFrom: '#27272a', logoVia: '#525252', logoTo: '#facc15',
+    },
+    purple: {
+      primary: '#9333ea', primaryHover: '#7e22ce', shadow: 'rgba(147,51,234,0.15)',
+      heroFrom: '#6b21a8', heroVia: '#7e22ce', heroTo: '#3b0764',
+      logoFrom: '#9333ea', logoVia: '#d946ef', logoTo: '#facc15',
+    },
+    red: {
+      primary: '#dc2626', primaryHover: '#b91c1c', shadow: 'rgba(220,38,38,0.15)',
+      heroFrom: '#991b1b', heroVia: '#b91c1c', heroTo: '#450a0a',
+      logoFrom: '#dc2626', logoVia: '#f43f5e', logoTo: '#facc15',
+    },
+  };
+  const palette = THEME_PALETTES[themeColor || 'green'] || THEME_PALETTES.green;
   const displayBrandName = brandName || 'Crisalap';
   const displayWhatsapp = whatsappNumber || brandConfig.whatsappNumber;
   const displayHeroImage = heroImageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=80';
@@ -343,7 +381,13 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
   };
 
   return (
-    <div className="min-h-screen bg-slate-100/40 text-slate-800 flex flex-col font-sans pb-32 antialiased">
+    <div
+      className="min-h-screen bg-slate-100/40 text-slate-800 flex flex-col font-sans pb-32 antialiased"
+      style={{
+        '--brand-primary': palette.primary,
+        '--brand-primary-hover': palette.primaryHover,
+      } as React.CSSProperties}
+    >
       
       {/* ── HIGH FIDELITY HEADER ── */}
       <header className="sticky top-0 z-40 backdrop-blur-lg bg-white/95 border-b border-slate-200/50 shadow-xs transition-all">
