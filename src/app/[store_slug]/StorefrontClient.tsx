@@ -398,7 +398,10 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
             className="flex items-center gap-2.5 cursor-pointer select-none group shrink-0" 
             onClick={() => { setSelectedCategory('Todas'); setSearchQuery(''); }}
           >
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-green-600 via-emerald-500 to-yellow-400 text-white flex items-center justify-center shadow-lg shadow-green-600/20 group-hover:scale-105 transition-transform duration-200 overflow-hidden">
+            <div
+              className="w-11 h-11 rounded-2xl text-white flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-200 overflow-hidden"
+              style={{ background: `linear-gradient(to top right, ${palette.logoFrom}, ${palette.logoVia}, ${palette.logoTo})` }}
+            >
               {logoUrl ? (
                 <img src={logoUrl} alt={displayBrandName} className="w-full h-full object-cover" />
               ) : (
