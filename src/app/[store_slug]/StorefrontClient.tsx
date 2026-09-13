@@ -378,7 +378,7 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
             </span>
             <input
               type="text"
-              placeholder={language === 'en' ? "Search steak, vegetables, snacks..." : "Encuentra carne de res, pollo, papas, frutas..."}
+              placeholder={language === 'en' ? "Search the catalog..." : "Busca en el catálogo..."}
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
