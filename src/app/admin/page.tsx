@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import { markStoreAsPaid } from './actions';
+import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +21,21 @@ export default async function AdminPage() {
   return (
     <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
       <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>Panel de Administración de Tiendas</h1>
+      <Link
+        href="/admin/nueva-tienda"
+        style={{
+          display: 'inline-block',
+          backgroundColor: '#16a34a',
+          color: 'white',
+          padding: '10px 18px',
+          borderRadius: '8px',
+          fontWeight: 'bold',
+          textDecoration: 'none',
+          marginBottom: '1.5rem',
+        }}
+      >
+        + Crear Tienda Nueva
+      </Link>
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr style={{ textAlign: 'left', borderBottom: '2px solid #ccc' }}>
