@@ -24,6 +24,19 @@ export async function GET(
   const displayName = store.brand_name || store.name;
   const icon = store.logo_url || '/favicon.ico';
 
+  let iconType = 'image/png';
+  if (icon.toLowerCase().endsWith('.jpg') || icon.toLowerCase().endsWith('.jpeg')) {
+    iconType = 'image/jpeg';
+  } else if (icon.toLowerCase().endsWith('.svg')) {
+    iconType = 'image/svg+xml';
+  } else if (icon.toLowerCase().endsWith('.webp')) {
+    iconType = 'image/webp';
+  } else if (icon.toLowerCase().endsWith('.gif')) {
+    iconType = 'image/gif';
+  } else if (icon.toLowerCase().endsWith('.ico')) {
+    iconType = 'image/x-icon';
+  }
+
   const manifest = {
     name: displayName,
     short_name: displayName,
@@ -33,8 +46,8 @@ export async function GET(
     theme_color: store.theme_color || '#16a34a',
     orientation: 'portrait-primary',
     icons: [
-      { src: icon, sizes: '192x192', type: 'image/png', purpose: 'any' },
-      { src: icon, sizes: '512x512', type: 'image/png', purpose: 'any' },
+      { src: icon, sizes: '192x192', type: iconType, purpose: 'any' },
+      { src: icon, sizes: '512x512', type: iconType, purpose: 'any' },
     ],
   };
 
