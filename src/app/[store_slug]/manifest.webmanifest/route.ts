@@ -10,7 +10,7 @@ export async function GET(
   const { store_slug } = await params;
   const supabase = await createClient();
 
-  const { data: store } = await supabase
+  const { data: store, error } = await supabase
     .from('stores')
     .select('name, brand_name, logo_url, theme_color')
     .eq('slug', store_slug)
@@ -18,7 +18,16 @@ export async function GET(
     .single();
 
   if (!store) {
-    return NextResponse.json({ error: 'Tienda no encontrada' }, { status: 404 });
+    // Diagnóstico temporal: exponemos el motivo real para depurar,
+    // esto se debe revertir a un mensaje simple una vez resuelto.
+    return NextResponse.json(
+      {
+        error: 'Tienda no encontrada',
+        debug_store_slug_recibido: store_slug,
+        debug_supabase_error: error ? error.message : null,
+      },
+      { status: 404 }
+    );
   }
 
   const displayName = store.brand_name || store.name;
