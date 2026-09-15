@@ -19,6 +19,7 @@ export async function proxy(request: NextRequest) {
 
     const isStorefrontPath =
       path === '/' ||
+      path === '/manifest.webmanifest' ||
       path.startsWith('/checkout') ||
       path.startsWith('/order-success');
 
