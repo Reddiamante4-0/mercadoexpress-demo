@@ -22,19 +22,24 @@ export async function GET(
   }
 
   const displayName = store.brand_name || store.name;
+  const hasLogo = Boolean(store.logo_url);
   const icon = store.logo_url || '/favicon.ico';
 
-  let iconType = 'image/png';
-  if (icon.toLowerCase().endsWith('.jpg') || icon.toLowerCase().endsWith('.jpeg')) {
-    iconType = 'image/jpeg';
-  } else if (icon.toLowerCase().endsWith('.svg')) {
-    iconType = 'image/svg+xml';
-  } else if (icon.toLowerCase().endsWith('.webp')) {
-    iconType = 'image/webp';
-  } else if (icon.toLowerCase().endsWith('.gif')) {
-    iconType = 'image/gif';
-  } else if (icon.toLowerCase().endsWith('.ico')) {
-    iconType = 'image/x-icon';
+  // El logo de cada tienda puede estar en distintos formatos (png, jpg, webp),
+  // así que verificamos el formato real en vez de asumir uno fijo.
+  let iconType = 'image/x-icon';
+  if (hasLogo) {
+    iconType = 'image/png';
+    try {
+      const headRes = await fetch(icon, { method: 'HEAD' });
+      const contentType = headRes.headers.get('content-type');
+      if (contentType && contentType.startsWith('image/')) {
+        iconType = contentType;
+      }
+    } catch {
+      // Si la verificación falla, seguimos con image/png por defecto
+      // para no romper el manifest completo.
+    }
   }
 
   const manifest = {
