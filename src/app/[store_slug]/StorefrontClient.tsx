@@ -869,10 +869,7 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
                 
                 // Smart decorative badges
                 let badge = null;
-                if (index === 0) badge = { text: 'Premium ⭐', color: 'bg-indigo-600' };
-                else if (index === 2) badge = { text: 'Fresco 🍏', color: 'bg-emerald-600' };
-                else if (index === 4) badge = { text: 'Más Vendido 🔥', color: 'bg-amber-600' };
-                else if (product.oldPrice) badge = { text: 'Oferta ⚡', color: 'bg-rose-600' };
+                if (product.oldPrice) badge = { text: 'Oferta ⚡', color: 'bg-rose-600' };
 
                 return (
                   <div 
