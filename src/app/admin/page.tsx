@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import { markStoreAsPaid } from './actions';
 import Link from 'next/link';
+import MarcarPagadoButton from './MarcarPagadoButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -82,19 +83,7 @@ export default async function AdminPage() {
                 <td style={{ padding: '8px' }}>{store.next_payment_date || '—'}</td>
                 <td style={{ padding: '8px' }}>
                   <form action={markStoreAsPaid.bind(null, store.id)}>
-                    <button
-                      type="submit"
-                      style={{
-                        padding: '6px 12px',
-                        backgroundColor: '#16a34a',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Marcar como pagado
-                    </button>
+                    <MarcarPagadoButton />
                   </form>
                 </td>
               </tr>
