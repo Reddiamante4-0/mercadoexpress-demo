@@ -28,7 +28,14 @@ const hintStyle: React.CSSProperties = {
   marginBottom: '14px',
 };
 
-export default function NuevaTiendaForm() {
+type TiendaExistente = {
+  id: string;
+  name: string;
+  brand_name: string | null;
+  codigo_referido: string | null;
+};
+
+export default function NuevaTiendaForm({ tiendasExistentes }: { tiendasExistentes: TiendaExistente[] }) {
   const [ownerEmail, setOwnerEmail] = useState('');
   const [ownerPassword, setOwnerPassword] = useState('');
   const [storeName, setStoreName] = useState('');
@@ -42,6 +49,8 @@ export default function NuevaTiendaForm() {
   const [freeShippingThreshold, setFreeShippingThreshold] = useState(80000);
   const [businessType, setBusinessType] = useState<'drogueria' | 'supermercado' | 'tienda_barrio' | 'otro'>('tienda_barrio');
   const [customCategories, setCustomCategories] = useState('');
+  const [planTipo, setPlanTipo] = useState<'basica' | 'estandar' | 'premium' | 'vendedor'>('basica');
+  const [referidoPor, setReferidoPor] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<{ success: boolean; slug?: string; error?: string } | null>(null);
 
@@ -64,6 +73,8 @@ export default function NuevaTiendaForm() {
         freeShippingThreshold,
         businessType,
         customCategories,
+        planTipo,
+        referidoPor: referidoPor || null,
       });
       setResult({ success: true, slug: res.slug });
     } catch (err: any) {
@@ -138,6 +149,25 @@ export default function NuevaTiendaForm() {
 
       <label style={labelStyle}>Envío gratis desde</label>
       <input type="number" value={freeShippingThreshold} onChange={(e) => setFreeShippingThreshold(Number(e.target.value))} style={inputStyle} />
+
+      <label style={labelStyle}>Plan de Vinculación</label>
+      <select value={planTipo} onChange={(e) => setPlanTipo(e.target.value as any)} style={inputStyle}>
+        <option value="basica">Básica — $250.000 (hasta 75 productos)</option>
+        <option value="estandar">Estándar — $300.000 (hasta 150 productos)</option>
+        <option value="premium">Premium — $400.000 (hasta 300 productos)</option>
+        <option value="vendedor">Vendedor/Afiliado — $40.000 (solo referir, sin catálogo)</option>
+      </select>
+      <p style={hintStyle}>Todos los planes pagan $40.000 de mensualidad.</p>
+
+      <label style={labelStyle}>¿Quién la refirió? (opcional)</label>
+      <select value={referidoPor} onChange={(e) => setReferidoPor(e.target.value)} style={inputStyle}>
+        <option value="">Ninguno — venta directa</option>
+        {tiendasExistentes.map((t) => (
+          <option key={t.id} value={t.id}>
+            {t.brand_name || t.name}{t.codigo_referido ? ` (${t.codigo_referido})` : ''}
+          </option>
+        ))}
+      </select>
 
       <label style={labelStyle}>Tipo de negocio</label>
       <select value={businessType} onChange={(e) => setBusinessType(e.target.value as any)} style={inputStyle}>
