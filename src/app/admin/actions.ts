@@ -42,22 +42,32 @@ export async function markStoreAsPaid(storeId: string) {
   }
 
   if (tienda?.referido_por) {
-    const { data: tiendaReferente } = await supabaseAdmin
-      .from('stores')
-      .select('comision_pct_mensualidad')
-      .eq('id', tienda.referido_por)
-      .single();
+    const { data: comisionExistente } = await supabaseAdmin
+      .from('comisiones')
+      .select('id')
+      .eq('store_referida_id', storeId)
+      .eq('tipo', 'mensualidad')
+      .eq('periodo', formatDate(today))
+      .maybeSingle();
 
-    if (tiendaReferente) {
-      const montoComision = Math.round((tienda.plan_mensualidad_monto || 40000) * (tiendaReferente.comision_pct_mensualidad / 100));
-      await supabaseAdmin.from('comisiones').insert({
-        store_beneficiaria_id: tienda.referido_por,
-        store_referida_id: storeId,
-        tipo: 'mensualidad',
-        periodo: formatDate(today),
-        monto: montoComision,
-        estado: 'pendiente',
-      });
+    if (!comisionExistente) {
+      const { data: tiendaReferente } = await supabaseAdmin
+        .from('stores')
+        .select('comision_pct_mensualidad')
+        .eq('id', tienda.referido_por)
+        .single();
+
+      if (tiendaReferente) {
+        const montoComision = Math.round((tienda.plan_mensualidad_monto || 40000) * (tiendaReferente.comision_pct_mensualidad / 100));
+        await supabaseAdmin.from('comisiones').insert({
+          store_beneficiaria_id: tienda.referido_por,
+          store_referida_id: storeId,
+          tipo: 'mensualidad',
+          periodo: formatDate(today),
+          monto: montoComision,
+          estado: 'pendiente',
+        });
+      }
     }
   }
 
