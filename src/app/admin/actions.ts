@@ -243,3 +243,51 @@ export async function createNewStore(formData: {
 
   return { success: true, slug: formData.slug };
 }
+
+export async function aprobarComision(comisionId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user || user.email !== process.env.SUPER_ADMIN_EMAIL) {
+    throw new Error('No autorizado');
+  }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseSecret = process.env.SUPABASE_SECRET_KEY!;
+  const supabaseAdmin = createAdminClient(supabaseUrl, supabaseSecret);
+
+  const { error } = await supabaseAdmin
+    .from('comisiones')
+    .update({ estado: 'aprobado' })
+    .eq('id', comisionId);
+
+  if (error) {
+    throw new Error('Error aprobando la comisión: ' + error.message);
+  }
+
+  revalidatePath('/admin/comisiones');
+}
+
+export async function marcarComisionPagada(comisionId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user || user.email !== process.env.SUPER_ADMIN_EMAIL) {
+    throw new Error('No autorizado');
+  }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseSecret = process.env.SUPABASE_SECRET_KEY!;
+  const supabaseAdmin = createAdminClient(supabaseUrl, supabaseSecret);
+
+  const { error } = await supabaseAdmin
+    .from('comisiones')
+    .update({ estado: 'pagado' })
+    .eq('id', comisionId);
+
+  if (error) {
+    throw new Error('Error marcando la comisión como pagada: ' + error.message);
+  }
+
+  revalidatePath('/admin/comisiones');
+}
