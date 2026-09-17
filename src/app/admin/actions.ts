@@ -22,6 +22,12 @@ export async function markStoreAsPaid(storeId: string) {
 
   const formatDate = (d: Date) => d.toISOString().split('T')[0];
 
+  const { data: tienda } = await supabaseAdmin
+    .from('stores')
+    .select('referido_por, plan_mensualidad_monto')
+    .eq('id', storeId)
+    .single();
+
   const { error } = await supabaseAdmin
     .from('stores')
     .update({
@@ -33,6 +39,26 @@ export async function markStoreAsPaid(storeId: string) {
 
   if (error) {
     throw new Error('Error actualizando el pago: ' + error.message);
+  }
+
+  if (tienda?.referido_por) {
+    const { data: tiendaReferente } = await supabaseAdmin
+      .from('stores')
+      .select('comision_pct_mensualidad')
+      .eq('id', tienda.referido_por)
+      .single();
+
+    if (tiendaReferente) {
+      const montoComision = Math.round((tienda.plan_mensualidad_monto || 40000) * (tiendaReferente.comision_pct_mensualidad / 100));
+      await supabaseAdmin.from('comisiones').insert({
+        store_beneficiaria_id: tienda.referido_por,
+        store_referida_id: storeId,
+        tipo: 'mensualidad',
+        periodo: formatDate(today),
+        monto: montoComision,
+        estado: 'pendiente',
+      });
+    }
   }
 
   revalidatePath('/admin');
@@ -52,6 +78,8 @@ export async function createNewStore(formData: {
   freeShippingThreshold: number;
   businessType: 'drogueria' | 'supermercado' | 'tienda_barrio' | 'otro';
   customCategories: string;
+  planTipo: 'basica' | 'estandar' | 'premium' | 'vendedor';
+  referidoPor: string | null;
 }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -79,6 +107,16 @@ export async function createNewStore(formData: {
   nextPayment.setDate(nextPayment.getDate() + 30);
   const formatDate = (d: Date) => d.toISOString().split('T')[0];
 
+  const PLAN_VINCULACION_MONTOS: Record<string, number> = {
+    basica: 250000,
+    estandar: 300000,
+    premium: 400000,
+    vendedor: 40000,
+  };
+  const planVinculacionMonto = PLAN_VINCULACION_MONTOS[formData.planTipo];
+  const planMensualidadMonto = 40000;
+  const codigoReferido = formData.slug.toUpperCase();
+
   const { data: newStore, error: storeError } = await supabaseAdmin
     .from('stores')
     .insert({
@@ -95,12 +133,37 @@ export async function createNewStore(formData: {
       is_active: true,
       last_payment_date: formatDate(today),
       next_payment_date: formatDate(nextPayment),
+      plan_tipo: formData.planTipo,
+      plan_vinculacion_monto: planVinculacionMonto,
+      plan_mensualidad_monto: planMensualidadMonto,
+      referido_por: formData.referidoPor,
+      codigo_referido: codigoReferido,
     })
     .select('id')
     .single();
 
   if (storeError || !newStore) {
     throw new Error('Error creando la tienda: ' + (storeError?.message || 'desconocido'));
+  }
+
+  if (formData.referidoPor) {
+    const { data: tiendaReferente } = await supabaseAdmin
+      .from('stores')
+      .select('comision_pct_vinculacion')
+      .eq('id', formData.referidoPor)
+      .single();
+
+    if (tiendaReferente) {
+      const montoComision = Math.round(planVinculacionMonto * (tiendaReferente.comision_pct_vinculacion / 100));
+      await supabaseAdmin.from('comisiones').insert({
+        store_beneficiaria_id: formData.referidoPor,
+        store_referida_id: newStore.id,
+        tipo: 'vinculacion',
+        periodo: formatDate(today),
+        monto: montoComision,
+        estado: 'pendiente',
+      });
+    }
   }
 
   const TEMPLATES: Record<string, { name: string; emoji: string }[]> = {
