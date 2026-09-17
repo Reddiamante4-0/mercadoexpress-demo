@@ -37,6 +37,22 @@ export default async function AdminPage() {
       >
         + Crear Tienda Nueva
       </Link>
+      <Link
+        href="/admin/comisiones"
+        style={{
+          display: 'inline-block',
+          backgroundColor: '#1e40af',
+          color: 'white',
+          padding: '10px 18px',
+          borderRadius: '8px',
+          fontWeight: 'bold',
+          textDecoration: 'none',
+          marginBottom: '1.5rem',
+          marginLeft: '10px',
+        }}
+      >
+        💰 Comisiones de Referidos
+      </Link>
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr style={{ textAlign: 'left', borderBottom: '2px solid #ccc' }}>
