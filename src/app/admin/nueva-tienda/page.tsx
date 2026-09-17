@@ -12,10 +12,15 @@ export default async function NuevaTiendaPage() {
     notFound();
   }
 
+  const { data: tiendasExistentes } = await supabase
+    .from('stores')
+    .select('id, name, brand_name, codigo_referido')
+    .order('name', { ascending: true });
+
   return (
     <div style={{ padding: '2rem', fontFamily: 'sans-serif', maxWidth: '640px' }}>
       <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>Crear Tienda Nueva</h1>
-      <NuevaTiendaForm />
+      <NuevaTiendaForm tiendasExistentes={tiendasExistentes || []} />
     </div>
   );
 }
