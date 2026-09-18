@@ -99,6 +99,12 @@ const NAV_SECTIONS = [
         labelEs: 'Reporte de Ventas',
       },
       {
+        href: '/dashboard/mi-cuenta',
+        icon: <CreditCard className="w-5 h-5 shrink-0" />,
+        labelEn: 'My Account',
+        labelEs: 'Mi Cuenta',
+      },
+      {
         href: '/dashboard/calificaciones',
         icon: <Star className="w-5 h-5 shrink-0" />,
         labelEn: 'Ratings',
