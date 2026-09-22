@@ -621,6 +621,14 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
                   className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl border border-green-200/60 p-5 flex flex-col justify-between shadow-xs text-left relative overflow-hidden group cursor-pointer hover:scale-103 transition-all"
                 >
                   <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-green-200/30 blur-xl pointer-events-none" />
+                  <div className="w-full aspect-square rounded-2xl overflow-hidden bg-white/60 mb-3">
+                    <img
+                      src={combo.image || DEFAULT_IMAGE}
+                      alt={combo.name}
+                      onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_IMAGE; }}
+                      className="object-cover w-full h-full group-hover:scale-105 transition-all duration-300"
+                    />
+                  </div>
                   <div>
                     <span className="bg-[var(--brand-primary)] text-white text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md">
                       Combo
