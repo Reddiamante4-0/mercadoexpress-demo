@@ -17,6 +17,7 @@ export default function CombosPage() {
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [comboImage, setComboImage] = useState('');
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
   const [comboPrice, setComboPrice] = useState(0);
   const [comboStock, setComboStock] = useState(0);
@@ -52,6 +53,7 @@ export default function CombosPage() {
     setEditingCombo(null);
     setName('');
     setDescription('');
+    setComboImage('');
     setSelectedProductIds([]);
     setComboPrice(0);
     setComboStock(0);
@@ -63,6 +65,7 @@ export default function CombosPage() {
     setEditingCombo(combo);
     setName(combo.name);
     setDescription(combo.description || '');
+    setComboImage(combo.image || '');
     setSelectedProductIds(combo.comboProductIds || []);
     setComboPrice(combo.price);
     setComboStock(combo.stock);
@@ -96,7 +99,7 @@ export default function CombosPage() {
         price: comboPrice,
         oldPrice: regularPrice > comboPrice ? regularPrice : undefined,
         stock: comboStock,
-        image: editingCombo ? editingCombo.image : DEFAULT_IMAGE,
+        image: comboImage.trim() || DEFAULT_IMAGE,
         description: description || 'Combo especial de ahorro',
         active,
         unit: 'combo',
@@ -234,6 +237,17 @@ export default function CombosPage() {
             <div className="space-y-1">
               <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Descripción (opcional)</label>
               <input type="text" value={description} onChange={(e) => setDescription(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs" />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">URL de la imagen (opcional, sube la foto en Fotos y pega aquí el link)</label>
+              <input
+                type="url"
+                placeholder="https://..."
+                value={comboImage}
+                onChange={(e) => setComboImage(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs"
+              />
             </div>
 
             <div className="space-y-1">
