@@ -23,7 +23,7 @@ import {
   Globe,
   MessageCircle
 } from 'lucide-react';
-import { getProductsByIds, getProductsPaginated, getDiscountedProducts, Product } from '@/lib/supabase-api';
+import { getProductsByIds, getProductsPaginated, getDiscountedProducts, getComboProducts, Product } from '@/lib/supabase-api';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslation } from '@/hooks/useTranslation';
 import { translations } from '@/config/translations';
@@ -161,6 +161,7 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [dealsProducts, setDealsProducts] = useState<Product[]>([]);
+  const [comboProducts, setComboProducts] = useState<Product[]>([]);
 
   // Cart State
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -173,6 +174,11 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
   // category/search filters and of pagination)
   useEffect(() => {
     getDiscountedProducts(storeId, 4).then(setDealsProducts);
+  }, [storeId]);
+
+  // Load real savings combos (independent of category/search filters and of pagination)
+  useEffect(() => {
+    getComboProducts(storeId, 6).then(setComboProducts);
   }, [storeId]);
 
   // Debounce search input (waits 400ms after typing stops before querying)
@@ -308,44 +314,6 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
     } else {
       setWishlist([...wishlist, id]);
       toast({ title: 'Agregado a tus favoritos ❤️', type: 'success' });
-    }
-  };
-
-  // Add savings combos helper
-  const addComboToCart = (comboName: string, productIds: string[]) => {
-    const comboProducts = products.filter(p => productIds.includes(p.id) && p.stock > 0);
-    if (comboProducts.length === 0) {
-      toast({ title: 'Lo sentimos, este combo no tiene stock disponible', type: 'error' });
-      return;
-    }
-    
-    let addedCount = 0;
-    const updatedCart = [...cart];
-    
-    comboProducts.forEach(product => {
-      const idx = updatedCart.findIndex(item => item.product.id === product.id);
-      if (idx >= 0) {
-        if (updatedCart[idx].quantity < product.stock) {
-          updatedCart[idx].quantity += 1;
-          addedCount++;
-        }
-      } else {
-        updatedCart.push({ product, quantity: 1 });
-        addedCount++;
-      }
-    });
-
-    if (addedCount > 0) {
-      saveCartToStorage(updatedCart);
-      toast({
-        title: `¡Combo "${comboName}" agregado al carrito!`,
-        type: 'success'
-      });
-    } else {
-      toast({
-        title: 'Los productos de este combo ya están al límite de su inventario en tu carrito',
-        type: 'error'
-      });
     }
   };
 
@@ -630,126 +598,56 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
           </div>
         </section>
 
-        {/* HIGH CONVERTING SAVINGS COMBOS BLOCK [NEW] */}
-        {false && (
+        {/* SAVINGS COMBOS (combos reales creados desde el panel de la tienda) */}
+        {comboProducts.length > 0 && (
         <section className="w-full">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 text-left">
               {t.store.combosTitle}
             </h3>
           </div>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {/* Combo 1 */}
-            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl border border-green-200/60 p-5 flex flex-col justify-between shadow-xs text-left relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-green-200/30 blur-xl pointer-events-none" />
-              <div>
-                <span className="bg-[var(--brand-primary)] text-white text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md">
-                  {language === 'en' ? 'Healthy' : 'Saludable'}
-                </span>
-                <h4 className="text-sm font-black text-slate-800 mt-2">
-                  {language === 'en' ? 'Homemade Sancocho Stew Combo' : 'Combo Sancocho Casero'}
-                </h4>
-                <p className="text-[10px] text-slate-400 mt-1 leading-normal">
-                  {language === 'en' 
-                    ? 'Includes potatoes, plantains, onion, tomato, and selected fresh cilantro.' 
-                    : 'Incluye papas, plátanos, cebolla, tomate, y cilantro fresco seleccionado.'}
-                </p>
-                <div className="flex items-center gap-1.5 mt-3">
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-white border border-slate-200 text-slate-500 font-bold">
-                    {language === 'en' ? '🥦 Vegetables' : '🥦 Verduras'}
-                  </span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-white border border-slate-200 text-slate-500 font-bold">
-                    {language === 'en' ? '🧅 3 Varieties' : '🧅 3 Variedades'}
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between mt-5 pt-3 border-t border-green-200/30">
-                <span className="text-xs font-black text-green-800">
-                  {language === 'en' ? 'Get all for $12,500' : 'Llevar todo por $12.500'}
-                </span>
-                <button 
-                  onClick={() => addComboToCart(language === 'en' ? 'Homemade Sancocho Combo' : 'Sancocho Casero', ['p7', 'p8', 'p9'])}
-                  className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-white text-[10px] font-black uppercase tracking-wider px-3.5 py-2 rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
-                >
-                  {t.store.addCombo}
-                </button>
-              </div>
-            </div>
+            {comboProducts.map((combo) => {
+              const includedNames = (combo.comboProductIds || [])
+                .map(id => products.find(p => p.id === id))
+                .filter((p): p is Product => Boolean(p))
+                .map(p => language === 'en' ? (p.nameEn || p.name) : p.name);
 
-            {/* Combo 2 */}
-            <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-3xl border border-red-200/60 p-5 flex flex-col justify-between shadow-xs text-left relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-red-200/30 blur-xl pointer-events-none" />
-              <div>
-                <span className="bg-red-600 text-white text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md">
-                  {language === 'en' ? 'Awesome BBQ' : 'Asado Asombroso'}
-                </span>
-                <h4 className="text-sm font-black text-slate-800 mt-2">
-                  {language === 'en' ? 'Premium Grilled Meat Combo' : 'Combo Parrillada Premium'}
-                </h4>
-                <p className="text-[10px] text-slate-400 mt-1 leading-normal">
-                  {language === 'en'
-                    ? 'Includes fresh premium beef tenderloin, chicken wings to season, and Hass avocado.'
-                    : 'Incluye lomo de res premium fresco, alitas de pollo adobables y aguacate Hass.'}
-                </p>
-                <div className="flex items-center gap-1.5 mt-3">
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-white border border-slate-200 text-slate-500 font-bold">
-                    {language === 'en' ? '🥩 Meats' : '🥩 Carnes'}
-                  </span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-white border border-slate-200 text-slate-500 font-bold">
-                    {language === 'en' ? '🥑 Side dish' : '🥑 Acompañante'}
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between mt-5 pt-3 border-t border-red-200/30">
-                <span className="text-xs font-black text-red-800">
-                  {language === 'en' ? 'Get all for $68,400' : 'Llevar todo por $68.400'}
-                </span>
-                <button 
-                  onClick={() => addComboToCart(language === 'en' ? 'Premium Grilled Combo' : 'Parrillada Premium', ['p1', 'p4', 'p10'])}
-                  className="bg-red-600 hover:bg-red-700 text-white text-[10px] font-black uppercase tracking-wider px-3.5 py-2 rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
+              return (
+                <div
+                  key={combo.id}
+                  onClick={() => setSelectedProduct(combo)}
+                  className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl border border-green-200/60 p-5 flex flex-col justify-between shadow-xs text-left relative overflow-hidden group cursor-pointer hover:scale-103 transition-all"
                 >
-                  {t.store.addCombo}
-                </button>
-              </div>
-            </div>
-
-            {/* Combo 3 */}
-            <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-3xl border border-orange-200/60 p-5 flex flex-col justify-between shadow-xs text-left relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-orange-200/30 blur-xl pointer-events-none" />
-              <div>
-                <span className="bg-orange-600 text-white text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md">
-                  {language === 'en' ? 'Daily Vitamins' : 'Vitaminas al Día'}
-                </span>
-                <h4 className="text-sm font-black text-slate-800 mt-2">
-                  {language === 'en' ? 'Sweet Salad Combo' : 'Combo Ensalada Dulce'}
-                </h4>
-                <p className="text-[10px] text-slate-400 mt-1 leading-normal">
-                  {language === 'en'
-                    ? 'Selected red and sweet strawberries accompanied by fresh Uraba bananas.'
-                    : 'Fresas seleccionadas rojas y dulces acompañadas de banano Urabá fresco.'}
-                </p>
-                <div className="flex items-center gap-1.5 mt-3">
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-white border border-slate-200 text-slate-500 font-bold">
-                    {language === 'en' ? '🍎 Fruits' : '🍎 Frutas'}
-                  </span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-white border border-slate-200 text-slate-500 font-bold">
-                    {language === 'en' ? '🍌 100% Organic' : '🍌 100% Orgánico'}
-                  </span>
+                  <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-green-200/30 blur-xl pointer-events-none" />
+                  <div>
+                    <span className="bg-[var(--brand-primary)] text-white text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md">
+                      Combo
+                    </span>
+                    <h4 className="text-sm font-black text-slate-800 mt-2">
+                      {language === 'en' ? (combo.nameEn || combo.name) : combo.name}
+                    </h4>
+                    {includedNames.length > 0 && (
+                      <p className="text-[10px] text-slate-400 mt-1 leading-normal">
+                        {language === 'en' ? 'Includes: ' : 'Incluye: '}{includedNames.join(', ')}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between mt-5 pt-3 border-t border-green-200/30">
+                    <span className="text-xs font-black text-green-800">
+                      {formatPrice(combo.price)}
+                    </span>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); addToCart(combo); }}
+                      className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-white text-[10px] font-black uppercase tracking-wider px-3.5 py-2 rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
+                    >
+                      {t.store.addCombo}
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center justify-between mt-5 pt-3 border-t border-orange-200/30">
-                <span className="text-xs font-black text-orange-800">
-                  {language === 'en' ? 'Get all for $11,000' : 'Llevar todo por $11.000'}
-                </span>
-                <button 
-                  onClick={() => addComboToCart(language === 'en' ? 'Sweet Salad Combo' : 'Ensalada Dulce', ['p11', 'p12'])}
-                  className="bg-orange-600 hover:bg-orange-700 text-white text-[10px] font-black uppercase tracking-wider px-3.5 py-2 rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
-                >
-                  {t.store.addCombo}
-                </button>
-              </div>
-            </div>
+              );
+            })}
           </div>
         </section>
         )}

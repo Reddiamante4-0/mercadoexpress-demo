@@ -290,6 +290,23 @@ export async function getDiscountedProducts(storeId: string, limit: number = 4):
   return data.map(productFromDb);
 }
 
+export async function getComboProducts(storeId: string, limit: number = 6): Promise<Product[]> {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .eq('store_id', storeId)
+    .eq('active', true)
+    .eq('is_combo', true)
+    .order('name', { ascending: true })
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching combo products:', error);
+    return [];
+  }
+  return data.map(productFromDb);
+}
+
 export async function getLowStockProducts(storeId: string, threshold: number = 5): Promise<Product[]> {
   const { data, error } = await supabase
     .from('products')
