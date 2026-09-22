@@ -23,13 +23,13 @@ export async function GET(
 
   const displayName = store.brand_name || store.name;
   const hasLogo = Boolean(store.logo_url);
-  const icon = store.logo_url || '/favicon.ico';
+  const icon = store.logo_url || '/icon-512.png';
 
   // El logo de cada tienda puede estar en distintos formatos (png, jpg, webp),
   // así que verificamos el formato real en vez de asumir uno fijo.
-  let iconType = 'image/x-icon';
+  // Si la tienda no tiene logo propio, usamos el logo de Crisalap (siempre PNG).
+  let iconType = 'image/png';
   if (hasLogo) {
-    iconType = 'image/png';
     try {
       const headRes = await fetch(icon, { method: 'HEAD' });
       const contentType = headRes.headers.get('content-type');
