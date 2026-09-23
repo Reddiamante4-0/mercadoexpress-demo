@@ -613,6 +613,7 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
                 .map(id => products.find(p => p.id === id))
                 .filter((p): p is Product => Boolean(p))
                 .map(p => language === 'en' ? (p.nameEn || p.name) : p.name);
+              const savingPct = combo.oldPrice ? Math.round((1 - combo.price / combo.oldPrice) * 100) : 0;
 
               return (
                 <div
@@ -621,6 +622,11 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
                   className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl border border-green-200/60 p-5 flex flex-col justify-between shadow-xs text-left relative overflow-hidden group cursor-pointer hover:scale-103 transition-all"
                 >
                   <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-green-200/30 blur-xl pointer-events-none" />
+                  {savingPct > 0 && (
+                    <span className="absolute top-2 left-2 bg-rose-600 text-white font-black text-[9px] px-2 py-0.5 rounded-md shadow-xs z-10">
+                      -{savingPct}%
+                    </span>
+                  )}
                   <div className="w-full aspect-square rounded-2xl overflow-hidden bg-white/60 mb-3">
                     <img
                       src={combo.image || DEFAULT_IMAGE}
@@ -643,9 +649,16 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
                     )}
                   </div>
                   <div className="flex items-center justify-between mt-5 pt-3 border-t border-green-200/30">
-                    <span className="text-xs font-black text-green-800">
-                      {formatPrice(combo.price)}
-                    </span>
+                    <div>
+                      <span className="text-xs font-black text-green-800 block leading-none">
+                        {formatPrice(combo.price)}
+                      </span>
+                      {combo.oldPrice && (
+                        <span className="text-[10px] text-slate-400 line-through block mt-0.5 leading-none">
+                          {formatPrice(combo.oldPrice)}
+                        </span>
+                      )}
+                    </div>
                     <button
                       onClick={(e) => { e.stopPropagation(); addToCart(combo); }}
                       className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-white text-[10px] font-black uppercase tracking-wider px-3.5 py-2 rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
