@@ -228,7 +228,11 @@ export default function AdminProductsPage() {
             descriptionEn: row.descripcion_ingles?.toString().trim() || undefined,
             unit: row.unidad?.toString().trim() || 'lb',
             unitEn: row.unidad_ingles?.toString().trim() || undefined,
-            active: true
+            active: true,
+            // Esta importación no maneja combos, así que si el producto
+            // ya existente era un combo, conservamos esa marca en vez de borrarla.
+            isCombo: existingProduct?.isCombo,
+            comboProductIds: existingProduct?.comboProductIds
           };
 
           await saveProduct(parsedProduct, currentStoreId);
@@ -430,7 +434,11 @@ export default function AdminProductsPage() {
       descriptionEn: descriptionEn.trim() || undefined,
       unit: unit.trim() || 'lb',
       unitEn: unitEn.trim() || undefined,
-      active
+      active,
+      // Esta pantalla no maneja combos, así que si el producto editado
+      // ya era un combo, conservamos esa marca en vez de borrarla.
+      isCombo: editingProduct?.isCombo,
+      comboProductIds: editingProduct?.comboProductIds
     };
 
     if (currentStoreId) await saveProduct(newProduct, currentStoreId);
