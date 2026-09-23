@@ -245,7 +245,8 @@ export async function getProductsPaginated(
     .from('products')
     .select('*', { count: 'exact' })
     .eq('store_id', storeId)
-    .eq('active', true);
+    .eq('active', true)
+    .or('is_combo.is.null,is_combo.eq.false');
 
   if (category && category !== 'Todas') {
     if (category === 'Ofertas') {
@@ -279,6 +280,7 @@ export async function getDiscountedProducts(storeId: string, limit: number = 4):
     .select('*')
     .eq('store_id', storeId)
     .eq('active', true)
+    .or('is_combo.is.null,is_combo.eq.false')
     .not('old_price', 'is', null)
     .order('name', { ascending: true })
     .limit(limit);
