@@ -20,6 +20,7 @@ const ESTADO_COMISION: Record<string, { texto: string; bg: string; color: string
 export default function MiCuentaPage() {
   const [data, setData] = useState<MiCuentaData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [copiado, setCopiado] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -80,9 +81,26 @@ export default function MiCuentaPage() {
 
       <div className="bg-white rounded-lg shadow p-5 border border-gray-200">
         <h2 className="text-lg font-semibold mb-1">Mis referidos</h2>
-        <p className="text-sm text-gray-500 mb-4">
-          Tu código de referido: <span className="font-mono font-bold">{data.store.codigoReferido || '—'}</span>
-        </p>
+        {data.store.codigoReferido && (
+          <div className="mb-4">
+            <p className="text-sm text-gray-500 mb-1">Tu link para invitar a otras tiendas:</p>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 text-xs bg-gray-50 border border-gray-200 rounded px-2 py-2 truncate">
+                {`https://crisalap.com/solicitud?ref=${data.store.codigoReferido}`}
+              </code>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(`https://crisalap.com/solicitud?ref=${data.store.codigoReferido}`);
+                  setCopiado(true);
+                  setTimeout(() => setCopiado(false), 2000);
+                }}
+                className="text-xs font-bold px-3 py-2 rounded bg-green-600 text-white hover:bg-green-700"
+              >
+                {copiado ? '¡Copiado!' : 'Copiar'}
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-4 mb-5">
           <div className="bg-green-50 rounded-lg p-3">
