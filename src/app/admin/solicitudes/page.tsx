@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { notFound } from 'next/navigation';
+import { descartarSolicitud } from './actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -62,6 +63,25 @@ export default async function SolicitudesPage() {
           <p style={{ fontSize: '11px', color: '#999', marginTop: '4px' }}>
             Recibida: {new Date(s.created_at).toLocaleString('es-CO')}
           </p>
+          <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+            <form action="/admin/nueva-tienda" method="GET">
+              <input type="hidden" name="solicitud_id" value={s.id} />
+              <button
+                type="submit"
+                style={{ fontSize: '13px', fontWeight: 'bold', padding: '6px 12px', backgroundColor: '#16a34a', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+              >
+                Convertir en tienda
+              </button>
+            </form>
+            <form action={descartarSolicitud.bind(null, s.id)}>
+              <button
+                type="submit"
+                style={{ fontSize: '13px', fontWeight: 'bold', padding: '6px 12px', backgroundColor: '#f3f4f6', color: '#555', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer' }}
+              >
+                Descartar
+              </button>
+            </form>
+          </div>
         </div>
       ))}
     </div>
