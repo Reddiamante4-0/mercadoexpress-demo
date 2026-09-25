@@ -23,6 +23,7 @@ export default function CombosPage() {
   const [comboStock, setComboStock] = useState(0);
   const [active, setActive] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [productSearch, setProductSearch] = useState('');
 
   const combos = products.filter(p => p.isCombo);
   const regularProducts = products.filter(p => !p.isCombo);
@@ -58,6 +59,7 @@ export default function CombosPage() {
     setComboPrice(0);
     setComboStock(0);
     setActive(true);
+    setProductSearch('');
     setShowModal(true);
   };
 
@@ -70,6 +72,7 @@ export default function CombosPage() {
     setComboPrice(combo.price);
     setComboStock(combo.stock);
     setActive(combo.active);
+    setProductSearch('');
     setShowModal(true);
   };
 
@@ -78,6 +81,10 @@ export default function CombosPage() {
       prev.includes(productId) ? prev.filter(id => id !== productId) : [...prev, productId]
     );
   };
+
+  const filteredRegularProducts = productSearch.trim()
+    ? regularProducts.filter(p => p.name.toLowerCase().includes(productSearch.trim().toLowerCase()))
+    : regularProducts;
 
   const regularPrice = regularProducts
     .filter(p => selectedProductIds.includes(p.id))
@@ -252,8 +259,18 @@ export default function CombosPage() {
 
             <div className="space-y-1">
               <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Productos incluidos (elige 2 o más, solo de referencia)</label>
+              <input
+                type="text"
+                value={productSearch}
+                onChange={(e) => setProductSearch(e.target.value)}
+                placeholder="Buscar producto por nombre..."
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs mb-2"
+              />
               <div className="max-h-48 overflow-y-auto border border-slate-200 rounded-xl divide-y divide-slate-100">
-                {regularProducts.map((p) => (
+                {filteredRegularProducts.length === 0 && (
+                  <p className="px-3 py-3 text-xs text-slate-400 text-center">No se encontraron productos con ese nombre.</p>
+                )}
+                {filteredRegularProducts.map((p) => (
                   <label key={p.id} className="flex items-center gap-2 px-3 py-2 text-xs cursor-pointer hover:bg-slate-50">
                     <input
                       type="checkbox"
