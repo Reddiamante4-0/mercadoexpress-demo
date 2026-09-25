@@ -198,6 +198,7 @@ function SidebarContent({
   const { language } = useTranslation();
   const [supabase] = useState(() => createClient());
   const [businessName, setBusinessName] = useState(brandConfig.appName);
+  const [esVendedor, setEsVendedor] = useState(false);
 
   useEffect(() => {
     async function loadBusinessName() {
@@ -207,12 +208,15 @@ function SidebarContent({
 
         const { data, error } = await supabase
           .from('stores')
-          .select('brand_name')
+          .select('brand_name, plan_tipo')
           .eq('owner_id', user.id)
           .single();
 
-        if (!error && data && data.brand_name) {
-          setBusinessName(data.brand_name);
+        if (!error && data) {
+          if (data.brand_name) {
+            setBusinessName(data.brand_name);
+          }
+          setEsVendedor(data.plan_tipo === 'vendedor');
         }
       } catch (err) {
         console.error('Error fetching business name:', err);
@@ -257,26 +261,31 @@ function SidebarContent({
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
-        {NAV_SECTIONS.map((section) => (
-          <div key={section.titleEn}>
-            {!collapsed && (
-              <p className="px-3 mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400 text-left">
-                {language === 'en' ? section.titleEn : section.titleEs}
-              </p>
-            )}
-            {collapsed && <div className="mb-2 mx-3 border-t border-slate-100" />}
-            <div className="space-y-1">
-              {section.items.map((item) => (
-                <NavLink
-                  key={item.href}
-                  item={item}
-                  collapsed={collapsed}
-                  onCloseMobile={onCloseMobile}
-                />
-              ))}
+        {NAV_SECTIONS.map((section) => {
+          const items = esVendedor
+            ? section.items.filter((item) => item.href !== '/dashboard/configuracion-pagos')
+            : section.items;
+          return (
+            <div key={section.titleEn}>
+              {!collapsed && (
+                <p className="px-3 mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400 text-left">
+                  {language === 'en' ? section.titleEn : section.titleEs}
+                </p>
+              )}
+              {collapsed && <div className="mb-2 mx-3 border-t border-slate-100" />}
+              <div className="space-y-1">
+                {items.map((item) => (
+                  <NavLink
+                    key={item.href}
+                    item={item}
+                    collapsed={collapsed}
+                    onCloseMobile={onCloseMobile}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </nav>
 
       {/* Collapse toggle (desktop only) */}

@@ -8,7 +8,7 @@ export async function getStorePaymentSettings() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data: store } = await supabase.from('stores').select('id').eq('owner_id', user.id).single();
+  const { data: store } = await supabase.from('stores').select('id, plan_tipo').eq('owner_id', user.id).single();
   if (!store) return null;
 
   const { data, error } = await supabase
@@ -22,7 +22,7 @@ export async function getStorePaymentSettings() {
     return null;
   }
   
-  return { storeId: store.id, settings: data || null };
+  return { storeId: store.id, planTipo: store.plan_tipo, settings: data || null };
 }
 
 export async function saveStorePaymentSettings(formData: FormData) {
@@ -30,8 +30,12 @@ export async function saveStorePaymentSettings(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: 'No autenticado' };
 
-  const { data: store } = await supabase.from('stores').select('id').eq('owner_id', user.id).single();
+  const { data: store } = await supabase.from('stores').select('id, plan_tipo').eq('owner_id', user.id).single();
   if (!store) return { success: false, error: 'Tienda no encontrada' };
+
+  if (store.plan_tipo === 'vendedor') {
+    return { success: false, error: 'Esta sección no está disponible para tiendas de tipo Vendedor/Afiliado.' };
+  }
 
   const pubKey = formData.get('wompi_pub_key') as string;
   const prvKey = formData.get('wompi_prv_key') as string;

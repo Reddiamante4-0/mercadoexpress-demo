@@ -13,6 +13,17 @@ export default async function ConfiguracionPagosPage() {
     );
   }
 
+  if (data.planTipo === 'vendedor') {
+    return (
+      <div className="p-6 max-w-4xl mx-auto text-white">
+        <h1 className="text-3xl font-bold mb-2">Configuración de Pagos</h1>
+        <p className="text-gray-400">
+          Esta sección no aplica para tu tipo de tienda. Las tiendas Vendedor/Afiliado no procesan pagos propios: tus comisiones por referidos se generan automáticamente y las gestiona Crisalap.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 max-w-4xl mx-auto text-white">
       <h1 className="text-3xl font-bold mb-2">Configuración de Pagos Wompi</h1>
