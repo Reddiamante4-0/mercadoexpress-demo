@@ -35,14 +35,38 @@ type TiendaExistente = {
   codigo_referido: string | null;
 };
 
-export default function NuevaTiendaForm({ tiendasExistentes }: { tiendasExistentes: TiendaExistente[] }) {
+type SolicitudPrefill = {
+  id: string;
+  nombreNegocio: string;
+  contactoTelefono: string | null;
+  tipoNegocio: string | null;
+  referidoPorId: string | null;
+};
+
+function slugificar(texto: string): string {
+  return texto
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9-]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+export default function NuevaTiendaForm({
+  tiendasExistentes,
+  solicitudPrefill,
+}: {
+  tiendasExistentes: TiendaExistente[];
+  solicitudPrefill?: SolicitudPrefill | null;
+}) {
   const [ownerEmail, setOwnerEmail] = useState('');
   const [ownerPassword, setOwnerPassword] = useState('');
-  const [storeName, setStoreName] = useState('');
-  const [slug, setSlug] = useState('');
+  const [storeName, setStoreName] = useState(solicitudPrefill?.nombreNegocio || '');
+  const [slug, setSlug] = useState(solicitudPrefill ? slugificar(solicitudPrefill.nombreNegocio) : '');
   const [brandName, setBrandName] = useState('');
   const [tagline, setTagline] = useState('');
-  const [whatsappNumber, setWhatsappNumber] = useState('');
+  const [whatsappNumber, setWhatsappNumber] = useState(solicitudPrefill?.contactoTelefono || '');
   const [nequiNumber, setNequiNumber] = useState('');
   const [wompiEnabled, setWompiEnabled] = useState(true);
   const [shippingFee, setShippingFee] = useState(5000);
@@ -50,7 +74,7 @@ export default function NuevaTiendaForm({ tiendasExistentes }: { tiendasExistent
   const [businessType, setBusinessType] = useState<'drogueria' | 'supermercado' | 'tienda_barrio' | 'otro'>('tienda_barrio');
   const [customCategories, setCustomCategories] = useState('');
   const [planTipo, setPlanTipo] = useState<'basica' | 'estandar' | 'premium' | 'vendedor'>('basica');
-  const [referidoPor, setReferidoPor] = useState('');
+  const [referidoPor, setReferidoPor] = useState(solicitudPrefill?.referidoPorId || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<{ success: boolean; slug?: string; error?: string } | null>(null);
 
@@ -75,10 +99,11 @@ export default function NuevaTiendaForm({ tiendasExistentes }: { tiendasExistent
         customCategories,
         planTipo,
         referidoPor: referidoPor || null,
+        solicitudId: solicitudPrefill?.id || null,
       });
       setResult({ success: true, slug: res.slug });
-    } catch (err: any) {
-      setResult({ success: false, error: err.message || 'Error desconocido' });
+    } catch (err) {
+      setResult({ success: false, error: err instanceof Error ? err.message : 'Error desconocido' });
     } finally {
       setIsSubmitting(false);
     }
@@ -106,6 +131,13 @@ export default function NuevaTiendaForm({ tiendasExistentes }: { tiendasExistent
 
   return (
     <form onSubmit={handleSubmit}>
+      {solicitudPrefill && (
+        <div style={{ padding: '10px 12px', backgroundColor: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '6px', marginBottom: '16px', fontSize: '13px', color: '#1e3a8a' }}>
+          Datos precargados desde una solicitud recibida.
+          {solicitudPrefill.tipoNegocio && ` Tipo de negocio indicado: "${solicitudPrefill.tipoNegocio}".`}
+          {' '}Revisa y completa lo que falte antes de crear la tienda.
+        </div>
+      )}
       {result?.success === false && (
         <div style={{ padding: '12px', backgroundColor: '#fee2e2', border: '1px solid #dc2626', borderRadius: '6px', marginBottom: '16px', color: '#991b1b', fontSize: '13px' }}>
           {result.error}

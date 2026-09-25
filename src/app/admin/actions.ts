@@ -90,6 +90,7 @@ export async function createNewStore(formData: {
   customCategories: string;
   planTipo: 'basica' | 'estandar' | 'premium' | 'vendedor';
   referidoPor: string | null;
+  solicitudId?: string | null;
 }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -239,7 +240,19 @@ export async function createNewStore(formData: {
     }
   }
 
+  if (formData.solicitudId) {
+    try {
+      await supabaseAdmin
+        .from('solicitudes_tienda')
+        .update({ estado: 'convertida', store_creada_id: newStore.id })
+        .eq('id', formData.solicitudId);
+    } catch {
+      // La tienda ya quedó creada; si esto falla no interrumpimos el flujo.
+    }
+  }
+
   revalidatePath('/admin');
+  revalidatePath('/admin/solicitudes');
 
   return { success: true, slug: formData.slug };
 }
