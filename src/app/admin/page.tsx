@@ -98,9 +98,15 @@ export default async function AdminPage() {
                 <td style={{ padding: '8px' }}>{store.last_payment_date || '—'}</td>
                 <td style={{ padding: '8px' }}>{store.next_payment_date || '—'}</td>
                 <td style={{ padding: '8px' }}>
-                  <form action={markStoreAsPaid.bind(null, store.id)}>
+                  <form action={markStoreAsPaid.bind(null, store.id)} style={{ display: 'inline-block', marginRight: '10px' }}>
                     <MarcarPagadoButton />
                   </form>
+                  <Link
+                    href={`/admin/tiendas/${store.id}/categorias`}
+                    style={{ fontSize: '12px', fontWeight: 'bold', color: '#1e40af' }}
+                  >
+                    Categorías
+                  </Link>
                 </td>
               </tr>
             );
