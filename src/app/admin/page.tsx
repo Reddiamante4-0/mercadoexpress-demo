@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { notFound } from 'next/navigation';
 import { markStoreAsPaid } from './actions';
 import Link from 'next/link';
@@ -18,6 +19,15 @@ export default async function AdminPage() {
     .from('stores')
     .select('id, slug, name, brand_name, is_active, next_payment_date, last_payment_date')
     .order('name', { ascending: true });
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseSecret = process.env.SUPABASE_SECRET_KEY!;
+  const supabaseAdmin = createAdminClient(supabaseUrl, supabaseSecret);
+
+  const { count: solicitudesPendientesCount } = await supabaseAdmin
+    .from('solicitudes_tienda')
+    .select('id', { count: 'exact', head: true })
+    .eq('estado', 'pendiente');
 
   return (
     <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
@@ -52,6 +62,22 @@ export default async function AdminPage() {
         }}
       >
         💰 Comisiones de Referidos
+      </Link>
+      <Link
+        href="/admin/solicitudes"
+        style={{
+          display: 'inline-block',
+          backgroundColor: solicitudesPendientesCount && solicitudesPendientesCount > 0 ? '#dc2626' : '#6b7280',
+          color: 'white',
+          padding: '10px 18px',
+          borderRadius: '8px',
+          fontWeight: 'bold',
+          textDecoration: 'none',
+          marginBottom: '1.5rem',
+          marginLeft: '10px',
+        }}
+      >
+        📋 Solicitudes{solicitudesPendientesCount ? ` (${solicitudesPendientesCount})` : ''}
       </Link>
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
