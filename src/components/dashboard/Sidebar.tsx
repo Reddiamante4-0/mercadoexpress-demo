@@ -20,7 +20,8 @@ import {
   Star,
   MessageSquare,
   CreditCard,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Tags
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -55,6 +56,12 @@ const NAV_SECTIONS = [
         icon: <Package className="w-5 h-5 shrink-0" />,
         labelEn: 'Products',
         labelEs: 'Productos',
+      },
+      {
+        href: '/dashboard/categorias',
+        icon: <Tags className="w-5 h-5 shrink-0" />,
+        labelEn: 'Categories',
+        labelEs: 'Categorías',
       },
       {
         href: '/dashboard/mostrador',
