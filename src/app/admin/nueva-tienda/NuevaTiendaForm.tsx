@@ -187,7 +187,7 @@ export default function NuevaTiendaForm({
         <option value="basica">Básica — $250.000 (hasta 75 productos)</option>
         <option value="estandar">Estándar — $300.000 (hasta 150 productos)</option>
         <option value="premium">Premium — $400.000 (hasta 300 productos)</option>
-        <option value="vendedor">Vendedor/Afiliado — $40.000 (solo referir, sin catálogo)</option>
+        <option value="vendedor">Vendedor/Afiliado — $80.000 (solo referir, sin catálogo)</option>
       </select>
       <p style={hintStyle}>Todos los planes pagan $40.000 de mensualidad.</p>
 

@@ -122,7 +122,7 @@ export async function createNewStore(formData: {
     basica: 250000,
     estandar: 300000,
     premium: 400000,
-    vendedor: 40000,
+    vendedor: 80000,
   };
   const planVinculacionMonto = PLAN_VINCULACION_MONTOS[formData.planTipo];
   const planMensualidadMonto = 40000;
