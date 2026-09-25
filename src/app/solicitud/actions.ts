@@ -55,4 +55,25 @@ export async function crearSolicitud(formData: {
   if (error) {
     throw new Error('No se pudo guardar la solicitud: ' + error.message);
   }
+
+  // Aviso por correo, sin bloquear la respuesta al usuario si el correo falla
+  if (process.env.RESEND_API_KEY && process.env.SUPER_ADMIN_EMAIL) {
+    try {
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'Crisalap <noreply@crisalap.com>',
+          to: process.env.SUPER_ADMIN_EMAIL,
+          subject: 'Nueva solicitud de tienda en Crisalap',
+          html: `<p>Llegó una nueva solicitud:</p><p><strong>Negocio:</strong> ${nombreNegocio}</p><p><strong>Contacto:</strong> ${formData.contactoNombre.trim() || '—'} — ${contactoTelefono}</p><p><strong>Referido por código:</strong> ${refCodigo || 'Venta directa'}</p><p>Revísala en tu panel: https://crisalap.com/admin/solicitudes</p>`,
+        }),
+      });
+    } catch {
+      // Si falla el correo, la solicitud ya quedó guardada; no interrumpimos nada.
+    }
+  }
 }
