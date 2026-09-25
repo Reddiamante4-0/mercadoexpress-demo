@@ -12,6 +12,7 @@ export default function MostradorPage() {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -83,6 +84,10 @@ export default function MostradorPage() {
   const formatPrice = (val: number) =>
     new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(val);
 
+  const filteredProducts = search.trim()
+    ? products.filter(p => p.name.toLowerCase().includes(search.trim().toLowerCase()))
+    : products;
+
   if (loading) {
     return <div className="p-6 text-sm text-slate-400">Cargando productos...</div>;
   }
@@ -101,9 +106,22 @@ export default function MostradorPage() {
         </div>
       </div>
 
+      <div className="bg-white rounded-2xl border border-slate-200/60 p-4 shadow-xs">
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Buscar producto por nombre..."
+          className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-bold text-slate-800 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
+        />
+      </div>
+
       <div className="bg-white rounded-2xl border border-slate-200/60 shadow-xs overflow-hidden">
+        {filteredProducts.length === 0 && (
+          <p className="px-5 py-6 text-xs text-slate-400 text-center">No se encontraron productos con ese nombre.</p>
+        )}
         <div className="divide-y divide-slate-100">
-          {products.map((p) => (
+          {filteredProducts.map((p) => (
             <div key={p.id} className="flex items-center justify-between px-5 py-3 gap-4">
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-bold text-slate-800 truncate">{p.name}</p>
