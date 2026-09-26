@@ -24,12 +24,14 @@ function OrderSuccessContent({ storeId, storeName, storeSlug }: { storeId: strin
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
+  const esTiendaDeVentas = storeSlug === process.env.NEXT_PUBLIC_TIENDA_VENTAS_SLUG;
 
   const { language } = useTranslation();
   const t = translations[language];
 
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refCodigo, setRefCodigo] = useState<string | null>(null);
 
   // Ratings State
   const [productRating, setProductRating] = useState(5);
@@ -56,8 +58,11 @@ function OrderSuccessContent({ storeId, storeName, storeSlug }: { storeId: strin
         }
       }
     }
+    if (esTiendaDeVentas) {
+      setRefCodigo(localStorage.getItem(`ref_venta_${storeId}`));
+    }
     setLoading(false);
-  }, [orderId]);
+  }, [orderId, esTiendaDeVentas, storeId]);
 
   if (loading) {
     return (
@@ -179,81 +184,91 @@ function OrderSuccessContent({ storeId, storeName, storeSlug }: { storeId: strin
             </div>
           )}
 
-          {/* Delivery progress simulation bar */}
-          <div className="pt-4 pb-2 space-y-3">
-            <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-              <span className="text-green-600">{t.success.statusReceived}</span>
-              <span>{t.success.statusPreparing}</span>
-              <span>{t.success.statusOnTheWay}</span>
-              <span>{t.success.statusDelivered}</span>
-            </div>
-            {/* Progress bar */}
-            <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden relative">
-              <div className="absolute top-0 left-0 h-full bg-green-600 rounded-full w-1/4" />
-            </div>
-            <p className="text-[10px] text-slate-400 font-bold flex items-center justify-center gap-1">
-              <Clock className="w-3.5 h-3.5 text-green-600" />
-              <span>
-                {order.deliveryType === 'weekly' 
-                  ? t.success.deliveryWeeklyEstimated 
-                  : t.success.estimatedTime}
-              </span>
-            </p>
-          </div>
-        </div>
-
-        {/* WhatsApp Notification Button */}
-        <a
-          href={whatsappLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="w-full py-3.5 bg-[#25D366] hover:bg-[#20ba5a] text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-98 flex items-center justify-center gap-2 cursor-pointer"
-        >
-          <MessageCircle className="w-4.5 h-4.5" />
-          <span>{t.success.whatsappButton}</span>
-        </a>
-
-        {/* Client ratings section */}
-        <div className="bg-white rounded-3xl border border-slate-200/60 p-5 shadow-xs space-y-4 text-left">
-          <h3 className="text-xs font-black uppercase tracking-wider text-slate-800 pb-2 border-b border-slate-100 flex items-center gap-1.5">
-            <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-            <span>{t.success.ratingTitle}</span>
-          </h3>
-
-          {isRatingSubmitted ? (
-            <div className="p-4 bg-green-50 border border-green-200 rounded-2xl text-center">
-              <p className="text-xs font-bold text-green-700">{t.success.rateSuccess}</p>
+          {/* Delivery progress simulation bar (no aplica a la compra de un plan) */}
+          {esTiendaDeVentas ? (
+            <div className="pt-4 pb-2">
+              <p className="text-xs font-bold text-slate-600">¡Gracias por tu compra! Sigamos con la creación de tu tienda.</p>
             </div>
           ) : (
-            <form onSubmit={handleRatingSubmit} className="space-y-4">
-              <p className="text-[11px] text-slate-400">{t.success.ratingDesc}</p>
-              
-              <div className="space-y-1 bg-slate-50/50 p-3 rounded-2xl border border-slate-100">
-                <StarRatingSelector label={t.success.rateProduct} value={productRating} onChange={setProductRating} />
-                <StarRatingSelector label={t.success.rateService} value={serviceRating} onChange={setServiceRating} />
-                <StarRatingSelector label={t.success.rateDelivery} value={deliveryRating} onChange={setDeliveryRating} />
+            <div className="pt-4 pb-2 space-y-3">
+              <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                <span className="text-green-600">{t.success.statusReceived}</span>
+                <span>{t.success.statusPreparing}</span>
+                <span>{t.success.statusOnTheWay}</span>
+                <span>{t.success.statusDelivered}</span>
               </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">{t.success.rateComment}</label>
-                <textarea
-                  value={ratingComment}
-                  onChange={(e) => setRatingComment(e.target.value)}
-                  placeholder={t.success.rateCommentPlaceholder}
-                  rows={2}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600 resize-none bg-slate-50/30"
-                />
+              {/* Progress bar */}
+              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden relative">
+                <div className="absolute top-0 left-0 h-full bg-green-600 rounded-full w-1/4" />
               </div>
-
-              <button
-                type="submit"
-                className="w-full py-2.5 bg-green-600 hover:bg-green-700 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl transition-all shadow-sm active:scale-98"
-              >
-                {t.success.rateSubmit}
-              </button>
-            </form>
+              <p className="text-[10px] text-slate-400 font-bold flex items-center justify-center gap-1">
+                <Clock className="w-3.5 h-3.5 text-green-600" />
+                <span>
+                  {order.deliveryType === 'weekly'
+                    ? t.success.deliveryWeeklyEstimated
+                    : t.success.estimatedTime}
+                </span>
+              </p>
+            </div>
           )}
         </div>
+
+        {/* WhatsApp Notification Button (no aplica a la compra de un plan, que no tiene envío) */}
+        {!esTiendaDeVentas && (
+          <a
+            href={whatsappLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full py-3.5 bg-[#25D366] hover:bg-[#20ba5a] text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-98 flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <MessageCircle className="w-4.5 h-4.5" />
+            <span>{t.success.whatsappButton}</span>
+          </a>
+        )}
+
+        {/* Client ratings section (no aplica a la compra de un plan) */}
+        {!esTiendaDeVentas && (
+          <div className="bg-white rounded-3xl border border-slate-200/60 p-5 shadow-xs space-y-4 text-left">
+            <h3 className="text-xs font-black uppercase tracking-wider text-slate-800 pb-2 border-b border-slate-100 flex items-center gap-1.5">
+              <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+              <span>{t.success.ratingTitle}</span>
+            </h3>
+
+            {isRatingSubmitted ? (
+              <div className="p-4 bg-green-50 border border-green-200 rounded-2xl text-center">
+                <p className="text-xs font-bold text-green-700">{t.success.rateSuccess}</p>
+              </div>
+            ) : (
+              <form onSubmit={handleRatingSubmit} className="space-y-4">
+                <p className="text-[11px] text-slate-400">{t.success.ratingDesc}</p>
+                
+                <div className="space-y-1 bg-slate-50/50 p-3 rounded-2xl border border-slate-100">
+                  <StarRatingSelector label={t.success.rateProduct} value={productRating} onChange={setProductRating} />
+                  <StarRatingSelector label={t.success.rateService} value={serviceRating} onChange={setServiceRating} />
+                  <StarRatingSelector label={t.success.rateDelivery} value={deliveryRating} onChange={setDeliveryRating} />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">{t.success.rateComment}</label>
+                  <textarea
+                    value={ratingComment}
+                    onChange={(e) => setRatingComment(e.target.value)}
+                    placeholder={t.success.rateCommentPlaceholder}
+                    rows={2}
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600 resize-none bg-slate-50/30"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-2.5 bg-green-600 hover:bg-green-700 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl transition-all shadow-sm active:scale-98"
+                >
+                  {t.success.rateSubmit}
+                </button>
+              </form>
+            )}
+          </div>
+        )}
 
         {/* Client message section */}
         <div className="bg-white rounded-3xl border border-slate-200/60 p-5 shadow-xs space-y-4 text-left">
@@ -286,38 +301,40 @@ function OrderSuccessContent({ storeId, storeName, storeSlug }: { storeId: strin
           )}
         </div>
 
-        {/* Delivery Details Card */}
-        <div className="bg-white rounded-3xl border border-slate-200/60 p-5 shadow-xs space-y-3 text-left">
-          <h3 className="text-xs font-black uppercase tracking-wider text-slate-800 pb-2 border-b border-slate-100">
-            {t.success.dispatchDetails}
-          </h3>
-          
-          <div className="space-y-3.5 text-xs text-slate-600">
-            <div className="flex gap-2.5 items-start">
-              <MapPin className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />
-              <div>
-                <p className="font-bold text-slate-700">{order.customerName}</p>
-                <p className="text-slate-400 mt-0.5">{order.address}</p>
-              </div>
-            </div>
-
-            <div className="flex gap-2.5 items-center">
-              <Phone className="w-4 h-4 text-green-600 shrink-0" />
-              <span className="font-medium">{order.phone}</span>
-            </div>
-
-            <div className="flex gap-2.5 items-center">
-              <CreditCard className="w-4 h-4 text-green-600 shrink-0" />
-              <span className="font-medium truncate">{order.paymentDetails}</span>
-            </div>
+        {/* Delivery Details Card (la direccion de envio no aplica a la compra de un plan) */}
+        {!esTiendaDeVentas && (
+          <div className="bg-white rounded-3xl border border-slate-200/60 p-5 shadow-xs space-y-3 text-left">
+            <h3 className="text-xs font-black uppercase tracking-wider text-slate-800 pb-2 border-b border-slate-100">
+              {t.success.dispatchDetails}
+            </h3>
             
-            {order.notes && (
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/40 text-[11px] text-slate-400 italic">
-                <b>{language === 'en' ? 'Notes:' : 'Notas:'}</b> {order.notes}
+            <div className="space-y-3.5 text-xs text-slate-600">
+              <div className="flex gap-2.5 items-start">
+                <MapPin className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-bold text-slate-700">{order.customerName}</p>
+                  <p className="text-slate-400 mt-0.5">{order.address}</p>
+                </div>
               </div>
-            )}
+
+              <div className="flex gap-2.5 items-center">
+                <Phone className="w-4 h-4 text-green-600 shrink-0" />
+                <span className="font-medium">{order.phone}</span>
+              </div>
+
+              <div className="flex gap-2.5 items-center">
+                <CreditCard className="w-4 h-4 text-green-600 shrink-0" />
+                <span className="font-medium truncate">{order.paymentDetails}</span>
+              </div>
+              
+              {order.notes && (
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/40 text-[11px] text-slate-400 italic">
+                  <b>{language === 'en' ? 'Notes:' : 'Notas:'}</b> {order.notes}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Order Items Receipt Card */}
         <div className="bg-white rounded-3xl border border-slate-200/60 p-5 shadow-xs space-y-3 text-left">
@@ -356,13 +373,23 @@ function OrderSuccessContent({ storeId, storeName, storeSlug }: { storeId: strin
 
         {/* Bottom Actions */}
         <div className="flex flex-col gap-2">
-          <button
-            onClick={() => router.push(`/${storeSlug}`)}
-            className="w-full py-3.5 bg-green-600 hover:bg-green-700 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-98 flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <ShoppingBag className="w-4 h-4" />
-            <span>{t.success.keepShopping}</span>
-          </button>
+          {esTiendaDeVentas ? (
+            <button
+              onClick={() => router.push(`/solicitud?pedido=${order.id}${refCodigo ? `&ref=${encodeURIComponent(refCodigo)}` : ''}`)}
+              className="w-full py-3.5 bg-green-600 hover:bg-green-700 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-98 flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <ShoppingBag className="w-4 h-4" />
+              <span>Continuar con la creación de tu tienda</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => router.push(`/${storeSlug}`)}
+              className="w-full py-3.5 bg-green-600 hover:bg-green-700 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-98 flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <ShoppingBag className="w-4 h-4" />
+              <span>{t.success.keepShopping}</span>
+            </button>
+          )}
         </div>
 
         <a
