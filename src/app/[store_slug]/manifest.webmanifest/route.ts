@@ -15,6 +15,7 @@ export async function GET(
     .select('name, brand_name, logo_url, theme_color')
     .eq('slug', store_slug)
     .eq('is_active', true)
+    .eq('publicada', true)
     .single();
 
   if (!store) {

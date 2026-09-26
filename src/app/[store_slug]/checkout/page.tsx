@@ -11,6 +11,7 @@ export default async function CheckoutServerPage({ params }: { params: Promise<{
     .select('id, name, whatsapp_number, nequi_number, wompi_enabled, shipping_fee, free_shipping_threshold')
     .eq('slug', store_slug)
     .eq('is_active', true)
+    .eq('publicada', true)
     .single();
 
   if (!store) {

@@ -11,6 +11,7 @@ export default async function OrderSuccessServerPage({ params }: { params: Promi
     .select('id, name')
     .eq('slug', store_slug)
     .eq('is_active', true)
+    .eq('publicada', true)
     .single();
 
   if (!store) {

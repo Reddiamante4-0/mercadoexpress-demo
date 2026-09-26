@@ -13,6 +13,7 @@ const getStoreData = cache(async (store_slug: string) => {
     .select('id, name, brand_name, tagline, logo_url, whatsapp_number, hero_description, hero_image_url, hero_badge_text, hero_title_text, hero_subtitle_text, shipping_fee, free_shipping_threshold, hero_header_subtitle, hero_delivery_badge, hero_guarantee_text, hero_discount_text, hero_cta_primary, hero_cta_secondary, theme_color')
     .eq('slug', store_slug)
     .eq('is_active', true)
+    .eq('publicada', true)
     .single();
   return store;
 });
