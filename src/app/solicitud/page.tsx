@@ -25,6 +25,7 @@ const labelStyle: React.CSSProperties = {
 function SolicitudForm() {
   const searchParams = useSearchParams();
   const refCodigo = searchParams.get('ref') || '';
+  const pedidoId = searchParams.get('pedido') || '';
 
   const [nombreNegocio, setNombreNegocio] = useState('');
   const [contactoNombre, setContactoNombre] = useState('');
@@ -48,6 +49,7 @@ function SolicitudForm() {
         tipoNegocio,
         refCodigo,
         sitioweb,
+        pedidoId,
       });
       setResult({ success: true });
     } catch (err) {
@@ -63,6 +65,17 @@ function SolicitudForm() {
       <div style={{ padding: '32px', maxWidth: '480px', margin: '0 auto', textAlign: 'center', fontFamily: 'sans-serif' }}>
         <h1 style={{ color: '#16a34a' }}>¡Listo!</h1>
         <p>Recibimos tu solicitud. Muy pronto te contactaremos para armar tu tienda.</p>
+      </div>
+    );
+  }
+
+  if (!pedidoId) {
+    return (
+      <div style={{ padding: '32px', maxWidth: '480px', margin: '0 auto', textAlign: 'center', fontFamily: 'sans-serif' }}>
+        <h1 style={{ fontSize: '20px', marginBottom: '12px' }}>Acceso no disponible</h1>
+        <p style={{ fontSize: '14px', color: '#555' }}>
+          Este formulario solo se habilita después de completar el pago de tu plan en nuestra tienda de ventas. Si ya pagaste y llegaste aquí por error, contáctanos.
+        </p>
       </div>
     );
   }
