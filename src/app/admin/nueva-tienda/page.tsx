@@ -29,6 +29,15 @@ export default async function NuevaTiendaPage({
     contactoTelefono: string | null;
     tipoNegocio: string | null;
     referidoPorId: string | null;
+    subdominioDeseado: string | null;
+    brandName: string | null;
+    tagline: string | null;
+    nequiNumber: string | null;
+    customCategories: string | null;
+    planTipo: string | null;
+    shippingFee: number | null;
+    freeShippingThreshold: number | null;
+    ownerEmail: string | null;
   } | null = null;
 
   if (solicitudId) {
@@ -38,7 +47,7 @@ export default async function NuevaTiendaPage({
 
     const { data: solicitud } = await supabaseAdmin
       .from('solicitudes_tienda')
-      .select('id, nombre_negocio, contacto_telefono, tipo_negocio, referido_por_id')
+      .select('id, nombre_negocio, contacto_telefono, tipo_negocio, referido_por_id, subdominio_deseado, brand_name, tagline, nequi_number, custom_categories, plan_tipo, shipping_fee, free_shipping_threshold, owner_email')
       .eq('id', solicitudId)
       .maybeSingle();
 
@@ -49,6 +58,15 @@ export default async function NuevaTiendaPage({
         contactoTelefono: solicitud.contacto_telefono,
         tipoNegocio: solicitud.tipo_negocio,
         referidoPorId: solicitud.referido_por_id,
+        subdominioDeseado: solicitud.subdominio_deseado,
+        brandName: solicitud.brand_name,
+        tagline: solicitud.tagline,
+        nequiNumber: solicitud.nequi_number,
+        customCategories: solicitud.custom_categories,
+        planTipo: solicitud.plan_tipo,
+        shippingFee: solicitud.shipping_fee,
+        freeShippingThreshold: solicitud.free_shipping_threshold,
+        ownerEmail: solicitud.owner_email,
       };
     }
   }
