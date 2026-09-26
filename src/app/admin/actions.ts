@@ -110,7 +110,6 @@ export async function publicarTienda(storeId: string) {
 
 export async function createNewStore(formData: {
   ownerEmail: string;
-  ownerPassword: string;
   storeName: string;
   slug: string;
   brandName: string;
@@ -137,14 +136,15 @@ export async function createNewStore(formData: {
   const supabaseSecret = process.env.SUPABASE_SECRET_KEY!;
   const supabaseAdmin = createAdminClient(supabaseUrl, supabaseSecret);
 
-  const { data: newUser, error: userError } = await supabaseAdmin.auth.admin.createUser({
-    email: formData.ownerEmail,
-    password: formData.ownerPassword,
-    email_confirm: true,
-  });
+  // No se crea la cuenta con una contraseña puesta por Jaime: se invita al dueño
+  // por correo para que él mismo defina su contraseña. Nadie más la conoce.
+  const { data: newUser, error: userError } = await supabaseAdmin.auth.admin.inviteUserByEmail(
+    formData.ownerEmail,
+    { redirectTo: 'https://crisalap.com/reset-password' }
+  );
 
   if (userError || !newUser.user) {
-    throw new Error('Error creando el usuario: ' + (userError?.message || 'desconocido'));
+    throw new Error('Error invitando al dueño: ' + (userError?.message || 'desconocido'));
   }
 
   const today = new Date();

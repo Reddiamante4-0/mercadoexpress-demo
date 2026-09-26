@@ -76,7 +76,6 @@ export default function NuevaTiendaForm({
   const planTipoPrefill = PLANES_VALIDOS.find((p) => p === solicitudPrefill?.planTipo);
 
   const [ownerEmail, setOwnerEmail] = useState(solicitudPrefill?.ownerEmail || '');
-  const [ownerPassword, setOwnerPassword] = useState('');
   const [storeName, setStoreName] = useState(solicitudPrefill?.nombreNegocio || '');
   const [slug, setSlug] = useState(
     slugificar(solicitudPrefill?.subdominioDeseado || solicitudPrefill?.nombreNegocio || '')
@@ -102,7 +101,6 @@ export default function NuevaTiendaForm({
     try {
       const res = await createNewStore({
         ownerEmail,
-        ownerPassword,
         storeName,
         slug,
         brandName,
@@ -134,7 +132,7 @@ export default function NuevaTiendaForm({
           Subdominio: <a href={`https://${result.slug}.crisalap.com`} target="_blank" rel="noopener noreferrer">{result.slug}.crisalap.com</a>
         </p>
         <p style={{ fontSize: '13px', color: '#555', marginTop: '8px' }}>
-          No olvides anotar el correo y la contraseña que usaste para dárselos al dueño.
+          Le enviamos un correo de invitación al dueño para que defina su propia contraseña.
         </p>
         <button
           onClick={() => setResult(null)}
@@ -163,10 +161,6 @@ export default function NuevaTiendaForm({
 
       <label style={labelStyle}>Correo del dueño</label>
       <input type="email" required value={ownerEmail} onChange={(e) => setOwnerEmail(e.target.value)} style={inputStyle} />
-
-      <label style={labelStyle}>Contraseña inicial</label>
-      <input type="text" required value={ownerPassword} onChange={(e) => setOwnerPassword(e.target.value)} style={inputStyle} />
-      <p style={hintStyle}>Anótala para dársela al dueño en la capacitación.</p>
 
       <label style={labelStyle}>Nombre del negocio</label>
       <input type="text" required value={storeName} onChange={(e) => setStoreName(e.target.value)} style={inputStyle} />
