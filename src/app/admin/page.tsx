@@ -1,9 +1,10 @@
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { notFound } from 'next/navigation';
-import { markStoreAsPaid } from './actions';
+import { markStoreAsPaid, publicarTienda } from './actions';
 import Link from 'next/link';
 import MarcarPagadoButton from './MarcarPagadoButton';
+import PublicarTiendaButton from './PublicarTiendaButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +18,7 @@ export default async function AdminPage() {
 
   const { data: stores } = await supabase
     .from('stores')
-    .select('id, slug, name, brand_name, is_active, next_payment_date, last_payment_date')
+    .select('id, slug, name, brand_name, is_active, publicada, next_payment_date, last_payment_date')
     .order('name', { ascending: true });
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -102,7 +103,9 @@ export default async function AdminPage() {
             }
 
             let estado: { texto: string; bg: string; color: string };
-            if (!store.is_active) {
+            if (!store.publicada) {
+              estado = { texto: '🔧 En construcción', bg: '#dbeafe', color: '#1e40af' };
+            } else if (!store.is_active) {
               estado = { texto: '⚫ Suspendida', bg: '#e5e7eb', color: '#374151' };
             } else if (daysUntilDue !== null && daysUntilDue < 0) {
               estado = { texto: `🔴 Vencido hace ${Math.abs(daysUntilDue)} día${Math.abs(daysUntilDue) === 1 ? '' : 's'}`, bg: '#fee2e2', color: '#991b1b' };
@@ -124,9 +127,15 @@ export default async function AdminPage() {
                 <td style={{ padding: '8px' }}>{store.last_payment_date || '—'}</td>
                 <td style={{ padding: '8px' }}>{store.next_payment_date || '—'}</td>
                 <td style={{ padding: '8px' }}>
-                  <form action={markStoreAsPaid.bind(null, store.id)} style={{ display: 'inline-block', marginRight: '10px' }}>
-                    <MarcarPagadoButton />
-                  </form>
+                  {!store.publicada ? (
+                    <form action={publicarTienda.bind(null, store.id)} style={{ display: 'inline-block', marginRight: '10px' }}>
+                      <PublicarTiendaButton />
+                    </form>
+                  ) : (
+                    <form action={markStoreAsPaid.bind(null, store.id)} style={{ display: 'inline-block', marginRight: '10px' }}>
+                      <MarcarPagadoButton />
+                    </form>
+                  )}
                   <Link
                     href={`/admin/tiendas/${store.id}/categorias`}
                     style={{ fontSize: '12px', fontWeight: 'bold', color: '#1e40af' }}
