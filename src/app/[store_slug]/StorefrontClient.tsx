@@ -181,6 +181,17 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
     getComboProducts(storeId, 6).then(setComboProducts);
   }, [storeId]);
 
+  // Guarda el código de referido del vendedor cuando alguien llega a la tienda
+  // de ventas de planes (?ref=CODIGO), para usarlo después en el enlace hacia
+  // el formulario de solicitud. No afecta a ninguna otra tienda.
+  useEffect(() => {
+    if (storeSlug !== process.env.NEXT_PUBLIC_TIENDA_VENTAS_SLUG) return;
+    const refCodigo = new URLSearchParams(window.location.search).get('ref');
+    if (refCodigo) {
+      localStorage.setItem(`ref_venta_${storeId}`, refCodigo);
+    }
+  }, [storeId, storeSlug]);
+
   // Debounce search input (waits 400ms after typing stops before querying)
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(searchQuery), 400);
