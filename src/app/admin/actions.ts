@@ -211,9 +211,12 @@ export async function createNewStore(formData: {
     ],
   };
 
+  // El plan vendedor/afiliado no vende productos: no se le siembra catálogo.
   let categoriesToInsert: { name: string; emoji: string }[];
 
-  if (formData.businessType === 'otro') {
+  if (formData.planTipo === 'vendedor') {
+    categoriesToInsert = [];
+  } else if (formData.businessType === 'otro') {
     categoriesToInsert = formData.customCategories
       .split(',')
       .map(c => c.trim())
