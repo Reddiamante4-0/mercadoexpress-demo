@@ -74,6 +74,40 @@ export async function markStoreAsPaid(storeId: string) {
   revalidatePath('/admin');
 }
 
+export async function publicarTienda(storeId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user || user.email !== process.env.SUPER_ADMIN_EMAIL) {
+    throw new Error('No autorizado');
+  }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseSecret = process.env.SUPABASE_SECRET_KEY!;
+  const supabaseAdmin = createAdminClient(supabaseUrl, supabaseSecret);
+
+  const today = new Date();
+  const nextPayment = new Date(today);
+  nextPayment.setDate(nextPayment.getDate() + 30);
+  const formatDate = (d: Date) => d.toISOString().split('T')[0];
+
+  const { error } = await supabaseAdmin
+    .from('stores')
+    .update({
+      publicada: true,
+      is_active: true,
+      last_payment_date: formatDate(today),
+      next_payment_date: formatDate(nextPayment),
+    })
+    .eq('id', storeId);
+
+  if (error) {
+    throw new Error('Error publicando la tienda: ' + error.message);
+  }
+
+  revalidatePath('/admin');
+}
+
 export async function createNewStore(formData: {
   ownerEmail: string;
   ownerPassword: string;
@@ -128,6 +162,12 @@ export async function createNewStore(formData: {
   const planMensualidadMonto = 40000;
   const codigoReferido = formData.slug.toUpperCase();
 
+  // El plan vendedor no necesita construcción (no sube catálogo ni fotos):
+  // se publica de una vez y su mes de cobro arranca ahora mismo. Los demás
+  // planes quedan "en construcción" (sin cobrar todavía) hasta que alguien
+  // los publique manualmente con el botón "Publicar tienda".
+  const esVendedor = formData.planTipo === 'vendedor';
+
   const { data: newStore, error: storeError } = await supabaseAdmin
     .from('stores')
     .insert({
@@ -142,8 +182,9 @@ export async function createNewStore(formData: {
       shipping_fee: formData.shippingFee,
       free_shipping_threshold: formData.freeShippingThreshold,
       is_active: true,
-      last_payment_date: formatDate(today),
-      next_payment_date: formatDate(nextPayment),
+      publicada: esVendedor,
+      last_payment_date: esVendedor ? formatDate(today) : null,
+      next_payment_date: esVendedor ? formatDate(nextPayment) : null,
       plan_tipo: formData.planTipo,
       plan_vinculacion_monto: planVinculacionMonto,
       plan_mensualidad_monto: planMensualidadMonto,
