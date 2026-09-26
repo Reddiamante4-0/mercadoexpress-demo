@@ -10,6 +10,7 @@ export async function crearSolicitud(formData: {
   tipoNegocio: string;
   refCodigo: string;
   sitioweb: string;
+  pedidoId: string;
 }) {
   // Honeypot: si este campo viene lleno, es un bot. Fingimos éxito y no guardamos nada.
   if (formData.sitioweb.trim() !== '') {
@@ -18,14 +19,51 @@ export async function crearSolicitud(formData: {
 
   const nombreNegocio = formData.nombreNegocio.trim();
   const contactoTelefono = formData.contactoTelefono.trim();
+  const pedidoId = formData.pedidoId.trim();
 
   if (!nombreNegocio || !contactoTelefono) {
     throw new Error('Falta el nombre del negocio o el teléfono de contacto.');
   }
 
+  if (!pedidoId) {
+    throw new Error('Falta el pago del plan. Esta solicitud solo se puede enviar después de pagar en nuestra tienda de ventas.');
+  }
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const supabaseSecret = process.env.SUPABASE_SECRET_KEY!;
   const supabaseAdmin = createAdminClient(supabaseUrl, supabaseSecret);
+
+  // Verificamos que exista un pago real, aprobado, hecho en la tienda de ventas,
+  // y que ese pago no se haya usado ya para otra solicitud.
+  const ventasSlug = process.env.NEXT_PUBLIC_TIENDA_VENTAS_SLUG;
+
+  const { data: tiendaVentas } = ventasSlug
+    ? await supabaseAdmin.from('stores').select('id').eq('slug', ventasSlug).maybeSingle()
+    : { data: null };
+
+  if (!tiendaVentas) {
+    throw new Error('No pudimos verificar el pago. Intenta de nuevo o contáctanos.');
+  }
+
+  const { data: pedido } = await supabaseAdmin
+    .from('orders')
+    .select('id, status, store_id')
+    .eq('id', pedidoId)
+    .maybeSingle();
+
+  if (!pedido || pedido.store_id !== tiendaVentas.id || pedido.status !== 'Recibido') {
+    throw new Error('No encontramos un pago confirmado para esta solicitud. Si ya pagaste, espera un momento e intenta de nuevo, o contáctanos.');
+  }
+
+  const { data: solicitudExistente } = await supabaseAdmin
+    .from('solicitudes_tienda')
+    .select('id')
+    .eq('pedido_id', pedidoId)
+    .maybeSingle();
+
+  if (solicitudExistente) {
+    throw new Error('Este pago ya tiene una solicitud registrada.');
+  }
 
   const refCodigo = formData.refCodigo.trim().toUpperCase();
   let referidoPorId: string | null = null;
@@ -50,6 +88,7 @@ export async function crearSolicitud(formData: {
     tipo_negocio: formData.tipoNegocio.trim() || null,
     referido_codigo_texto: refCodigo || null,
     referido_por_id: referidoPorId,
+    pedido_id: pedidoId,
   });
 
   if (error) {
