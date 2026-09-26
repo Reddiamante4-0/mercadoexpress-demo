@@ -41,7 +41,19 @@ type SolicitudPrefill = {
   contactoTelefono: string | null;
   tipoNegocio: string | null;
   referidoPorId: string | null;
+  subdominioDeseado: string | null;
+  brandName: string | null;
+  tagline: string | null;
+  nequiNumber: string | null;
+  customCategories: string | null;
+  planTipo: string | null;
+  shippingFee: number | null;
+  freeShippingThreshold: number | null;
+  ownerEmail: string | null;
 };
+
+const TIPOS_NEGOCIO_VALIDOS = ['drogueria', 'supermercado', 'tienda_barrio', 'otro'] as const;
+const PLANES_VALIDOS = ['basica', 'estandar', 'premium', 'vendedor'] as const;
 
 function slugificar(texto: string): string {
   return texto
@@ -60,20 +72,25 @@ export default function NuevaTiendaForm({
   tiendasExistentes: TiendaExistente[];
   solicitudPrefill?: SolicitudPrefill | null;
 }) {
-  const [ownerEmail, setOwnerEmail] = useState('');
+  const tipoNegocioPrefill = TIPOS_NEGOCIO_VALIDOS.find((t) => t === solicitudPrefill?.tipoNegocio);
+  const planTipoPrefill = PLANES_VALIDOS.find((p) => p === solicitudPrefill?.planTipo);
+
+  const [ownerEmail, setOwnerEmail] = useState(solicitudPrefill?.ownerEmail || '');
   const [ownerPassword, setOwnerPassword] = useState('');
   const [storeName, setStoreName] = useState(solicitudPrefill?.nombreNegocio || '');
-  const [slug, setSlug] = useState(solicitudPrefill ? slugificar(solicitudPrefill.nombreNegocio) : '');
-  const [brandName, setBrandName] = useState('');
-  const [tagline, setTagline] = useState('');
+  const [slug, setSlug] = useState(
+    slugificar(solicitudPrefill?.subdominioDeseado || solicitudPrefill?.nombreNegocio || '')
+  );
+  const [brandName, setBrandName] = useState(solicitudPrefill?.brandName || '');
+  const [tagline, setTagline] = useState(solicitudPrefill?.tagline || '');
   const [whatsappNumber, setWhatsappNumber] = useState(solicitudPrefill?.contactoTelefono || '');
-  const [nequiNumber, setNequiNumber] = useState('');
+  const [nequiNumber, setNequiNumber] = useState(solicitudPrefill?.nequiNumber || '');
   const [wompiEnabled, setWompiEnabled] = useState(true);
-  const [shippingFee, setShippingFee] = useState(5000);
-  const [freeShippingThreshold, setFreeShippingThreshold] = useState(80000);
-  const [businessType, setBusinessType] = useState<'drogueria' | 'supermercado' | 'tienda_barrio' | 'otro'>('tienda_barrio');
-  const [customCategories, setCustomCategories] = useState('');
-  const [planTipo, setPlanTipo] = useState<'basica' | 'estandar' | 'premium' | 'vendedor'>('basica');
+  const [shippingFee, setShippingFee] = useState(solicitudPrefill?.shippingFee ?? 5000);
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState(solicitudPrefill?.freeShippingThreshold ?? 80000);
+  const [businessType, setBusinessType] = useState<'drogueria' | 'supermercado' | 'tienda_barrio' | 'otro'>(tipoNegocioPrefill || 'tienda_barrio');
+  const [customCategories, setCustomCategories] = useState(solicitudPrefill?.customCategories || '');
+  const [planTipo, setPlanTipo] = useState<'basica' | 'estandar' | 'premium' | 'vendedor'>(planTipoPrefill || 'basica');
   const [referidoPor, setReferidoPor] = useState(solicitudPrefill?.referidoPorId || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<{ success: boolean; slug?: string; error?: string } | null>(null);
@@ -133,8 +150,8 @@ export default function NuevaTiendaForm({
     <form onSubmit={handleSubmit}>
       {solicitudPrefill && (
         <div style={{ padding: '10px 12px', backgroundColor: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '6px', marginBottom: '16px', fontSize: '13px', color: '#1e3a8a' }}>
-          Datos precargados desde una solicitud recibida.
-          {solicitudPrefill.tipoNegocio && ` Tipo de negocio indicado: "${solicitudPrefill.tipoNegocio}".`}
+          Datos precargados desde una solicitud con pago verificado.
+          {planTipoPrefill && ` Plan pagado detectado: "${planTipoPrefill}".`}
           {' '}Revisa y completa lo que falte antes de crear la tienda.
         </div>
       )}
