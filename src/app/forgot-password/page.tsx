@@ -70,7 +70,7 @@ export default function ForgotPasswordPage() {
           <h1 className="text-2xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-primary via-accent-pink to-accent-warm color-transparent -webkit-text-fill-color-transparent select-none">
             {brandConfig.forgotPasswordTitle}
           </h1>
-          <p className="text-xs text-white/50 mt-1.5 text-center font-medium">
+          <p className="text-xs text-base-content/60 mt-1.5 text-center font-medium">
             {language === 'en' ? brandConfig.forgotPasswordSubtitle.en : brandConfig.forgotPasswordSubtitle.es}
           </p>
         </div>
@@ -102,7 +102,7 @@ export default function ForgotPasswordPage() {
 
         {/* Back to Login */}
         <div className="text-center mt-8">
-          <Link href="/login" className="inline-flex items-center gap-1.5 text-xs text-white/45 hover:text-white transition-colors font-medium">
+          <Link href="/login" className="inline-flex items-center gap-1.5 text-xs text-base-content/60 hover:text-base-content transition-colors font-medium">
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>
               {language === 'en' ? 'Back to sign in' : 'Volver a iniciar sesión'}
