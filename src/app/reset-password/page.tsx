@@ -94,13 +94,13 @@ export default function ResetPasswordPage() {
           <h1 className="text-2xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-primary via-accent-pink to-accent-warm color-transparent -webkit-text-fill-color-transparent select-none">
             {language === 'en' ? 'New Password' : 'Nueva Contraseña'}
           </h1>
-          <p className="text-xs text-white/50 mt-1.5 text-center font-medium">
+          <p className="text-xs text-base-content/60 mt-1.5 text-center font-medium">
             {language === 'en' ? 'Enter your new password below.' : 'Escribe tu nueva contraseña abajo.'}
           </p>
         </div>
 
         {!ready ? (
-          <p className="text-xs text-white/50 text-center">
+          <p className="text-xs text-base-content/60 text-center">
             {language === 'en' ? 'Verifying your recovery link...' : 'Verificando tu enlace de recuperación...'}
           </p>
         ) : (
@@ -145,7 +145,7 @@ export default function ResetPasswordPage() {
         )}
 
         <div className="text-center mt-8">
-          <Link href="/login" className="inline-flex items-center gap-1.5 text-xs text-white/45 hover:text-white transition-colors font-medium">
+          <Link href="/login" className="inline-flex items-center gap-1.5 text-xs text-base-content/60 hover:text-base-content transition-colors font-medium">
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>
               {language === 'en' ? 'Back to sign in' : 'Volver a iniciar sesión'}
