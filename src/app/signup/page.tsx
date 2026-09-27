@@ -83,7 +83,7 @@ export default function SignUpPage() {
           <h1 className="text-2xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-primary via-accent-pink to-accent-warm color-transparent -webkit-text-fill-color-transparent select-none">
             {brandConfig.signupTitle}
           </h1>
-          <p className="text-xs text-white/50 mt-1.5 text-center font-medium">
+          <p className="text-xs text-base-content/60 mt-1.5 text-center font-medium">
             {language === 'en' ? brandConfig.signupSubtitle.en : brandConfig.signupSubtitle.es}
           </p>
         </div>
@@ -158,7 +158,7 @@ export default function SignUpPage() {
         </form>
 
         {/* Login Link */}
-        <div className="text-center mt-8 text-xs text-white/45">
+        <div className="text-center mt-8 text-xs text-base-content/60">
           {language === 'en' ? 'Already have an account? ' : '¿Ya tienes cuenta? '}
           <Link href="/login" className="text-accent-blue font-semibold hover:underline">
             {language === 'en' ? 'Sign In' : 'Inicia sesión'}
