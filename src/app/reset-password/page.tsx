@@ -26,7 +26,11 @@ export default function ResetPasswordPage() {
 
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
+      // Un enlace de "olvidé mi contraseña" dispara PASSWORD_RECOVERY, pero un
+      // enlace de invitación (inviteUserByEmail) dispara SIGNED_IN en su lugar.
+      // Ambos casos significan lo mismo aquí: el enlace es válido y ya se puede
+      // mostrar el formulario para definir la contraseña.
+      if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
         setReady(true);
       }
     });
