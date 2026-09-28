@@ -120,6 +120,7 @@ export default function ResetPasswordPage() {
                 placeholder="••••••••"
                 icon={<Lock className="w-4 h-4" />}
                 required
+                className="border-base-content/20 placeholder-base-content/40"
               />
             </div>
 
@@ -134,6 +135,7 @@ export default function ResetPasswordPage() {
                 placeholder="••••••••"
                 icon={<Lock className="w-4 h-4" />}
                 required
+                className="border-base-content/20 placeholder-base-content/40"
               />
             </div>
 
