@@ -20,7 +20,10 @@ export async function markStoreAsPaid(storeId: string) {
   const nextPayment = new Date(today);
   nextPayment.setDate(nextPayment.getDate() + 30);
 
-  const formatDate = (d: Date) => d.toISOString().split('T')[0];
+  // Usamos la fecha de Colombia, no la del servidor (que corre en UTC):
+  // pasadas las 7:00 p.m. hora Colombia, .toISOString() ya cae en el día
+  // siguiente y desajustaba las fechas de cobro por 1 día.
+  const formatDate = (d: Date) => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(d);
 
   const { data: tienda } = await supabaseAdmin
     .from('stores')
@@ -89,7 +92,10 @@ export async function publicarTienda(storeId: string) {
   const today = new Date();
   const nextPayment = new Date(today);
   nextPayment.setDate(nextPayment.getDate() + 30);
-  const formatDate = (d: Date) => d.toISOString().split('T')[0];
+  // Usamos la fecha de Colombia, no la del servidor (que corre en UTC):
+  // pasadas las 7:00 p.m. hora Colombia, .toISOString() ya cae en el día
+  // siguiente y desajustaba las fechas de cobro por 1 día.
+  const formatDate = (d: Date) => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(d);
 
   const { error } = await supabaseAdmin
     .from('stores')
@@ -150,7 +156,10 @@ export async function createNewStore(formData: {
   const today = new Date();
   const nextPayment = new Date(today);
   nextPayment.setDate(nextPayment.getDate() + 30);
-  const formatDate = (d: Date) => d.toISOString().split('T')[0];
+  // Usamos la fecha de Colombia, no la del servidor (que corre en UTC):
+  // pasadas las 7:00 p.m. hora Colombia, .toISOString() ya cae en el día
+  // siguiente y desajustaba las fechas de cobro por 1 día.
+  const formatDate = (d: Date) => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(d);
 
   const PLAN_VINCULACION_MONTOS: Record<string, number> = {
     basica: 250000,
