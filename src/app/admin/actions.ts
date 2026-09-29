@@ -142,16 +142,25 @@ export async function createNewStore(formData: {
   const supabaseSecret = process.env.SUPABASE_SECRET_KEY!;
   const supabaseAdmin = createAdminClient(supabaseUrl, supabaseSecret);
 
-  // No se crea la cuenta con una contraseña puesta por Jaime: se invita al dueño
-  // por correo para que él mismo defina su contraseña. Nadie más la conoce.
-  const { data: newUser, error: userError } = await supabaseAdmin.auth.admin.inviteUserByEmail(
-    formData.ownerEmail,
-    { redirectTo: 'https://crisalap.com/reset-password' }
-  );
+  // No se crea la cuenta con una contraseña puesta por Jaime: se genera un link
+  // de invitación para que el dueño defina su propia contraseña. Nadie más la
+  // conoce. Usamos generateLink (no inviteUserByEmail) a propósito: el envío de
+  // correo automático de Supabase tiene un límite muy bajo (pocos correos por
+  // hora) y a veces simplemente no llega. En vez de depender de eso, devolvemos
+  // el link para que Jaime se lo mande al dueño directamente (WhatsApp, correo,
+  // como sea) y que funcione siempre, sin depender del correo de Supabase.
+  const { data: inviteData, error: userError } = await supabaseAdmin.auth.admin.generateLink({
+    type: 'invite',
+    email: formData.ownerEmail,
+    options: { redirectTo: 'https://crisalap.com/reset-password' },
+  });
 
-  if (userError || !newUser.user) {
+  if (userError || !inviteData.user) {
     throw new Error('Error invitando al dueño: ' + (userError?.message || 'desconocido'));
   }
+
+  const newUser = { user: inviteData.user };
+  const inviteLink = inviteData.properties?.action_link ?? null;
 
   const today = new Date();
   const nextPayment = new Date(today);
@@ -307,7 +316,7 @@ export async function createNewStore(formData: {
   revalidatePath('/admin');
   revalidatePath('/admin/solicitudes');
 
-  return { success: true, slug: formData.slug };
+  return { success: true, slug: formData.slug, inviteLink };
 }
 
 export async function aprobarComision(comisionId: string) {

@@ -59,7 +59,7 @@ function slugificar(texto: string): string {
   return texto
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\p{Diacritic}/gu, '')
     .replace(/[^a-z0-9-]/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '');
@@ -92,7 +92,8 @@ export default function NuevaTiendaForm({
   const [planTipo, setPlanTipo] = useState<'basica' | 'estandar' | 'premium' | 'vendedor'>(planTipoPrefill || 'basica');
   const [referidoPor, setReferidoPor] = useState(solicitudPrefill?.referidoPorId || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [result, setResult] = useState<{ success: boolean; slug?: string; error?: string } | null>(null);
+  const [result, setResult] = useState<{ success: boolean; slug?: string; error?: string; inviteLink?: string | null } | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,7 +117,7 @@ export default function NuevaTiendaForm({
         referidoPor: referidoPor || null,
         solicitudId: solicitudPrefill?.id || null,
       });
-      setResult({ success: true, slug: res.slug });
+      setResult({ success: true, slug: res.slug, inviteLink: res.inviteLink });
     } catch (err) {
       setResult({ success: false, error: err instanceof Error ? err.message : 'Error desconocido' });
     } finally {
@@ -131,9 +132,37 @@ export default function NuevaTiendaForm({
         <p style={{ fontSize: '14px' }}>
           Subdominio: <a href={`https://${result.slug}.crisalap.com`} target="_blank" rel="noopener noreferrer">{result.slug}.crisalap.com</a>
         </p>
-        <p style={{ fontSize: '13px', color: '#555', marginTop: '8px' }}>
-          Le enviamos un correo de invitación al dueño para que defina su propia contraseña.
-        </p>
+        {result.inviteLink ? (
+          <div style={{ marginTop: '12px' }}>
+            <p style={{ fontSize: '13px', color: '#555', marginBottom: '6px' }}>
+              Copia este link y mándaselo al dueño (WhatsApp, correo, como sea) para que defina su propia contraseña. No depende de que le llegue un correo:
+            </p>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input
+                type="text"
+                readOnly
+                value={result.inviteLink}
+                onFocus={(e) => e.target.select()}
+                style={{ ...inputStyle, marginBottom: 0, fontSize: '12px', backgroundColor: '#f9fafb' }}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(result.inviteLink!);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+                style={{ padding: '8px 14px', backgroundColor: '#16a34a', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', whiteSpace: 'nowrap' }}
+              >
+                {copied ? '¡Copiado!' : 'Copiar link'}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <p style={{ fontSize: '13px', color: '#555', marginTop: '8px' }}>
+            No se pudo generar el link de invitación. Puedes generarlo manualmente desde el panel de Supabase (Authentication → Users → Invite user).
+          </p>
+        )}
         <button
           onClick={() => setResult(null)}
           style={{ marginTop: '12px', padding: '8px 16px', backgroundColor: '#16a34a', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
