@@ -12,7 +12,7 @@ import {
   Plus,
   Package
 } from 'lucide-react';
-import { getSalesMetrics, getOrders, getLowStockProducts, getCurrentStoreId, Order, Product, SalesMetrics } from '@/lib/supabase-api';
+import { getSalesMetrics, getOrders, getLowStockProducts, getCurrentStoreId, supabase, Order, Product, SalesMetrics } from '@/lib/supabase-api';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslation } from '@/hooks/useTranslation';
 import { translations } from '@/config/translations';
@@ -80,6 +80,20 @@ export default function DashboardAdminPage() {
       const storeId = await getCurrentStoreId();
       if (!storeId || !active) {
         if (active) setLoading(false);
+        return;
+      }
+
+      // Una cuenta vendedor/afiliado no vende productos: este Resumen General
+      // (ventas, stock, pedidos) siempre le saldría vacío y no le sirve para
+      // nada. La mandamos directo a "Mi Cuenta", que es lo único que le aplica.
+      const { data: tienda } = await supabase
+        .from('stores')
+        .select('plan_tipo')
+        .eq('id', storeId)
+        .single();
+
+      if (tienda?.plan_tipo === 'vendedor') {
+        if (active) router.replace('/dashboard/mi-cuenta');
         return;
       }
 

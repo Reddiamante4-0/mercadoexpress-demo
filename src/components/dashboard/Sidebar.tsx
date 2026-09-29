@@ -262,8 +262,12 @@ function SidebarContent({
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
         {NAV_SECTIONS.map((section) => {
+          // Una cuenta vendedor/afiliado no vende productos: todo lo demás del
+          // panel (productos, pedidos, clientes, reportes, etc.) le saldría
+          // vacío y no le sirve para nada. Solo dejamos "Mi Cuenta", donde ve
+          // sus comisiones y su link de referido.
           const items = esVendedor
-            ? section.items.filter((item) => item.href !== '/dashboard/configuracion-pagos')
+            ? section.items.filter((item) => item.href === '/dashboard/mi-cuenta')
             : section.items;
           return (
             <div key={section.titleEn}>
