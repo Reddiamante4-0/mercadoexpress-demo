@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import StorefrontClient from './StorefrontClient';
 import type { Metadata } from 'next';
@@ -10,7 +10,7 @@ const getStoreData = cache(async (store_slug: string) => {
   const supabase = await createClient();
   const { data: store } = await supabase
     .from('stores')
-    .select('id, name, brand_name, tagline, logo_url, whatsapp_number, hero_description, hero_image_url, hero_badge_text, hero_title_text, hero_subtitle_text, shipping_fee, free_shipping_threshold, hero_header_subtitle, hero_delivery_badge, hero_guarantee_text, hero_discount_text, hero_cta_primary, hero_cta_secondary, theme_color')
+    .select('id, name, brand_name, tagline, logo_url, whatsapp_number, hero_description, hero_image_url, hero_badge_text, hero_title_text, hero_subtitle_text, shipping_fee, free_shipping_threshold, hero_header_subtitle, hero_delivery_badge, hero_guarantee_text, hero_discount_text, hero_cta_primary, hero_cta_secondary, theme_color, plan_tipo, codigo_referido')
     .eq('slug', store_slug)
     .eq('is_active', true)
     .eq('publicada', true)
@@ -52,6 +52,17 @@ export default async function StorePage({ params }: { params: Promise<{ store_sl
 
   if (!store) {
     notFound();
+  }
+
+  // Una cuenta vendedor/afiliado no vende productos propios: su "tienda" es
+  // en realidad la tienda de ventas de planes de Crisal. En vez de mostrarle
+  // un storefront vacío, la mandamos directo allá con su código de referido
+  // ya aplicado, para que pueda compartir su propio subdominio como si fuera
+  // su página de ventas (la compra la sigue procesando esa tienda de ventas).
+  if (store.plan_tipo === 'vendedor') {
+    const tiendaVentasSlug = process.env.NEXT_PUBLIC_TIENDA_VENTAS_SLUG;
+    const refParam = store.codigo_referido ? `?ref=${store.codigo_referido}` : '';
+    redirect(`https://${tiendaVentasSlug}.crisalap.com/${refParam}`);
   }
 
   const supabase = await createClient();
