@@ -313,6 +313,38 @@ export async function createNewStore(formData: {
     }
   }
 
+  // Enviamos el link de invitación automáticamente por correo (Resend, el mismo
+  // servicio que ya usamos para el aviso de nueva solicitud). Así el dueño lo
+  // recibe solo, sin que Jaime tenga que copiarlo y mandarlo a mano. Si el envío
+  // falla no interrumpimos el flujo: el link también queda disponible en
+  // pantalla como respaldo (se muestra en el formulario tras crear la tienda).
+  if (process.env.RESEND_API_KEY && inviteLink) {
+    try {
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'Crisalap <noreply@crisalap.com>',
+          to: formData.ownerEmail,
+          subject: 'Activa tu tienda en Crisalap',
+          html: `
+            <p>¡Hola!</p>
+            <p>Tu tienda <strong>${formData.brandName || formData.storeName}</strong> ya está creada en Crisalap.</p>
+            <p>Para activarla, define tu contraseña haciendo clic en el siguiente enlace:</p>
+            <p><a href="${inviteLink}">${inviteLink}</a></p>
+            <p>Si tú no solicitaste esto, puedes ignorar este correo.</p>
+          `,
+        }),
+      });
+    } catch {
+      // La tienda ya quedó creada y el link sigue disponible en pantalla;
+      // si falla el correo no interrumpimos el flujo.
+    }
+  }
+
   revalidatePath('/admin');
   revalidatePath('/admin/solicitudes');
 
