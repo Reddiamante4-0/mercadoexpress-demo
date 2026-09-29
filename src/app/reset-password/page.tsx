@@ -25,11 +25,10 @@ export default function ResetPasswordPage() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    // Camino 1: enlace de "olvidé mi contraseña". Ese ya pasó por /auth/callback,
+    // que dejó la sesión guardada antes de llegar aquí. PASSWORD_RECOVERY es el
+    // evento normal; SIGNED_IN se deja también por si acaso.
     const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
-      // Un enlace de "olvidé mi contraseña" dispara PASSWORD_RECOVERY, pero un
-      // enlace de invitación (inviteUserByEmail) dispara SIGNED_IN en su lugar.
-      // Ambos casos significan lo mismo aquí: el enlace es válido y ya se puede
-      // mostrar el formulario para definir la contraseña.
       if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
         setReady(true);
       }
@@ -37,6 +36,29 @@ export default function ResetPasswordPage() {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) setReady(true);
     });
+
+    // Camino 2: enlace de invitación (inviteUserByEmail). Este llega directo
+    // aquí con el token en el fragmento (#) de la URL, en un formato que
+    // Supabase no puede generar como PKCE (limitación de Supabase, no nuestra).
+    // El cliente de la app siempre usa PKCE, así que no detecta este tipo de
+    // enlace por sí solo. Lo leemos nosotros mismos y se lo entregamos al
+    // cliente con setSession(), que sí acepta el token directamente.
+    const hash = window.location.hash;
+    if (hash.includes('access_token=')) {
+      const hashParams = new URLSearchParams(hash.substring(1));
+      const access_token = hashParams.get('access_token');
+      const refresh_token = hashParams.get('refresh_token');
+
+      if (access_token && refresh_token) {
+        supabase.auth.setSession({ access_token, refresh_token }).then(({ error }) => {
+          if (!error) {
+            // Limpia el token de la URL para que no quede visible ni se reuse por error.
+            window.history.replaceState(null, '', window.location.pathname);
+          }
+        });
+      }
+    }
+
     return () => {
       authListener.subscription.unsubscribe();
     };
