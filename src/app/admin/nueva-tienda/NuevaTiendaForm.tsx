@@ -241,18 +241,25 @@ export default function NuevaTiendaForm({
         ))}
       </select>
 
-      <label style={labelStyle}>Tipo de negocio</label>
-      <select value={businessType} onChange={(e) => setBusinessType(e.target.value as any)} style={inputStyle}>
-        <option value="tienda_barrio">Tienda de barrio</option>
-        <option value="drogueria">Droguería</option>
-        <option value="supermercado">Supermercado</option>
-        <option value="otro">Otro / Personalizado</option>
-      </select>
-
-      {businessType === 'otro' && (
+      {/* Un vendedor/afiliado no tiene catálogo: el backend nunca siembra
+          categorías para ese plan, sin importar lo que se elija aquí. Por
+          eso este campo no aplica y solo confunde, así que se oculta. */}
+      {planTipo !== 'vendedor' && (
         <>
-          <label style={labelStyle}>Categorías personalizadas (separadas por coma)</label>
-          <input type="text" value={customCategories} onChange={(e) => setCustomCategories(e.target.value)} style={inputStyle} placeholder="Ej: Papelería, Juguetes, Regalos" />
+          <label style={labelStyle}>Tipo de negocio</label>
+          <select value={businessType} onChange={(e) => setBusinessType(e.target.value as any)} style={inputStyle}>
+            <option value="tienda_barrio">Tienda de barrio</option>
+            <option value="drogueria">Droguería</option>
+            <option value="supermercado">Supermercado</option>
+            <option value="otro">Otro / Personalizado</option>
+          </select>
+
+          {businessType === 'otro' && (
+            <>
+              <label style={labelStyle}>Categorías personalizadas (separadas por coma)</label>
+              <input type="text" value={customCategories} onChange={(e) => setCustomCategories(e.target.value)} style={inputStyle} placeholder="Ej: Papelería, Juguetes, Regalos" />
+            </>
+          )}
         </>
       )}
 
