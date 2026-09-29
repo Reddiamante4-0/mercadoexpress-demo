@@ -86,11 +86,14 @@ export default function MiCuentaPage() {
             <p className="text-sm text-gray-500 mb-1">Tu link para invitar a otras tiendas:</p>
             <div className="flex items-center gap-2">
               <code className="flex-1 text-xs bg-gray-50 border border-gray-200 rounded px-2 py-2 truncate">
-                {`https://crisalap.com/solicitud?ref=${data.store.codigoReferido}`}
+                {/* El link tiene que llevar a la tienda de ventas (donde se paga el
+                    plan), no directo a /solicitud: esa página exige un pedido pagado
+                    y sin eso no deja avanzar, sin importar el código de referido. */}
+                {`https://${process.env.NEXT_PUBLIC_TIENDA_VENTAS_SLUG}.crisalap.com/?ref=${data.store.codigoReferido}`}
               </code>
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText(`https://crisalap.com/solicitud?ref=${data.store.codigoReferido}`);
+                  navigator.clipboard.writeText(`https://${process.env.NEXT_PUBLIC_TIENDA_VENTAS_SLUG}.crisalap.com/?ref=${data.store.codigoReferido}`);
                   setCopiado(true);
                   setTimeout(() => setCopiado(false), 2000);
                 }}
