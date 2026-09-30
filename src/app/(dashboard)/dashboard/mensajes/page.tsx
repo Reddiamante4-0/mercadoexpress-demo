@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { MessageSquare, RefreshCw, Send, MessageCircle } from 'lucide-react';
-import { getMessages, Message } from '@/lib/db';
+import { getMessages, getCurrentStoreId, Message } from '@/lib/supabase-api';
 import { useTranslation } from '@/hooks/useTranslation';
 import { translations } from '@/config/translations';
 
@@ -13,9 +13,16 @@ export default function AdminMessagesPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const loadMessagesData = () => {
+  const loadMessagesData = async () => {
     setLoading(true);
-    setMessages(getMessages());
+    const storeId = await getCurrentStoreId();
+    if (!storeId) {
+      setMessages([]);
+      setLoading(false);
+      return;
+    }
+    const data = await getMessages(storeId);
+    setMessages(data);
     setLoading(false);
   };
 

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Star, RefreshCw, Award } from 'lucide-react';
-import { getRatings, Rating } from '@/lib/db';
+import { getRatings, getCurrentStoreId, Rating } from '@/lib/supabase-api';
 import { useTranslation } from '@/hooks/useTranslation';
 import { translations } from '@/config/translations';
 
@@ -13,9 +13,16 @@ export default function AdminRatingsPage() {
   const [ratings, setRatings] = useState<Rating[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const loadRatingsData = () => {
+  const loadRatingsData = async () => {
     setLoading(true);
-    setRatings(getRatings());
+    const storeId = await getCurrentStoreId();
+    if (!storeId) {
+      setRatings([]);
+      setLoading(false);
+      return;
+    }
+    const data = await getRatings(storeId);
+    setRatings(data);
     setLoading(false);
   };
 
