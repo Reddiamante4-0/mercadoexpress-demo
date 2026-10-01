@@ -37,7 +37,7 @@ export interface Order {
   phone: string;
   address: string;
   notes?: string;
-  paymentMethod: 'card' | 'pse' | 'wallet' | 'nequi' | 'mostrador';
+  paymentMethod: 'card' | 'pse' | 'wallet' | 'nequi' | 'mostrador' | 'breb';
   paymentDetails: string;
   items: OrderItem[];
   subtotal: number;
