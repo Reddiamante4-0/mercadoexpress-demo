@@ -33,6 +33,7 @@ export default async function NuevaTiendaPage({
     brandName: string | null;
     tagline: string | null;
     nequiNumber: string | null;
+    llaveBreB: string | null;
     customCategories: string | null;
     planTipo: string | null;
     shippingFee: number | null;
@@ -47,7 +48,7 @@ export default async function NuevaTiendaPage({
 
     const { data: solicitud } = await supabaseAdmin
       .from('solicitudes_tienda')
-      .select('id, nombre_negocio, contacto_telefono, tipo_negocio, referido_por_id, subdominio_deseado, brand_name, tagline, nequi_number, custom_categories, plan_tipo, shipping_fee, free_shipping_threshold, owner_email')
+      .select('id, nombre_negocio, contacto_telefono, tipo_negocio, referido_por_id, subdominio_deseado, brand_name, tagline, nequi_number, llave_bre_b, custom_categories, plan_tipo, shipping_fee, free_shipping_threshold, owner_email')
       .eq('id', solicitudId)
       .maybeSingle();
 
@@ -62,6 +63,7 @@ export default async function NuevaTiendaPage({
         brandName: solicitud.brand_name,
         tagline: solicitud.tagline,
         nequiNumber: solicitud.nequi_number,
+        llaveBreB: solicitud.llave_bre_b,
         customCategories: solicitud.custom_categories,
         planTipo: solicitud.plan_tipo,
         shippingFee: solicitud.shipping_fee,
