@@ -33,7 +33,7 @@ export default async function SolicitudesPage() {
 
   const { data: solicitudes } = await supabaseAdmin
     .from('solicitudes_tienda')
-    .select('id, created_at, nombre_negocio, contacto_nombre, contacto_telefono, contacto_email, tipo_negocio, referido_codigo_texto, referido_por_id, estado, pedido_id, subdominio_deseado, brand_name, tagline, nequi_number, custom_categories, plan_tipo, shipping_fee, free_shipping_threshold, owner_email')
+    .select('id, created_at, nombre_negocio, contacto_nombre, contacto_telefono, contacto_email, tipo_negocio, referido_codigo_texto, referido_por_id, estado, pedido_id, subdominio_deseado, brand_name, tagline, nequi_number, llave_bre_b, custom_categories, plan_tipo, shipping_fee, free_shipping_threshold, owner_email')
     .eq('estado', 'pendiente')
     .order('created_at', { ascending: false });
 
@@ -95,6 +95,7 @@ export default async function SolicitudesPage() {
             {s.contacto_email && <p style={{ fontSize: '13px', color: '#555', margin: '2px 0' }}>Correo de contacto: {s.contacto_email}</p>}
             {s.owner_email && <p style={{ fontSize: '13px', color: '#555', margin: '2px 0' }}>Correo del dueño: {s.owner_email}</p>}
             {s.nequi_number && <p style={{ fontSize: '13px', color: '#555', margin: '2px 0' }}>Nequi: {s.nequi_number}</p>}
+            {s.llave_bre_b && <p style={{ fontSize: '13px', color: '#555', margin: '2px 0' }}>Llave Bre-B: {s.llave_bre_b}</p>}
 
             {!esVendedor && s.tipo_negocio && (
               <p style={{ fontSize: '13px', color: '#555', margin: '2px 0' }}>
