@@ -45,6 +45,7 @@ export default function CheckoutPage({
   storeSlug,
   whatsappNumber,
   nequiNumber,
+  llaveBreB,
   wompiEnabled,
   shippingFee,
   freeShippingThreshold
@@ -54,6 +55,7 @@ export default function CheckoutPage({
   storeSlug: string;
   whatsappNumber?: string;
   nequiNumber?: string;
+  llaveBreB?: string;
   wompiEnabled: boolean;
   shippingFee: number;
   freeShippingThreshold: number;
@@ -75,9 +77,9 @@ export default function CheckoutPage({
   const [notes, setNotes] = useState('');
   const [deliveryType, setDeliveryType] = useState<'daily' | 'weekly'>('daily');
 
-  // Payment method: 'online' (Wompi) or 'nequi' (transferencia + comprobante por WhatsApp)
-  const [paymentOption, setPaymentOption] = useState<'online' | 'nequi'>(
-    wompiEnabled ? 'online' : 'nequi'
+  // Payment method: 'online' (Wompi), 'nequi' o 'breb' (transferencia + comprobante por WhatsApp)
+  const [paymentOption, setPaymentOption] = useState<'online' | 'nequi' | 'breb'>(
+    wompiEnabled ? 'online' : (nequiNumber ? 'nequi' : 'breb')
   );
 
   // Processing State
@@ -179,6 +181,41 @@ export default function CheckoutPage({
 
         toast({
           title: 'Gracias por tu pedido. En cuanto confirmemos tu pago por Nequi, lo alistaremos y enviaremos.',
+          type: 'success'
+        });
+
+        sessionStorage.setItem('last_order', JSON.stringify(newOrder));
+        router.push(`/${storeSlug}/order-success?orderId=${orderId}`);
+        setIsProcessing(false);
+        return;
+      }
+
+      if (paymentOption === 'breb') {
+        const newOrder: Order = {
+          id: orderId,
+          customerName,
+          phone,
+          address: `${address}, Barrio: ${barrio}`,
+          notes: notes || undefined,
+          paymentMethod: 'breb',
+          paymentDetails: `Transferencia por llave Bre-B a ${llaveBreB}, pendiente de confirmación`,
+          items: orderItems,
+          subtotal: cartSubtotal,
+          shippingFee: shippingFeeAmount,
+          total: cartTotal,
+          status: 'Pendiente de pago',
+          createdAt: new Date().toISOString(),
+          deliveryType
+        };
+
+        setProcessingStep('Guardando pedido...');
+        await saveOrder(newOrder, storeId);
+
+        const cartKey = `carrito_${storeId}`;
+        localStorage.removeItem(cartKey);
+
+        toast({
+          title: 'Gracias por tu pedido. En cuanto confirmemos tu pago por Bre-B, lo alistaremos y enviaremos.',
           type: 'success'
         });
 
