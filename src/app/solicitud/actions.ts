@@ -102,6 +102,7 @@ export async function crearSolicitud(formData: {
   brandName: string;
   tagline: string;
   nequiNumber: string;
+  llaveBreB: string;
   customCategories: string;
   shippingFee: string;
   freeShippingThreshold: string;
@@ -178,6 +179,7 @@ export async function crearSolicitud(formData: {
     brand_name: formData.brandName.trim() || null,
     tagline: formData.tagline.trim() || null,
     nequi_number: esVendedor ? null : (formData.nequiNumber.trim() || null),
+    llave_bre_b: esVendedor ? null : (formData.llaveBreB.trim() || null),
     custom_categories: customCategories,
     plan_tipo: planTipo,
     shipping_fee: shippingFee,
