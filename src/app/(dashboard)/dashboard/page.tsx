@@ -272,10 +272,10 @@ export default function DashboardAdminPage() {
 
               return (
                 <div key={item.month} className="flex flex-col items-center gap-2 w-16 group relative">
-                  {/* Tooltip on Hover */}
-                  <div className="absolute -top-10 scale-0 group-hover:scale-100 transition-all bg-slate-900 text-white text-[9px] font-bold px-2 py-1 rounded-md shadow-md z-10 whitespace-nowrap">
+                  {/* Monto, siempre visible */}
+                  <span className="text-[9px] font-black text-slate-700 whitespace-nowrap">
                     {formatPrice(item.amount)}
-                  </div>
+                  </span>
                   {/* Bar */}
                   <div 
                     style={{ height: `${heightPct}%` }}
