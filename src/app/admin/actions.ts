@@ -122,6 +122,7 @@ export async function createNewStore(formData: {
   tagline: string;
   whatsappNumber: string;
   nequiNumber: string;
+  llaveBreB: string;
   wompiEnabled: boolean;
   shippingFee: number;
   freeShippingThreshold: number;
@@ -196,6 +197,7 @@ export async function createNewStore(formData: {
       tagline: formData.tagline || null,
       whatsapp_number: formData.whatsappNumber || null,
       nequi_number: formData.nequiNumber || null,
+      llave_bre_b: formData.llaveBreB || null,
       wompi_enabled: formData.wompiEnabled,
       shipping_fee: formData.shippingFee,
       free_shipping_threshold: formData.freeShippingThreshold,
