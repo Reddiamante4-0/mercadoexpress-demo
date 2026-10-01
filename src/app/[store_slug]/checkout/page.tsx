@@ -8,7 +8,7 @@ export default async function CheckoutServerPage({ params }: { params: Promise<{
   
   const { data: store, error } = await supabase
     .from('stores')
-    .select('id, name, whatsapp_number, nequi_number, wompi_enabled, shipping_fee, free_shipping_threshold')
+    .select('id, name, whatsapp_number, nequi_number, llave_bre_b, wompi_enabled, shipping_fee, free_shipping_threshold')
     .eq('slug', store_slug)
     .eq('is_active', true)
     .eq('publicada', true)
@@ -26,6 +26,7 @@ export default async function CheckoutServerPage({ params }: { params: Promise<{
       storeSlug={store_slug}
       whatsappNumber={store.whatsapp_number}
       nequiNumber={store.nequi_number}
+      llaveBreB={store.llave_bre_b}
       wompiEnabled={store.wompi_enabled}
       shippingFee={store.shipping_fee}
       freeShippingThreshold={store.free_shipping_threshold}
