@@ -86,6 +86,7 @@ function SolicitudForm() {
   const [contactoEmail, setContactoEmail] = useState('');
   const [ownerEmail, setOwnerEmail] = useState('');
   const [nequiNumber, setNequiNumber] = useState('');
+  const [llaveBreB, setLlaveBreB] = useState('');
   const [tipoNegocio, setTipoNegocio] = useState<'drogueria' | 'supermercado' | 'tienda_barrio' | 'otro'>('tienda_barrio');
   const [customCategories, setCustomCategories] = useState('');
   const [shippingFee, setShippingFee] = useState('5000');
@@ -112,6 +113,7 @@ function SolicitudForm() {
         brandName,
         tagline,
         nequiNumber,
+        llaveBreB,
         customCategories,
         shippingFee,
         freeShippingThreshold,
@@ -215,6 +217,10 @@ function SolicitudForm() {
           <>
             <label style={labelStyle}>Número de Nequi (opcional)</label>
             <input type="text" value={nequiNumber} onChange={(e) => setNequiNumber(e.target.value)} style={inputStyle} />
+
+            <label style={labelStyle}>Llave Bre-B (opcional)</label>
+            <input type="text" value={llaveBreB} onChange={(e) => setLlaveBreB(e.target.value)} style={inputStyle} />
+            <p style={hintStyle}>Celular, correo, NIT o llave alfanumérica registrada en tu banco.</p>
 
             <label style={labelStyle}>Tipo de negocio</label>
             <select value={tipoNegocio} onChange={(e) => setTipoNegocio(e.target.value as 'drogueria' | 'supermercado' | 'tienda_barrio' | 'otro')} style={inputStyle}>
