@@ -45,6 +45,7 @@ type SolicitudPrefill = {
   brandName: string | null;
   tagline: string | null;
   nequiNumber: string | null;
+  llaveBreB: string | null;
   customCategories: string | null;
   planTipo: string | null;
   shippingFee: number | null;
@@ -84,6 +85,7 @@ export default function NuevaTiendaForm({
   const [tagline, setTagline] = useState(solicitudPrefill?.tagline || '');
   const [whatsappNumber, setWhatsappNumber] = useState(solicitudPrefill?.contactoTelefono || '');
   const [nequiNumber, setNequiNumber] = useState(solicitudPrefill?.nequiNumber || '');
+  const [llaveBreB, setLlaveBreB] = useState(solicitudPrefill?.llaveBreB || '');
   const [wompiEnabled, setWompiEnabled] = useState(true);
   const [shippingFee, setShippingFee] = useState(solicitudPrefill?.shippingFee ?? 5000);
   const [freeShippingThreshold, setFreeShippingThreshold] = useState(solicitudPrefill?.freeShippingThreshold ?? 80000);
@@ -108,6 +110,7 @@ export default function NuevaTiendaForm({
         tagline,
         whatsappNumber,
         nequiNumber,
+        llaveBreB,
         wompiEnabled,
         shippingFee,
         freeShippingThreshold,
@@ -209,6 +212,9 @@ export default function NuevaTiendaForm({
 
       <label style={labelStyle}>Número de Nequi (opcional)</label>
       <input type="text" value={nequiNumber} onChange={(e) => setNequiNumber(e.target.value)} style={inputStyle} />
+
+      <label style={labelStyle}>Llave Bre-B (opcional)</label>
+      <input type="text" value={llaveBreB} onChange={(e) => setLlaveBreB(e.target.value)} style={inputStyle} />
 
       <label style={labelStyle}>
         <input type="checkbox" checked={wompiEnabled} onChange={(e) => setWompiEnabled(e.target.checked)} style={{ marginRight: '6px' }} />
