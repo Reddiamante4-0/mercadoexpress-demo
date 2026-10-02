@@ -82,6 +82,9 @@ export default function CheckoutPage({
     wompiEnabled ? 'online' : (nequiNumber ? 'nequi' : 'breb')
   );
 
+  // Aceptación de la Política de Tratamiento de Datos
+  const [acceptedPolicy, setAcceptedPolicy] = useState(false);
+
   // Processing State
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStep, setProcessingStep] = useState('');
@@ -600,10 +603,27 @@ export default function CheckoutPage({
               </div>
             )}
 
+            {/* Casilla de Política de Tratamiento de Datos */}
+            <div className="flex items-start gap-2 mb-4">
+              <input
+                type="checkbox"
+                id="privacy-policy"
+                checked={acceptedPolicy}
+                onChange={(e) => setAcceptedPolicy(e.target.checked)}
+                className="mt-1 w-4 h-4 text-green-600 border-slate-300 rounded focus:ring-green-600 cursor-pointer shrink-0"
+              />
+              <label htmlFor="privacy-policy" className="text-[10px] text-slate-500 cursor-pointer leading-tight">
+                {language === 'en' ? 'I have read and accept the ' : 'He leído y acepto la '}
+                <a href="/politica-de-privacidad" target="_blank" rel="noopener noreferrer" className="text-green-600 underline font-bold">
+                  {language === 'en' ? 'Privacy Policy' : 'Política de Tratamiento de Datos'}
+                </a>
+              </label>
+            </div>
+
             {/* Pay Button (Visible on mobile/desktop inside form) */}
             <button
               type="submit"
-              disabled={isProcessing || (!wompiEnabled && !nequiNumber && !llaveBreB)}
+              disabled={!acceptedPolicy || isProcessing || (!wompiEnabled && !nequiNumber && !llaveBreB)}
               className="w-full py-3.5 bg-green-600 hover:bg-green-700 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-md active:scale-98 flex items-center justify-center gap-2 cursor-pointer disabled:bg-slate-300 disabled:cursor-not-allowed"
             >
               {isProcessing ? (
