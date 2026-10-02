@@ -922,15 +922,25 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
       </main>
 
       {/* ── FOOTER ── */}
-      <footer className="w-full py-6 text-center border-t border-slate-100 mt-4">
-        <a
-          href="https://tutienda.crisalap.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-[10px] font-bold text-slate-400 hover:text-green-600 transition-colors"
-        >
-          {language === 'en' ? 'Made with Crisalap' : 'Creado con Crisalap'}
-        </a>
+      <footer className="w-full py-6 text-center border-t border-slate-100 mt-4 space-y-1">
+        <div>
+          <a
+            href="https://tutienda.crisalap.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] font-bold text-slate-400 hover:text-green-600 transition-colors"
+          >
+            {language === 'en' ? 'Made with Crisalap' : 'Creado con Crisalap'}
+          </a>
+        </div>
+        <div>
+          <a
+            href="/politica-de-privacidad"
+            className="text-[10px] text-slate-400 hover:text-green-600 transition-colors underline"
+          >
+            {language === 'en' ? 'Privacy Policy' : 'Política de Tratamiento de Datos'}
+          </a>
+        </div>
       </footer>
 
       {/* ── SHOPPING CART DRAWER ── */}
