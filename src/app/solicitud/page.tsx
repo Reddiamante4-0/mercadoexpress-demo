@@ -87,6 +87,7 @@ function SolicitudForm() {
   const [ownerEmail, setOwnerEmail] = useState('');
   const [nequiNumber, setNequiNumber] = useState('');
   const [llaveBreB, setLlaveBreB] = useState('');
+  const [acceptedPolicy, setAcceptedPolicy] = useState(false);
   const [tipoNegocio, setTipoNegocio] = useState<'drogueria' | 'supermercado' | 'tienda_barrio' | 'otro'>('tienda_barrio');
   const [customCategories, setCustomCategories] = useState('');
   const [shippingFee, setShippingFee] = useState('5000');
@@ -245,9 +246,26 @@ function SolicitudForm() {
           </>
         )}
 
+        <div style={{ margin: '16px 0', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+          <input
+            type="checkbox"
+            id="acceptedPolicy"
+            checked={acceptedPolicy}
+            onChange={(e) => setAcceptedPolicy(e.target.checked)}
+            required
+            style={{ marginTop: '3px' }}
+          />
+          <label htmlFor="acceptedPolicy" style={{ fontSize: '13px', lineHeight: 1.4 }}>
+            Leí y acepto los{' '}
+            <a href="/terminos-de-vinculacion" target="_blank" rel="noopener noreferrer" style={{ color: '#16a34a', textDecoration: 'underline' }}>
+              Términos de Vinculación
+            </a>
+          </label>
+        </div>
+
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={!acceptedPolicy || isSubmitting}
           style={{ width: '100%', padding: '10px', backgroundColor: '#16a34a', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold' }}
         >
           {isSubmitting ? 'Enviando...' : 'Enviar solicitud'}
