@@ -18,6 +18,7 @@ import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslation } from '@/hooks/useTranslation';
 import { translations } from '@/config/translations';
 import { brandConfig } from '@/config/brandConfig';
+import { DEFAULT_IMAGE } from '@/lib/constants';
 import { generateWompiSignature } from './actions';
 
 interface CartItem {
@@ -650,7 +651,6 @@ export default function CheckoutPage({
             {/* Item list */}
             <div className="space-y-3.5 max-h-60 overflow-y-auto pr-1">
               {cart.map((item) => {
-                const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&auto=format&fit=crop&q=60';
                 return (
                   <div key={item.product.id} className="flex gap-2 text-xs">
                     <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 shrink-0">

@@ -28,6 +28,7 @@ import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslation } from '@/hooks/useTranslation';
 import { translations } from '@/config/translations';
 import { brandConfig } from '@/config/brandConfig';
+import { DEFAULT_IMAGE } from '@/lib/constants';
 
 const categoryTranslations: Record<string, Record<string, string>> = {
   es: {
@@ -86,8 +87,6 @@ const CATEGORY_STYLES: Record<string, { bg: string; text: string; border: string
   'Congelados': { bg: 'bg-cyan-50', text: 'text-cyan-700', border: 'border-cyan-200/40', gradient: 'from-cyan-500 to-sky-400' },
   'Ofertas': { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200/40', gradient: 'from-rose-600 to-pink-500' }
 };
-
-const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&auto=format&fit=crop&q=60';
 
 interface CartItem {
   product: Product;

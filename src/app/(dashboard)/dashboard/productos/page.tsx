@@ -22,6 +22,7 @@ import { getProducts, getProductsPaginated, saveProduct, deleteProduct, getCurre
 import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslation } from '@/hooks/useTranslation';
 import { translations } from '@/config/translations';
+import { DEFAULT_IMAGE } from '@/lib/constants';
 
 const CATEGORIES = [
   'Carnes',
@@ -65,20 +66,6 @@ const categoryTranslations: Record<string, Record<string, string>> = {
   }
 };
 
-const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&auto=format&fit=crop&q=60';
-
-// Preset Unsplash images to choose from to make it easy to select beautiful stock photos
-const STOCK_PHOTOS = [
-  { label: 'Carnes', url: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop&q=60' },
-  { label: 'Costillas', url: 'https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?w=600&auto=format&fit=crop&q=60' },
-  { label: 'Pollo', url: 'https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=600&auto=format&fit=crop&q=60' },
-  { label: 'Pescado', url: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=600&auto=format&fit=crop&q=60' },
-  { label: 'Tomates', url: 'https://images.unsplash.com/photo-1595855759920-86582396756a?w=600&auto=format&fit=crop&q=60' },
-  { label: 'Cebollas', url: 'https://images.unsplash.com/photo-1580149375544-246599efccb8?w=600&auto=format&fit=crop&q=60' },
-  { label: 'Frutas', url: 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=600&auto=format&fit=crop&q=60' },
-  { label: 'Bebidas', url: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=600&auto=format&fit=crop&q=60' }
-];
-
 export default function AdminProductsPage() {
   const { toast } = useToast();
   const { language } = useTranslation();
@@ -115,7 +102,7 @@ export default function AdminProductsPage() {
   const [descriptionEn, setDescriptionEn] = useState('');
   const [unit, setUnit] = useState('lb');
   const [unitEn, setUnitEn] = useState('lb');
-  const [image, setImage] = useState(STOCK_PHOTOS[0].url);
+  const [image, setImage] = useState('');
   const [active, setActive] = useState(true);
 
   // Helper functions for inline editing
@@ -175,7 +162,7 @@ export default function AdminProductsPage() {
   const downloadExcelTemplate = () => {
     const ws_data = [
       ['nombre', 'categoria', 'precio', 'precio_anterior', 'stock', 'imagen', 'descripcion', 'unidad', 'nombre_ingles', 'descripcion_ingles', 'unidad_ingles'],
-      ['Lomo de Res', 'Carnes', 25000, 30000, 10, 'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop&q=60', 'Lomo fresco', 'lb', 'Beef Loin', 'Fresh beef loin', 'lb']
+      ['Producto de Ejemplo', 'General', 15000, 20000, 10, DEFAULT_IMAGE, 'Descripción del producto', 'und', 'Sample Product', 'Product description', 'unit']
     ];
     const ws = XLSX.utils.aoa_to_sheet(ws_data);
     const wb = XLSX.utils.book_new();
@@ -354,7 +341,7 @@ export default function AdminProductsPage() {
     setDescriptionEn('');
     setUnit('lb');
     setUnitEn('lb');
-    setImage(STOCK_PHOTOS[0].url);
+    setImage('');
     setActive(true);
     setModalOpen(true);
   };
@@ -976,43 +963,43 @@ export default function AdminProductsPage() {
                 />
               </div>
 
-              {/* Photo selection preset */}
-              <div className="space-y-2">
+              {/* Image Upload / URL */}
+              <div className="space-y-3">
                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1 block">{t.admin.productsFieldPhoto}</label>
-                <div className="grid grid-cols-4 gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200/50">
-                  {STOCK_PHOTOS.map((ph, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setImage(ph.url)}
-                      className={`relative aspect-video rounded-lg overflow-hidden border cursor-pointer ${
-                        image === ph.url ? 'border-green-600 ring-2 ring-green-600/30' : 'border-slate-200 hover:border-slate-300'
-                      }`}
-                    >
-                      <img src={ph.url} alt={ph.label} className="object-cover w-full h-full" />
-                      <div className="absolute inset-x-0 bottom-0 bg-black/60 text-[8px] text-white font-bold py-0.5 text-center truncate">
-                        {ph.label}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-                <div className="space-y-1">
-                  <input
-                    type="url"
-                    placeholder="URL de la imagen..."
-                    value={image}
-                    onChange={(e) => setImage(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-1.5 px-3 text-[10px] text-slate-500 focus:outline-hidden"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider pl-1 block">{language === 'en' ? 'Or upload image file' : 'O subir archivo de imagen'}</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageFileChange}
-                    className="w-full text-[10px] text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-[10px] file:font-bold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 cursor-pointer"
-                  />
+                
+                {/* Image preview when there is an image */}
+                {image && (
+                  <div className="w-32 h-32 rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
+                    <img src={image} alt="Preview" className="w-full h-full object-cover" />
+                  </div>
+                )}
+                
+                <div className="p-3 bg-slate-50 border border-slate-200/60 rounded-xl space-y-3">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700 block">{language === 'en' ? 'Upload image file' : 'Subir archivo de imagen'}</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageFileChange}
+                      className="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-green-600 file:text-white hover:file:bg-green-700 cursor-pointer transition-colors"
+                    />
+                  </div>
+                  
+                  <div className="relative flex items-center py-2">
+                    <div className="flex-grow border-t border-slate-200"></div>
+                    <span className="shrink-0 px-3 text-[10px] font-bold text-slate-400 uppercase">{language === 'en' ? 'Or use a URL' : 'O usa una URL'}</span>
+                    <div className="flex-grow border-t border-slate-200"></div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <input
+                      type="url"
+                      placeholder={language === 'en' ? "Image URL..." : "URL de la imagen..."}
+                      value={image}
+                      onChange={(e) => setImage(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-800 focus:outline-hidden focus:border-green-600"
+                    />
+                  </div>
                 </div>
               </div>
 

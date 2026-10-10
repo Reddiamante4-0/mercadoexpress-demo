@@ -5,7 +5,7 @@ import { getProducts, saveProduct, deleteProduct, getCurrentStoreId, Product } f
 import { useToast } from '@/components/ui/ToastProvider';
 import { Sparkles, Plus, Trash2, Edit2, X } from 'lucide-react';
 
-const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1607082349566-187342175e2f?w=600&auto=format&fit=crop&q=60';
+import { DEFAULT_IMAGE } from '@/lib/constants';
 
 export default function CombosPage() {
   const { toast } = useToast();
