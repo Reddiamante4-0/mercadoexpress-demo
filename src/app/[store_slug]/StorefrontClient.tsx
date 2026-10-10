@@ -21,7 +21,8 @@ import {
   Truck,
   Heart,
   Globe,
-  MessageCircle
+  MessageCircle,
+  Share2
 } from 'lucide-react';
 import { getProductsByIds, getProductsPaginated, getDiscountedProducts, getComboProducts, Product } from '@/lib/supabase-api';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -29,6 +30,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { translations } from '@/config/translations';
 import { brandConfig } from '@/config/brandConfig';
 import { DEFAULT_IMAGE } from '@/lib/constants';
+import { ShareStoreModal } from '@/components/storefront/ShareStoreModal';
 
 const categoryTranslations: Record<string, Record<string, string>> = {
   es: {
@@ -165,6 +167,7 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
   // Cart State
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   
   // Wishlist simulation
   const [wishlist, setWishlist] = useState<string[]>([]);
@@ -417,6 +420,16 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
 
           {/* Header Action Buttons */}
           <div className="flex items-center gap-2">
+            {/* Share Store Button */}
+            <button
+              onClick={() => setIsShareModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2.5 rounded-2xl border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-all cursor-pointer"
+              title={t.store.shareStore}
+            >
+              <Share2 className="w-4 h-4 text-slate-500" />
+              <span className="hidden sm:inline">{t.store.shareStore}</span>
+            </button>
+
             {/* Language Switcher */}
             <button
               onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
@@ -921,7 +934,16 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
       </main>
 
       {/* ── FOOTER ── */}
-      <footer className="w-full py-6 text-center border-t border-slate-100 mt-4 space-y-1">
+      <footer className="w-full py-6 text-center border-t border-slate-100 mt-4 space-y-2">
+        <div>
+          <button
+            onClick={() => setIsShareModalOpen(true)}
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-green-600 transition-colors cursor-pointer"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+            <span>{t.store.shareStore}</span>
+          </button>
+        </div>
         <div>
           <a
             href="https://tutienda.crisalap.com"
@@ -1189,6 +1211,14 @@ export default function CatalogPage({ storeId, storeName, storeSlug, brandName, 
           </span>
         </a>
       )}
+
+      {/* ── SHARE STORE MODAL ── */}
+      <ShareStoreModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        storeSlug={storeSlug}
+        storeName={displayBrandName}
+      />
     </div>
   );
 }

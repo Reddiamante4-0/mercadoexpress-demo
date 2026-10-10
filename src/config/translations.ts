@@ -41,7 +41,15 @@ export const translations = {
       viewDetails: "Ver Detalles",
       whatsappFloatTooltip: "Chatea con nosotros",
       whatsappHello: "Hola, estoy visitando la tienda Crisalap y tengo una duda.",
-      allCategories: "Todas"
+      allCategories: "Todas",
+      shareStore: "Compartir tienda",
+      shareModalTitle: "Compartir esta tienda",
+      shareModalSubtitle: "Escanea el código QR o copia el enlace para compartirlo con quien quieras.",
+      shareCopyLink: "Copiar enlace",
+      shareCopied: "¡Enlace copiado!",
+      shareWhatsApp: "Enviar por WhatsApp",
+      shareWhatsAppMessage: "¡Hola! Te comparto la tienda {storeName} para que hagas tus pedidos: {url}",
+      shareQrAlt: "Código QR para compartir la tienda"
     },
     checkout: {
       title: "Confirmar Pedido",
@@ -302,7 +310,15 @@ export const translations = {
       viewDetails: "View Details",
       whatsappFloatTooltip: "Chat with us",
       whatsappHello: "Hello, I am visiting the Crisalap store and have a question.",
-      allCategories: "All"
+      allCategories: "All",
+      shareStore: "Share store",
+      shareModalTitle: "Share this store",
+      shareModalSubtitle: "Scan the QR code or copy the link to share it with anyone.",
+      shareCopyLink: "Copy link",
+      shareCopied: "Link copied!",
+      shareWhatsApp: "Send via WhatsApp",
+      shareWhatsAppMessage: "Hi! Check out {storeName} to do your shopping: {url}",
+      shareQrAlt: "QR code to share the store"
     },
     checkout: {
       title: "Confirm Order",
