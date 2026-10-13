@@ -1,6 +1,7 @@
 'use server';
 
 import { GoogleGenAI } from '@google/genai';
+import { requireIaAccess } from '@/lib/ia/guard';
 
 export async function generarAnuncioCompletoAction(
   producto: string,
@@ -10,6 +11,11 @@ export async function generarAnuncioCompletoAction(
   try {
     if (!producto || !audiencia || !objetivo) {
       return { success: false, error: 'Todos los campos son obligatorios.' };
+    }
+
+    const access = await requireIaAccess();
+    if (!access.ok) {
+      return { success: false, error: access.error };
     }
 
     const ai = new GoogleGenAI({

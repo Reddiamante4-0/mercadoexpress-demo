@@ -1,6 +1,7 @@
 'use server';
 
 import { GoogleGenAI } from '@google/genai';
+import { requireIaAccess } from '@/lib/ia/guard';
 
 function getAi() {
   return new GoogleGenAI({
@@ -12,6 +13,11 @@ export async function analizarAvatarAction(producto: string, nicho: string) {
   try {
     if (!producto || !nicho) {
       return { success: false, error: 'Producto y nicho son obligatorios.' };
+    }
+
+    const access = await requireIaAccess();
+    if (!access.ok) {
+      return { success: false, error: access.error };
     }
 
     const prompt = `Eres un psicólogo de ventas y experto en marketing de conversión para Red Diamante 4.0.
@@ -83,6 +89,11 @@ export async function generarAccionAvatarAction(
   try {
     if (!producto || !nicho || !accion) {
       return { success: false, error: 'Producto, nicho y acción son obligatorios.' };
+    }
+
+    const access = await requireIaAccess();
+    if (!access.ok) {
+      return { success: false, error: access.error };
     }
 
     let instructions = '';

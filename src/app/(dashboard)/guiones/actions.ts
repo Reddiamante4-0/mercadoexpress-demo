@@ -1,6 +1,7 @@
 'use server';
 
 import { GoogleGenAI } from '@google/genai';
+import { requireIaAccess } from '@/lib/ia/guard';
 
 export async function generarGuionVideoAction(tema: string, publico: string) {
   try {
@@ -9,6 +10,11 @@ export async function generarGuionVideoAction(tema: string, publico: string) {
     });
     if (!tema || !publico) {
       return { success: false, error: 'El tema y el público objetivo son obligatorios.' };
+    }
+
+    const access = await requireIaAccess();
+    if (!access.ok) {
+      return { success: false, error: access.error };
     }
 
     const prompt = `Eres un creador de contenido viral y copywriter experto en videos cortos (Reels, TikTok, Shorts).

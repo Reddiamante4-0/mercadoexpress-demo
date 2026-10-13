@@ -1,6 +1,7 @@
 'use server';
 
 import { GoogleGenAI } from '@google/genai';
+import { requireIaAccess } from '@/lib/ia/guard';
 
 function getAi() {
   return new GoogleGenAI({
@@ -28,6 +29,11 @@ export async function generarIdentidadMarcaAction(
   try {
     if (!tipo) {
       return { success: false, error: 'El tipo de negocio/nicho es obligatorio.' };
+    }
+
+    const access = await requireIaAccess();
+    if (!access.ok) {
+      return { success: false, error: access.error };
     }
 
     const prompt = `Basándote en la siguiente información de negocio:
@@ -78,6 +84,11 @@ export async function obtenerDirectricesSeguridadAction(
       return { success: false, error: 'El país es obligatorio' };
     }
 
+    const access = await requireIaAccess();
+    if (!access.ok) {
+      return { success: false, error: access.error };
+    }
+
     const prompt = `Eres un experto en cumplimiento de políticas publicitarias y protección de activos en Meta Ads. Para el país '${pais}', proporciona las directrices recomendadas de configuración del Administrador Comercial para establecer una infraestructura segura y cumplir con las normas de Meta.
     Sugiere la zona horaria y moneda local adecuadas, y detalla 3 pasos obligatorios de seguridad y buenas prácticas (2FA, verificación de correo, administrador de respaldo).
     Devuelve la respuesta estrictamente en formato JSON con la estructura:
@@ -111,6 +122,11 @@ export async function obtenerEscudoFinancieroAction(
   try {
     if (!pais) {
       return { success: false, error: 'El país es obligatorio' };
+    }
+
+    const access = await requireIaAccess();
+    if (!access.ok) {
+      return { success: false, error: access.error };
     }
 
     const prompt = `Eres un asesor financiero de tráfico de Meta Ads. Para el país '${pais}', proporciona recomendaciones de qué tipos de tarjetas bancarias locales (crédito, débito, prepago) y bancos son aceptados por Meta y cuáles suelen dar problemas de rechazo.
@@ -149,6 +165,11 @@ export async function explicarPixelAction(
       return { success: false, error: 'El ID del píxel es obligatorio' };
     }
 
+    const access = await requireIaAccess();
+    if (!access.ok) {
+      return { success: false, error: access.error };
+    }
+
     const prompt = `Explica de forma muy sencilla, en exactamente dos frases, qué es el píxel de Meta (con el ID '${pixelId}') y cómo actúa en el embudo de ventas para rastrear a los clientes.
     Devuelve la respuesta estrictamente en formato JSON con la estructura:
     {
@@ -180,6 +201,11 @@ export async function generarWhatsAppMensajesAction(
   try {
     if (!numero || !negocio) {
       return { success: false, error: 'El número y el negocio son obligatorios' };
+    }
+
+    const access = await requireIaAccess();
+    if (!access.ok) {
+      return { success: false, error: access.error };
     }
 
     const prompt = `Crea exactamente 3 opciones de mensajes de bienvenida cortos, persuasivos y naturales que los clientes usarán para enviar un mensaje al negocio '${negocio}' al hacer clic en un anuncio (ej. 'Hola, vi tu anuncio en Facebook y me interesa obtener la membresía...').
@@ -214,6 +240,11 @@ export async function generarEstructuraLandingAction(
   try {
     if (!negocio || !producto) {
       return { success: false, error: 'El nombre del negocio y la oferta son obligatorios' };
+    }
+
+    const access = await requireIaAccess();
+    if (!access.ok) {
+      return { success: false, error: access.error };
     }
 
     const prompt = `Como copywriter experto en conversión, crea una estructura y copia base para la página de destino (landing page) o descripción del grupo de prospección para el negocio '${negocio}' que ofrece '${producto}'.

@@ -2,9 +2,15 @@
 
 import { GoogleGenAI } from '@google/genai';
 import { createClient } from '@/lib/supabase/server';
+import { requireIaAccess } from '@/lib/ia/guard';
 
 export async function crearCopyPersuasivoAction(tema: string, publico: string) {
   try {
+    const access = await requireIaAccess();
+    if (!access.ok) {
+      return { success: false, error: access.error };
+    }
+
     const ai = new GoogleGenAI({
       apiKey: process.env.GEMINI_API_KEY,
     });

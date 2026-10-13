@@ -1,6 +1,7 @@
 'use server';
 
 import { GoogleGenAI } from '@google/genai';
+import { requireIaAccess } from '@/lib/ia/guard';
 
 export async function generarTextosLandingAction(
   producto: string,
@@ -13,6 +14,11 @@ export async function generarTextosLandingAction(
     });
     if (!producto || !plantilla || !seccion) {
       return { success: false, error: 'Todos los campos son obligatorios.' };
+    }
+
+    const access = await requireIaAccess();
+    if (!access.ok) {
+      return { success: false, error: access.error };
     }
 
     const prompt = `Eres un copywriter experto en embudos de conversión y landing pages de alto rendimiento para Red Diamante 4.0.
