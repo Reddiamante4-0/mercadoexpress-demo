@@ -1,6 +1,6 @@
 'use server';
 
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, Type } from '@google/genai';
 import { createClient } from '@/lib/supabase/server';
 import { requireIaAccess } from '@/lib/ia/guard';
 
@@ -133,10 +133,18 @@ export async function crearCopyPersuasivoAction(tema: string, publico: string, e
       apiKey: process.env.GEMINI_API_KEY,
     });
 
-    const response = await ai.models.generateContent({
+    const peticion = {
       model: 'gemini-2.5-flash',
       config: {
         responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            copy: { type: Type.STRING },
+            ganchos: { type: Type.ARRAY, items: { type: Type.STRING } },
+          },
+          required: ['copy', 'ganchos'],
+        },
         systemInstruction: `Eres un copywriter experto en anuncios para redes sociales. Escribes textos comerciales persuasivos, directos y con buen enganche para negocios de cualquier tipo. Eres creativo y propositivo: aportas ideas, ángulos y beneficios atractivos para el producto o negocio que te indican.
 
 FORMATO DE RESPUESTA (obligatorio):
@@ -171,15 +179,24 @@ ${datos.join('\n')}
 PEDIDO:
 ${pedido.join('\n')}
 - Escribe el copy y los tres ganchos alternativos. Responde solo con el JSON.`
-    });
+    };
 
-    const textoCrudo = response.text;
+    // Hasta 2 intentos si la respuesta llega vacía o no se puede interpretar.
+    let resultado: { copy: string; ganchos: string[] } | null = null;
+    for (let intento = 1; intento <= 2 && !resultado; intento++) {
+      const response = await ai.models.generateContent(peticion);
+      const textoCrudo = response.text;
 
-    if (!textoCrudo) {
-      return { success: false, error: 'No se recibió respuesta de la IA' };
+      if (!textoCrudo) {
+        console.error(`Respuesta vacía de la IA (intento ${intento}). Motivo de cierre:`, response.candidates?.[0]?.finishReason);
+        continue;
+      }
+
+      resultado = extraerRespuesta(textoCrudo);
+      if (!resultado) {
+        console.error(`Respuesta de la IA no interpretable (intento ${intento}):`, textoCrudo.slice(0, 800));
+      }
     }
-
-    const resultado = extraerRespuesta(textoCrudo);
 
     if (!resultado) {
       return { success: false, error: 'No se pudo generar el copy en este momento. Intenta de nuevo en unos minutos.' };
