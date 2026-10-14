@@ -137,7 +137,7 @@ function GeneradorCopysPageContent() {
             <h1 className="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-primary via-accent-pink to-accent-warm leading-tight">
               {language === 'en' ? 'AI Copywriting Generator' : 'Generador de Copys con IA'}
             </h1>
-            <p className="text-sm text-white/45 mt-1 font-medium">
+            <p className="text-sm text-slate-500 mt-1 font-medium">
               {language === 'en'
                 ? 'Generate disruptive, persuasive, and high-impact marketing texts using Gemini AI.'
                 : 'Crea textos comerciales persuasivos, directos y rompedores impulsados por Gemini 2.5.'}
@@ -150,7 +150,7 @@ function GeneradorCopysPageContent() {
           {/* Input Panel (Col span 2) */}
           <div className="lg:col-span-2">
             <GlassCard className="p-6 max-w-none items-start">
-              <h2 className="text-base font-bold text-white mb-5 flex items-center gap-2">
+              <h2 className="text-base font-bold text-slate-800 mb-5 flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-accent-pink" />
                 {language === 'en' ? 'Create New Campaign' : 'Nueva Campaña'}
               </h2>
@@ -209,14 +209,14 @@ function GeneradorCopysPageContent() {
           <div className="lg:col-span-3 h-full">
             <GlassCard className="p-6 max-w-none items-stretch justify-start h-full min-h-[340px]">
               <div className="flex justify-between items-center mb-5">
-                <h2 className="text-base font-bold text-white flex items-center gap-2">
+                <h2 className="text-base font-bold text-slate-800 flex items-center gap-2">
                   <FileText className="w-4 h-4 text-accent-blue" />
                   {language === 'en' ? 'Generated Copy' : 'Copy Generado'}
                 </h2>
                 {generatedCopy && (
                   <button
                     onClick={() => copyToClipboard(generatedCopy, 'main-result')}
-                    className="p-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all text-white/70 hover:text-white flex items-center gap-1.5 text-xs font-medium cursor-pointer"
+                    className="p-2 rounded-lg bg-slate-100 border border-slate-200 hover:bg-slate-200 transition-all text-slate-600 hover:text-slate-900 flex items-center gap-1.5 text-xs font-medium cursor-pointer"
                   >
                     {copiedId === 'main-result' ? (
                       <>
@@ -234,15 +234,15 @@ function GeneradorCopysPageContent() {
               </div>
 
               {generatedCopy ? (
-                <div className="relative flex-1 rounded-2xl bg-base-200/40 border border-white/5 p-5 overflow-y-auto max-h-[300px]">
-                  <p className="text-sm text-white/95 whitespace-pre-wrap leading-relaxed select-text font-sans font-medium">
+                <div className="relative flex-1 rounded-2xl bg-slate-50 border border-slate-200 p-5 overflow-y-auto max-h-[300px]">
+                  <p className="text-sm text-slate-800 whitespace-pre-wrap leading-relaxed select-text font-sans font-medium">
                     {generatedCopy}
                   </p>
                 </div>
               ) : (
-                <div className="flex-1 flex flex-col items-center justify-center text-center p-8 rounded-2xl border border-dashed border-white/10 bg-white/1">
-                  <Sparkles className="w-10 h-10 text-white/20 mb-3 animate-pulse" />
-                  <p className="text-sm text-white/50 font-medium">
+                <div className="flex-1 flex flex-col items-center justify-center text-center p-8 rounded-2xl border border-dashed border-slate-200 bg-slate-50/60">
+                  <Sparkles className="w-10 h-10 text-slate-300 mb-3 animate-pulse" />
+                  <p className="text-sm text-slate-400 font-medium">
                     {language === 'en' 
                       ? 'Fill in the fields on the left and click Generate.' 
                       : 'Completa los campos a la izquierda y presiona Generar.'}
@@ -255,9 +255,9 @@ function GeneradorCopysPageContent() {
 
         {/* ── HISTORY SECTION ── */}
         <div className="space-y-4">
-          <div className="flex items-center gap-2 border-b border-white/6 pb-2">
-            <History className="w-4.5 h-4.5 text-white/40" />
-            <h2 className="text-base font-bold text-white">
+          <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+            <History className="w-4.5 h-4.5 text-slate-400" />
+            <h2 className="text-base font-bold text-slate-800">
               {language === 'en' ? 'Campaign History' : 'Historial de Campañas'}
             </h2>
           </div>
@@ -268,7 +268,7 @@ function GeneradorCopysPageContent() {
             </div>
           ) : history.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {history.map((item) => (
+              {history.filter((item) => item.copy_texto !== generatedCopy).map((item) => (
                 <GlassCard key={item.id} className="p-5 max-w-none items-stretch justify-between text-left group">
                   <div className="space-y-3">
                     <div className="flex justify-between items-start gap-3">
@@ -277,21 +277,21 @@ function GeneradorCopysPageContent() {
                           {item.tema}
                         </span>
                       </div>
-                      <div className="flex items-center gap-1 text-[10px] text-white/30 font-medium">
+                      <div className="flex items-center gap-1 text-[10px] text-slate-400 font-medium">
                         <Calendar className="w-3 h-3" />
                         <span>{new Date(item.creado_el).toLocaleDateString()}</span>
                       </div>
                     </div>
 
-                    <p className="text-xs text-white/70 line-clamp-4 leading-relaxed font-sans select-text">
+                    <p className="text-xs text-slate-600 line-clamp-4 leading-relaxed font-sans select-text">
                       {item.copy_texto}
                     </p>
                   </div>
 
-                  <div className="mt-4 pt-3 border-t border-white/5 flex justify-end">
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex justify-end">
                     <button
                       onClick={() => copyToClipboard(item.copy_texto, item.id)}
-                      className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-white/60 hover:text-white flex items-center gap-1.5 text-[10px] font-semibold cursor-pointer"
+                      className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors text-slate-500 hover:text-slate-800 flex items-center gap-1.5 text-[10px] font-semibold cursor-pointer"
                     >
                       {copiedId === item.id ? (
                         <>
@@ -310,8 +310,8 @@ function GeneradorCopysPageContent() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 border border-dashed border-white/10 rounded-2xl bg-white/1">
-              <p className="text-sm text-white/40 font-medium">
+            <div className="text-center py-12 border border-dashed border-slate-200 rounded-2xl bg-slate-50/60">
+              <p className="text-sm text-slate-400 font-medium">
                 {language === 'en' ? 'No campaigns generated yet.' : 'Aún no has generado ninguna campaña.'}
               </p>
             </div>
