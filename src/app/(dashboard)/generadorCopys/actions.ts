@@ -1,8 +1,21 @@
 'use server';
 
 import { GoogleGenAI, Type } from '@google/genai';
+import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
 import { requireIaAccess } from '@/lib/ia/guard';
+
+// Cuántos copys se conservan y se muestran por persona.
+const MAX_HISTORIAL = 30;
+
+// Cliente con permisos de servidor, solo para borrar. Siempre se usa filtrando por el user_id de la sesión.
+function crearClienteAdmin() {
+  return createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SECRET_KEY!,
+    { auth: { persistSession: false } }
+  );
+}
 
 type CopyExtras = {
   beneficio?: string;
@@ -220,6 +233,26 @@ ${pedido.join('\n')}
             }
           ]);
         if (error) throw error;
+
+        // Conserva solo los últimos MAX_HISTORIAL copys de esta persona.
+        try {
+          const { data: viejos } = await supabase
+            .from('historial_copys')
+            .select('id')
+            .eq('user_id', user.id)
+            .order('creado_el', { ascending: false })
+            .range(MAX_HISTORIAL, MAX_HISTORIAL + 199);
+          if (viejos && viejos.length > 0) {
+            const admin = crearClienteAdmin();
+            await admin
+              .from('historial_copys')
+              .delete()
+              .eq('user_id', user.id)
+              .in('id', viejos.map((v: { id: string }) => v.id));
+          }
+        } catch (limpiezaError: any) {
+          console.error('Error al limpiar historial antiguo:', limpiezaError.message);
+        }
       }
     } catch (dbError: any) {
       console.error('Error al guardar en base de datos:', dbError.message);
@@ -244,12 +277,39 @@ export async function obtenerHistorialCopysAction() {
       .from('historial_copys')
       .select('*')
       .eq('user_id', user.id)
-      .order('creado_el', { ascending: false });
+      .order('creado_el', { ascending: false })
+      .limit(MAX_HISTORIAL);
 
     if (error) throw error;
     return { success: true, data };
   } catch (error: any) {
     console.error('Error al obtener historial de copys:', error);
     return { success: false, error: error.message || 'Error inesperado al consultar historial' };
+  }
+}
+
+export async function eliminarCopyAction(id: string | number) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { success: false, error: 'No autenticado' };
+    }
+    if (!(typeof id === 'string' || typeof id === 'number') || id === '') {
+      return { success: false, error: 'Copy no válido' };
+    }
+
+    const admin = crearClienteAdmin();
+    const { error } = await admin
+      .from('historial_copys')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', user.id);
+
+    if (error) throw error;
+    return { success: true };
+  } catch (error: any) {
+    console.error('Error al borrar copy del historial:', error);
+    return { success: false, error: 'No se pudo borrar el copy. Intenta de nuevo.' };
   }
 }

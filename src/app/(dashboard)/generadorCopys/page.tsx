@@ -10,14 +10,15 @@ import {
   Check,
   History,
   Loader2,
-  Calendar
+  Calendar,
+  Trash2
 } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GlowButton } from '@/components/ui/GlowButton';
 import { Input } from '@/components/ui/Input';
 import { useToast } from '@/components/ui/ToastProvider';
-import { crearCopyPersuasivoAction, obtenerHistorialCopysAction } from './actions';
+import { crearCopyPersuasivoAction, obtenerHistorialCopysAction, eliminarCopyAction } from './actions';
 
 interface CopyHistoryItem {
   id: string;
@@ -172,6 +173,21 @@ function GeneradorCopysPageContent() {
         title: t('No se pudo copiar.', 'Failed to copy.'),
         type: 'error',
       });
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm(t('¿Borrar este copy del historial?', 'Delete this copy from your history?'))) return;
+    try {
+      const res = await eliminarCopyAction(id);
+      if (res.success) {
+        setHistory((prev) => prev.filter((h) => h.id !== id));
+        toast({ title: t('Copy borrado.', 'Copy deleted.'), type: 'success' });
+      } else {
+        toast({ title: res.error || t('No se pudo borrar.', 'Could not delete.'), type: 'error' });
+      }
+    } catch (err) {
+      toast({ title: t('Ocurrió un error inesperado.', 'An unexpected error occurred.'), type: 'error' });
     }
   };
 
@@ -430,6 +446,9 @@ function GeneradorCopysPageContent() {
             {t('Historial de Campañas', 'Campaign History')}
           </h2>
         </div>
+        <p className="text-xs text-slate-500">
+          {t('Guardamos tus últimos 30 copys. Puedes borrar los que ya no necesites.', 'We keep your last 30 copies. You can delete the ones you no longer need.')}
+        </p>
 
         {isLoadingHistory ? (
           <div className="flex justify-center py-12">
@@ -457,7 +476,14 @@ function GeneradorCopysPageContent() {
                   </p>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-slate-100 flex justify-end">
+                <div className="mt-4 pt-3 border-t border-slate-100 flex justify-end gap-2">
+                  <button
+                    onClick={() => handleDelete(item.id)}
+                    className="p-1.5 rounded-lg bg-slate-100 hover:bg-red-50 transition-colors text-slate-400 hover:text-red-600 flex items-center gap-1.5 text-[10px] font-semibold cursor-pointer"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                    <span>{t('Borrar', 'Delete')}</span>
+                  </button>
                   <button
                     onClick={() => copyToClipboard(item.copy_texto, item.id)}
                     className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors text-slate-500 hover:text-slate-800 flex items-center gap-1.5 text-[10px] font-semibold cursor-pointer"
