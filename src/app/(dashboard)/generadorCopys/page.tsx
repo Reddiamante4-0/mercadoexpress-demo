@@ -18,7 +18,7 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { GlowButton } from '@/components/ui/GlowButton';
 import { Input } from '@/components/ui/Input';
 import { useToast } from '@/components/ui/ToastProvider';
-import { crearCopyPersuasivoAction, obtenerHistorialCopysAction, eliminarCopyAction } from './actions';
+import { crearCopyPersuasivoAction, obtenerHistorialCopysAction, eliminarCopyAction, obtenerOpcionesIaAction } from './actions';
 
 interface CopyHistoryItem {
   id: string;
@@ -85,6 +85,12 @@ function GeneradorCopysPageContent() {
   const [ganchos, setGanchos] = useState<string[]>([]);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
+  // Solo para el administrador: elegir motor de IA y ver el consumo de cada generación.
+  const [esAdmin, setEsAdmin] = useState(false);
+  const [openaiDisponible, setOpenaiDisponible] = useState(false);
+  const [motor, setMotor] = useState('gemini');
+  const [uso, setUso] = useState<{ motor: string; modelo: string; entrada: number; salida: number; costoUsd: number } | null>(null);
+
   const [history, setHistory] = useState<CopyHistoryItem[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
 
@@ -107,6 +113,15 @@ function GeneradorCopysPageContent() {
   }, []);
 
   useEffect(() => {
+    obtenerOpcionesIaAction()
+      .then((o) => {
+        setEsAdmin(o.esAdmin);
+        setOpenaiDisponible(o.openaiDisponible);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
     const queryTema = searchParams.get('tema');
     const queryPublico = searchParams.get('publico');
     if (queryTema) setTema(queryTema);
@@ -125,6 +140,7 @@ function GeneradorCopysPageContent() {
 
     setIsGenerating(true);
     setGanchos([]);
+    setUso(null);
     try {
       const result = await crearCopyPersuasivoAction(tema, publico, {
         beneficio,
@@ -133,10 +149,12 @@ function GeneradorCopysPageContent() {
         objetivo,
         plataforma,
         tono,
+        motor: esAdmin ? motor : undefined,
       });
       if (result.success && result.text) {
         setGeneratedCopy(result.text);
         setGanchos(result.ganchos ?? []);
+        setUso(result.uso ?? null);
         toast({
           title: t('¡Copy generado con éxito!', 'Copy generated successfully!'),
           type: 'success',
@@ -326,6 +344,22 @@ function GeneradorCopysPageContent() {
               {renderSelect(t('Dónde lo vas a publicar', 'Where will you publish it'), plataforma, setPlataforma, OPCIONES_PLATAFORMA)}
               {renderSelect(t('Tono', 'Tone'), tono, setTono, OPCIONES_TONO)}
 
+              {esAdmin && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 space-y-2">
+                  <p className="text-xs font-bold text-amber-800 uppercase tracking-wider">
+                    {t('Solo administrador', 'Admin only')}
+                  </p>
+                  {renderSelect(t('Motor de IA', 'AI engine'), motor, setMotor, [
+                    { value: 'gemini', es: 'Gemini 2.5 Flash', en: 'Gemini 2.5 Flash' },
+                    {
+                      value: 'openai',
+                      es: openaiDisponible ? 'GPT-6 Luna' : 'GPT-6 Luna (sin clave en Vercel)',
+                      en: openaiDisponible ? 'GPT-6 Luna' : 'GPT-6 Luna (no key in Vercel)',
+                    },
+                  ])}
+                </div>
+              )}
+
               <GlowButton
                 type="submit"
                 disabled={isGenerating}
@@ -382,6 +416,12 @@ function GeneradorCopysPageContent() {
                     {generatedCopy}
                   </p>
                 </div>
+
+                {uso && (
+                  <p className="mt-3 text-[11px] text-slate-500 font-mono">
+                    {uso.modelo} · {t('entrada', 'in')}: {uso.entrada} · {t('salida', 'out')}: {uso.salida} · ≈ US${uso.costoUsd.toFixed(5)} (≈ {Math.round(uso.costoUsd * 4000)} COP)
+                  </p>
+                )}
 
                 {ganchos.length > 0 && (
                   <div className="mt-5 space-y-3">
