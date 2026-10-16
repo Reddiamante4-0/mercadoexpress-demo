@@ -13,6 +13,9 @@ const MAX_HISTORIAL = 30;
 type Motor = 'gemini' | 'openai';
 const MODELO_GEMINI = 'gemini-2.5-flash';
 const MODELO_OPENAI = 'gpt-6-luna';
+// Niveles de razonamiento permitidos para GPT. Más alto = mejor redacción pero más tokens (más costo).
+const ESFUERZOS_OPENAI = ['none', 'low', 'medium', 'high'];
+const ESFUERZO_OPENAI_POR_DEFECTO = 'low';
 const PRECIOS_USD_POR_MILLON: Record<Motor, { entrada: number; salida: number }> = {
   gemini: { entrada: 0.3, salida: 2.5 },
   openai: { entrada: 0.1, salida: 0.5 },
@@ -55,6 +58,7 @@ type CopyExtras = {
   plataforma?: string;
   tono?: string;
   motor?: string;
+  razonamiento?: string;
 };
 
 // Opciones permitidas. Lo que llegue del navegador se valida contra estas listas.
@@ -157,7 +161,7 @@ async function generarConGemini(sistema: string, contenido: string): Promise<Gen
   };
 }
 
-async function generarConOpenAI(sistema: string, contenido: string): Promise<Generacion> {
+async function generarConOpenAI(sistema: string, contenido: string, esfuerzo: string): Promise<Generacion> {
   const respuesta = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
     headers: {
@@ -168,7 +172,7 @@ async function generarConOpenAI(sistema: string, contenido: string): Promise<Gen
       model: MODELO_OPENAI,
       instructions: sistema,
       input: contenido,
-      reasoning: { effort: 'low' },
+      reasoning: { effort: esfuerzo },
       text: {
         format: {
           type: 'json_schema',
@@ -308,6 +312,10 @@ ${pedido.join('\n')}
 
     const motor = elegirMotor(extras?.motor, esAdmin);
     const modelo = motor === 'openai' ? MODELO_OPENAI : MODELO_GEMINI;
+    // Solo el super admin puede cambiar el nivel de razonamiento; los demás usan el valor por defecto.
+    const esfuerzoSolicitado = limpiarCampo(extras?.razonamiento, 10);
+    const esfuerzo =
+      esAdmin && ESFUERZOS_OPENAI.includes(esfuerzoSolicitado) ? esfuerzoSolicitado : ESFUERZO_OPENAI_POR_DEFECTO;
 
     // Hasta 2 intentos si la respuesta llega vacía o no se puede interpretar.
     let resultado: { copy: string; ganchos: string[] } | null = null;
@@ -316,7 +324,7 @@ ${pedido.join('\n')}
     for (let intento = 1; intento <= 2 && !resultado; intento++) {
       const generacion =
         motor === 'openai'
-          ? await generarConOpenAI(SISTEMA_COPY, contenido)
+          ? await generarConOpenAI(SISTEMA_COPY, contenido, esfuerzo)
           : await generarConGemini(SISTEMA_COPY, contenido);
       tokensEntrada += generacion.entrada;
       tokensSalida += generacion.salida;
@@ -337,7 +345,7 @@ ${pedido.join('\n')}
     }
 
     // Registro de consumo en los logs de Vercel (sin textos ni datos de personas).
-    console.log('IA_USO', JSON.stringify({ motor, modelo, entrada: tokensEntrada, salida: tokensSalida }));
+    console.log('IA_USO', JSON.stringify({ motor, modelo, esfuerzo: motor === 'openai' ? esfuerzo : null, entrada: tokensEntrada, salida: tokensSalida }));
     const precios = PRECIOS_USD_POR_MILLON[motor];
     const costoUsd = (tokensEntrada * precios.entrada + tokensSalida * precios.salida) / 1_000_000;
 
@@ -388,7 +396,9 @@ ${pedido.join('\n')}
       success: true,
       text: textoCopy,
       ganchos: resultado.ganchos,
-      uso: esAdmin ? { motor, modelo, entrada: tokensEntrada, salida: tokensSalida, costoUsd } : undefined,
+      uso: esAdmin
+        ? { motor, modelo, esfuerzo: motor === 'openai' ? esfuerzo : null, entrada: tokensEntrada, salida: tokensSalida, costoUsd }
+        : undefined,
     };
   } catch (error: any) {
     console.error('Error al generar el copy:', error);

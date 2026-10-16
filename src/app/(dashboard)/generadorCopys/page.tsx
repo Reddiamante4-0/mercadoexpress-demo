@@ -89,7 +89,8 @@ function GeneradorCopysPageContent() {
   const [esAdmin, setEsAdmin] = useState(false);
   const [openaiDisponible, setOpenaiDisponible] = useState(false);
   const [motor, setMotor] = useState('gemini');
-  const [uso, setUso] = useState<{ motor: string; modelo: string; entrada: number; salida: number; costoUsd: number } | null>(null);
+  const [razonamiento, setRazonamiento] = useState('low');
+  const [uso, setUso] = useState<{ motor: string; modelo: string; esfuerzo: string | null; entrada: number; salida: number; costoUsd: number } | null>(null);
 
   const [history, setHistory] = useState<CopyHistoryItem[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
@@ -150,6 +151,7 @@ function GeneradorCopysPageContent() {
         plataforma,
         tono,
         motor: esAdmin ? motor : undefined,
+        razonamiento: esAdmin ? razonamiento : undefined,
       });
       if (result.success && result.text) {
         setGeneratedCopy(result.text);
@@ -357,6 +359,13 @@ function GeneradorCopysPageContent() {
                       en: openaiDisponible ? 'GPT-6 Luna' : 'GPT-6 Luna (no key in Vercel)',
                     },
                   ])}
+                  {motor === 'openai' &&
+                    renderSelect(t('Razonamiento (solo GPT)', 'Reasoning (GPT only)'), razonamiento, setRazonamiento, [
+                      { value: 'none', es: 'Ninguno (el más barato)', en: 'None (cheapest)' },
+                      { value: 'low', es: 'Bajo', en: 'Low' },
+                      { value: 'medium', es: 'Medio', en: 'Medium' },
+                      { value: 'high', es: 'Alto (el más caro)', en: 'High (most expensive)' },
+                    ])}
                 </div>
               )}
 
@@ -419,7 +428,7 @@ function GeneradorCopysPageContent() {
 
                 {uso && (
                   <p className="mt-3 text-[11px] text-slate-500 font-mono">
-                    {uso.modelo} · {t('entrada', 'in')}: {uso.entrada} · {t('salida', 'out')}: {uso.salida} · ≈ US${uso.costoUsd.toFixed(5)} (≈ {Math.round(uso.costoUsd * 4000)} COP)
+                    {uso.modelo}{uso.esfuerzo ? ` (${t('razonamiento', 'reasoning')}: ${uso.esfuerzo})` : ''} · {t('entrada', 'in')}: {uso.entrada} · {t('salida', 'out')}: {uso.salida} · ≈ US${uso.costoUsd.toFixed(5)} (≈ {Math.round(uso.costoUsd * 4000)} COP)
                   </p>
                 )}
 
