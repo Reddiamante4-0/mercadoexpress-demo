@@ -88,7 +88,7 @@ function GeneradorCopysPageContent() {
   // Solo para el administrador: elegir motor de IA y ver el consumo de cada generación.
   const [esAdmin, setEsAdmin] = useState(false);
   const [openaiDisponible, setOpenaiDisponible] = useState(false);
-  const [motor, setMotor] = useState('gemini');
+  const [motor, setMotor] = useState('openai');
   const [razonamiento, setRazonamiento] = useState('low');
   const [uso, setUso] = useState<{ motor: string; modelo: string; esfuerzo: string | null; entrada: number; salida: number; costoUsd: number } | null>(null);
 
@@ -118,6 +118,7 @@ function GeneradorCopysPageContent() {
       .then((o) => {
         setEsAdmin(o.esAdmin);
         setOpenaiDisponible(o.openaiDisponible);
+        if (!o.openaiDisponible) setMotor('gemini');
       })
       .catch(() => {});
   }, []);
@@ -303,7 +304,7 @@ function GeneradorCopysPageContent() {
 
               <div className="flex flex-col gap-2">
                 <label className={LABEL_CLASS}>
-                  {t('¿Qué gana el cliente?', 'What does the customer gain?')}
+                  {t('¿Qué problema le resuelve o qué logra el cliente?', 'What problem does it solve or what does the customer achieve?')}
                 </label>
                 <textarea
                   value={beneficio}
@@ -320,7 +321,7 @@ function GeneradorCopysPageContent() {
 
               <div className="flex flex-col gap-2">
                 <label className={LABEL_CLASS}>
-                  {t('Datos y ventajas reales de tu negocio', 'Real facts and strengths of your business')}
+                  {t('Ofertas, precios, garantías o datos que quieras que aparezcan', 'Offers, prices, guarantees or facts you want to include')}
                 </label>
                 <textarea
                   value={datosReales}
