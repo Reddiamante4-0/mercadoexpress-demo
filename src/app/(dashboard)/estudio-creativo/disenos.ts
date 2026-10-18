@@ -5,7 +5,7 @@ export type Formato = 'cuadrado' | 'volante' | 'afiche';
 
 export const MEDIDAS: Record<Formato, { w: number; h: number }> = {
   cuadrado: { w: 1080, h: 1080 }, // redes sociales
-  volante: { w: 2550, h: 3300 }, // carta vertical a 300 ppp
+  volante: { w: 1650, h: 2550 }, // media carta vertical (5,5 x 8,5 in) a 300 ppp
   afiche: { w: 2480, h: 3508 }, // A3 vertical (alta calidad en A4)
 };
 

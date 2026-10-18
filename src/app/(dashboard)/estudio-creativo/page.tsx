@@ -14,7 +14,7 @@ type Textos = { titular: string; subtitulo: string; puntos: string[]; cta: strin
 
 const FORMATOS: { value: Formato; es: string; en: string; ayudaEs: string; ayudaEn: string }[] = [
   { value: 'cuadrado', es: 'Cuadrado', en: 'Square', ayudaEs: 'Para redes sociales', ayudaEn: 'For social media' },
-  { value: 'volante', es: 'Volante', en: 'Flyer', ayudaEs: 'Tamaño carta, para entregar', ayudaEn: 'Letter size, to hand out' },
+  { value: 'volante', es: 'Volante', en: 'Flyer', ayudaEs: 'Media carta, para entregar en mano', ayudaEn: 'Half letter, to hand out' },
   { value: 'afiche', es: 'Afiche', en: 'Poster', ayudaEs: 'Para pared o vitrina', ayudaEn: 'For a wall or window' },
 ];
 
