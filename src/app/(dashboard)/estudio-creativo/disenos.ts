@@ -291,58 +291,75 @@ export function dibujarDiseno(canvas: HTMLCanvasElement, e: EspecDiseno) {
     yBloque += it.a.alto + it.sep;
   }
 
-  // ── Zona central: subtítulo, puntos y oferta ──
+  // ── Zona central: subtítulo, puntos y oferta (se reparte el espacio y se centra) ──
   const yZonaIni = hEnc + h * 0.03;
   const yZonaFin = yPie - h * 0.025;
   const zona = Math.max(1, yZonaFin - yZonaIni);
-  const hueco = h * 0.018;
+  const hueco = h * 0.02;
 
-  // 1) Oferta: ocupa como máximo el 45 % de la zona.
+  // 1) Oferta: ocupa como máximo el 35 % de la zona.
   let ofertaAjuste: Ajuste | null = null;
   let altoOferta = 0;
   const padOf = w * 0.024;
   if (e.oferta.trim()) {
-    ofertaAjuste = ajustar(ctx, e.oferta.trim(), anchoUtil - padOf * 2, 2, w * 0.065, w * 0.026, '900', 1.12, zona * 0.45 - padOf * 2);
+    ofertaAjuste = ajustar(ctx, e.oferta.trim(), anchoUtil - padOf * 2, 2, w * 0.065, w * 0.026, '900', 1.12, zona * 0.35 - padOf * 2);
     altoOferta = ofertaAjuste.alto + padOf * 2;
   }
+  const restante = zona - (altoOferta ? altoOferta + hueco : 0);
 
-  // 2) Subtítulo: usa el espacio que queda por encima de la oferta.
-  let y = yZonaIni;
-  const espacioSobreOferta = zona - (altoOferta ? altoOferta + hueco : 0);
+  const listaPuntos = d.puntos ? e.puntos.map((v) => v.trim()).filter(Boolean).slice(0, 3) : [];
+
+  // 2) Subtítulo: si hay puntos, usa un 40 % del espacio restante para que los tres quepan.
+  let sub: Ajuste | null = null;
   if (e.subtitulo.trim()) {
-    const maxLineasSub = e.formato === 'cuadrado' ? 2 : 3;
-    const topeSub = d.puntos ? espacioSobreOferta * 0.5 : espacioSobreOferta;
-    const sub = ajustar(ctx, e.subtitulo.trim(), anchoUtil, maxLineasSub, w * 0.05, w * 0.024, '600', 1.25, topeSub);
+    const maxLineasSub = listaPuntos.length > 0 ? 2 : e.formato === 'cuadrado' ? 2 : 3;
+    const topeSub = listaPuntos.length > 0 ? restante * 0.4 : restante;
+    sub = ajustar(ctx, e.subtitulo.trim(), anchoUtil, maxLineasSub, w * 0.05, w * 0.024, '600', 1.25, topeSub);
+  }
+
+  // 3) Puntos (solo volante): los tres, reduciendo el tamaño si hace falta.
+  const radio = w * 0.011;
+  const huecoPunto = h * 0.012;
+  const bloquesPuntos: Ajuste[] = [];
+  if (listaPuntos.length > 0) {
+    const espacioPuntos = restante - (sub ? sub.alto + hueco : 0);
+    const porPunto = Math.max(1, espacioPuntos / listaPuntos.length - huecoPunto);
+    for (const p of listaPuntos) {
+      bloquesPuntos.push(ajustar(ctx, p, anchoUtil - radio * 3, 2, w * 0.038, w * 0.018, '600', 1.2, porPunto));
+    }
+  }
+
+  // 4) Se centra todo el bloque dentro de la zona para que no queden huecos desparejos.
+  const altoPuntos = bloquesPuntos.reduce((s2, b) => s2 + b.alto + huecoPunto, 0);
+  const altoContenido =
+    (sub ? sub.alto + hueco : 0) + (altoPuntos ? altoPuntos + hueco - huecoPunto : 0) + altoOferta;
+  let y = yZonaIni + Math.max(0, (zona - altoContenido) / 2);
+
+  if (sub) {
     escribir(ctx, sub, '600', m, y, '#1F2937', 'left', 1.25);
     y += sub.alto + hueco;
   }
 
-  // 3) Puntos (solo volante): los que quepan.
-  const yMaxContenido = yZonaFin - (altoOferta ? altoOferta + hueco : 0);
-  if (d.puntos) {
-    for (const p of e.puntos.map((v) => v.trim()).filter(Boolean)) {
-      const radio = w * 0.011;
-      const pt = ajustar(ctx, p, anchoUtil - radio * 3, 2, w * 0.038, w * 0.026, '600', 1.2);
-      if (y + pt.alto > yMaxContenido) break;
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.arc(m + radio, y + pt.size * 0.55, radio, 0, Math.PI * 2);
-      ctx.fill();
-      escribir(ctx, pt, '600', m + radio * 3, y, '#374151', 'left', 1.2);
-      y += pt.alto + h * 0.014;
-    }
+  for (let i = 0; i < bloquesPuntos.length; i++) {
+    const pt = bloquesPuntos[i];
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(m + radio, y + pt.size * 0.55, radio, 0, Math.PI * 2);
+    ctx.fill();
+    escribir(ctx, pt, '600', m + radio * 3, y, '#374151', 'left', 1.2);
+    y += pt.alto + huecoPunto;
   }
+  if (bloquesPuntos.length > 0) y += hueco - huecoPunto;
 
-  // 4) Oferta anclada justo encima del pie.
+  // 5) Oferta justo debajo del contenido.
   if (ofertaAjuste) {
     let anchoTexto = 0;
     ctx.font = `900 ${ofertaAjuste.size}px ${FUENTE}`;
     for (const l of ofertaAjuste.lineas) anchoTexto = Math.max(anchoTexto, ctx.measureText(l).width);
     const anchoCaja = Math.min(anchoUtil, anchoTexto + padOf * 2);
-    const yCaja = yZonaFin - altoOferta;
     ctx.fillStyle = COLOR_OFERTA;
-    rectRedondeado(ctx, m, yCaja, anchoCaja, altoOferta, w * 0.025);
+    rectRedondeado(ctx, m, y, anchoCaja, altoOferta, w * 0.025);
     ctx.fill();
-    escribir(ctx, ofertaAjuste, '900', m + padOf, yCaja + padOf, '#111827', 'left', 1.12);
+    escribir(ctx, ofertaAjuste, '900', m + padOf, y + padOf, '#111827', 'left', 1.12);
   }
 }
