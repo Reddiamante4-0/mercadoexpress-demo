@@ -8,7 +8,7 @@ import { GlowButton } from '@/components/ui/GlowButton';
 import { Input } from '@/components/ui/Input';
 import { useToast } from '@/components/ui/ToastProvider';
 import { generarTextosDisenoAction, obtenerDatosTiendaAction } from './actions';
-import { dibujarDiseno, normalizarColor, type Formato } from './disenos';
+import { dibujarDiseno, normalizarColor, type Formato, type Estilo } from './disenos';
 
 type Textos = { titular: string; subtitulo: string; puntos: string[]; cta: string };
 
@@ -16,6 +16,12 @@ const FORMATOS: { value: Formato; es: string; en: string; ayudaEs: string; ayuda
   { value: 'cuadrado', es: 'Cuadrado', en: 'Square', ayudaEs: 'Para redes sociales', ayudaEn: 'For social media' },
   { value: 'volante', es: 'Volante', en: 'Flyer', ayudaEs: 'Media carta, para entregar en mano', ayudaEn: 'Half letter, to hand out' },
   { value: 'afiche', es: 'Afiche', en: 'Poster', ayudaEs: 'Para pared o vitrina', ayudaEn: 'For a wall or window' },
+];
+
+const ESTILOS: { value: Estilo; es: string; en: string; ayudaEs: string; ayudaEn: string }[] = [
+  { value: 'clasico', es: 'Clásico', en: 'Classic', ayudaEs: 'Color de tu marca', ayudaEn: 'Your brand color' },
+  { value: 'oscuro', es: 'Oscuro', en: 'Dark', ayudaEs: 'Fondo negro, elegante', ayudaEn: 'Black background, elegant' },
+  { value: 'minimalista', es: 'Minimalista', en: 'Minimal', ayudaEs: 'Blanco, limpio', ayudaEn: 'White, clean' },
 ];
 
 const LABEL_CLASS = 'text-xs font-semibold text-base-content/75 uppercase tracking-wider pl-1';
@@ -55,6 +61,7 @@ export default function EstudioCreativoPage() {
 
   // Formato, logo y QR
   const [formato, setFormato] = useState<Formato>('cuadrado');
+  const [estilo, setEstilo] = useState<Estilo>('clasico');
   const [usarLogo, setUsarLogo] = useState(true);
   const [logoUrl, setLogoUrl] = useState('');
   const [usarQr, setUsarQr] = useState(true);
@@ -109,6 +116,7 @@ export default function EstudioCreativoPage() {
 
       dibujarDiseno(canvas, {
         formato,
+        estilo,
         negocio,
         titular: textos.titular,
         subtitulo: textos.subtitulo,
@@ -126,7 +134,7 @@ export default function EstudioCreativoPage() {
     return () => {
       cancelado = true;
     };
-  }, [textos, formato, negocio, oferta, whatsapp, direccion, color, usarQr, urlQr, usarLogo, logoUrl]);
+  }, [textos, formato, estilo, negocio, oferta, whatsapp, direccion, color, usarQr, urlQr, usarLogo, logoUrl]);
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -250,6 +258,30 @@ export default function EstudioCreativoPage() {
                       <span className="block text-sm font-bold">{language === 'en' ? f.en : f.es}</span>
                       <span className="block text-[10px] leading-tight mt-0.5 opacity-80">
                         {language === 'en' ? f.ayudaEn : f.ayudaEs}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Estilo */}
+              <div className="flex flex-col gap-2">
+                <label className={LABEL_CLASS}>{t('Estilo del diseño', 'Design style')}</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {ESTILOS.map((st) => (
+                    <button
+                      key={st.value}
+                      type="button"
+                      onClick={() => setEstilo(st.value)}
+                      className={`rounded-xl border px-2 py-2.5 text-center cursor-pointer transition-all ${
+                        estilo === st.value
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span className="block text-sm font-bold">{language === 'en' ? st.en : st.es}</span>
+                      <span className="block text-[10px] leading-tight mt-0.5 opacity-80">
+                        {language === 'en' ? st.ayudaEn : st.ayudaEs}
                       </span>
                     </button>
                   ))}
