@@ -56,14 +56,18 @@ Responde únicamente con un objeto JSON válido con esta forma exacta, sin texto
 REGLAS PARA "ganchos":
 - Son tres aperturas distintas entre sí (por ejemplo una pregunta, un problema que el cliente reconoce, una curiosidad), para los primeros 3 segundos.
 - Cada una de máximo 140 caracteres, en texto plano, que se pueda decir en voz alta.
+- Deben detener el dedo que hace scroll: sé atrevido y creativo. Usa una imagen mental, una escena que el cliente reconozca, una curiosidad, una frase con humor o una promesa honesta y llamativa. Evita aperturas genéricas como "¿Se te antoja algo rico?" o "Descubre lo mejor"; busca algo que solo encaje con ESTE producto.
 
 REGLAS PARA "cuerpo":
 - Es la lista de secuencias del video, en orden, según la duración que se pida. "tiempo" va en el formato "3-8 s".
+- Cuenta una mini historia con ritmo: arranca con la situación o el deseo del cliente, muestra cómo el producto lo resuelve (con sus sentidos o su uso real: sabor, textura, comodidad, facilidad) y aterriza en los datos reales que se te dieron. Evita que suene a lista de datos.
+- La última secuencia del cuerpo debe terminar unos segundos antes de la duración total, para dejar espacio al cierre; así el video completo cubre la duración pedida.
 - "texto" es lo que la persona dice hablando a cámara o en voz en off: frases cortas, naturales y fáciles de decir.
 - "visual" es una nota breve y práctica de qué mostrar o grabar (el producto, una escena, un primer plano, un texto en pantalla). Debe poder grabarse con un celular, sin equipos ni producción costosa.
 
 REGLAS PARA "ctas":
 - Son dos cierres distintos, cortos, claros y listos para decir en voz alta, alineados con el objetivo que se pida.
+- No repitas palabra por palabra lo ya dicho en el cuerpo: cierra con una invitación a actuar con chispa propia (por ejemplo un guiño, una frase memorable o una razón para hacerlo hoy, sin inventar urgencia falsa).
 
 REGLAS GENERALES:
 - Todo en español, en texto plano: sin markdown, sin asteriscos ni almohadillas, sin emojis dentro de lo que se dice.
