@@ -234,7 +234,7 @@ export async function obtenerDatosTiendaAction() {
 
 export async function generarTextosDisenoAction(entrada: EntradaDiseno) {
   try {
-    const access = await requireIaAccess();
+    const access = await requireIaAccess('estudio-creativo');
     if (!access.ok) {
       return { success: false, error: access.error };
     }

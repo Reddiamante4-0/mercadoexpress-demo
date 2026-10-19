@@ -261,7 +261,7 @@ export async function obtenerOpcionesIaAction() {
 export async function crearCopyPersuasivoAction(tema: string, publico: string, extras?: CopyExtras) {
   let esAdmin = false;
   try {
-    const access = await requireIaAccess();
+    const access = await requireIaAccess('copys');
     if (!access.ok) {
       return { success: false, error: access.error };
     }

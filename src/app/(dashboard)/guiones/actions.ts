@@ -249,7 +249,7 @@ function extraerGuion(textoCrudo: string): Guion | null {
 
 export async function generarGuionVideoAction(tema: string, publico: string, extras?: GuionExtras) {
   try {
-    const access = await requireIaAccess();
+    const access = await requireIaAccess('guiones');
     if (!access.ok) {
       return { success: false, error: access.error };
     }

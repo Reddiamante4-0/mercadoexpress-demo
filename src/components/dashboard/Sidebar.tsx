@@ -21,10 +21,14 @@ import {
   MessageSquare,
   CreditCard,
   Image as ImageIcon,
-  Tags
+  Tags,
+  Megaphone,
+  Video,
+  Palette
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
+import { obtenerHerramientasIaAction } from '@/lib/ia/permisos';
 
 interface SidebarProps {
   collapsed: boolean;
@@ -133,6 +137,31 @@ const NAV_SECTIONS = [
   },
 ];
 
+// Herramientas de IA (Crisalap Impulsa). La clave es la misma que usa
+// src/lib/ia/guard.ts; el menú solo muestra las que el servidor autoriza.
+const HERRAMIENTAS_IA_NAV: Record<string, NavItem> = {
+  copys: {
+    href: '/generadorCopys',
+    icon: <Megaphone className="w-5 h-5 shrink-0" />,
+    labelEn: 'Copy Generator',
+    labelEs: 'Generador de Copys',
+  },
+  guiones: {
+    href: '/guiones',
+    icon: <Video className="w-5 h-5 shrink-0" />,
+    labelEn: 'Script Creator',
+    labelEs: 'Creador de Guiones',
+  },
+  'estudio-creativo': {
+    href: '/estudio-creativo',
+    icon: <Palette className="w-5 h-5 shrink-0" />,
+    labelEn: 'Creative Studio',
+    labelEs: 'Estudio Creativo',
+  },
+};
+
+const ORDEN_HERRAMIENTAS_IA = ['copys', 'guiones', 'estudio-creativo'];
+
 function NavLink({
   item,
   collapsed,
@@ -199,6 +228,7 @@ function SidebarContent({
   const [supabase] = useState(() => createClient());
   const [businessName, setBusinessName] = useState(brandConfig.appName);
   const [esVendedor, setEsVendedor] = useState(false);
+  const [herramientasIa, setHerramientasIa] = useState<string[]>([]);
 
   useEffect(() => {
     async function loadBusinessName() {
@@ -224,6 +254,27 @@ function SidebarContent({
     }
     loadBusinessName();
   }, [supabase]);
+
+  useEffect(() => {
+    obtenerHerramientasIaAction()
+      .then(setHerramientasIa)
+      .catch(() => setHerramientasIa([]));
+  }, []);
+
+  // Sección de herramientas de IA: solo con las que el servidor autoriza.
+  const itemsHerramientas = ORDEN_HERRAMIENTAS_IA
+    .filter((clave) => herramientasIa.includes(clave))
+    .map((clave) => HERRAMIENTAS_IA_NAV[clave]);
+  const secciones = itemsHerramientas.length > 0
+    ? [
+        ...NAV_SECTIONS,
+        {
+          titleEn: esVendedor ? 'Crisalap Impulsa' : 'Promotion Tools',
+          titleEs: esVendedor ? 'Crisalap Impulsa' : 'Herramientas de Promoción',
+          items: itemsHerramientas,
+        },
+      ]
+    : NAV_SECTIONS;
 
   return (
     <div className="flex flex-col h-full bg-white text-slate-800">
@@ -261,12 +312,12 @@ function SidebarContent({
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
-        {NAV_SECTIONS.map((section) => {
+        {secciones.map((section) => {
           // Una cuenta vendedor/afiliado no vende productos: todo lo demás del
           // panel (productos, pedidos, clientes, reportes, etc.) le saldría
           // vacío y no le sirve para nada. Solo dejamos "Mi Cuenta", donde ve
           // sus comisiones y su link de referido.
-          const items = esVendedor
+          const items = esVendedor && section.titleEn === 'Business Admin'
             ? section.items.filter((item) => item.href === '/dashboard/mi-cuenta')
             : section.items;
           return (
