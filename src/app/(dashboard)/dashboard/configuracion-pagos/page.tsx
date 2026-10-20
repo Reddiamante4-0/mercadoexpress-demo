@@ -1,5 +1,7 @@
 import { getStorePaymentSettings } from './actions';
 import PaymentSettingsForm from './PaymentSettingsForm';
+import { getTransferSettings } from './transferActions';
+import TransferSettingsForm from './TransferSettingsForm';
 
 export default async function ConfiguracionPagosPage() {
   const data = await getStorePaymentSettings();
@@ -18,15 +20,18 @@ export default async function ConfiguracionPagosPage() {
       <div className="p-6 max-w-4xl mx-auto text-white">
         <h1 className="text-3xl font-bold mb-2">Configuración de Pagos</h1>
         <p className="text-gray-400">
-          Esta sección no aplica para tu tipo de tienda. Las tiendas Vendedor/Afiliado no procesan pagos propios: tus comisiones por referidos se generan automáticamente y las gestiona Crisalap.
+          Esta sección no aplica para tu tipo de tienda. Las tiendas Crisalap Impulsa no procesan pagos propios: tus comisiones por referidos se generan automáticamente y las gestiona Crisalap.
         </p>
       </div>
     );
   }
 
+  const transfer = await getTransferSettings();
+
   return (
     <div className="p-6 max-w-4xl mx-auto text-white">
-      <h1 className="text-3xl font-bold mb-2">Configuración de Pagos Wompi</h1>
+      <h1 className="text-3xl font-bold mb-2">Configuración de Pagos</h1>
+      <h2 className="text-xl font-semibold mb-2 mt-6">Pagos en línea con Wompi</h2>
       <p className="text-gray-400 mb-8">
         Ingresa las llaves de tu cuenta de Wompi para habilitar los pagos en tu tienda. 
         Tus llaves se guardan de forma segura y encriptada en el sistema.
@@ -34,6 +39,18 @@ export default async function ConfiguracionPagosPage() {
 
       <div className="bg-[#1C1C1E] p-6 rounded-xl border border-white/10 shadow-lg">
         <PaymentSettingsForm initialData={data.settings} />
+      </div>
+
+      <h2 className="text-xl font-semibold mb-2 mt-10">Transferencias (Nequi y Bre-B)</h2>
+      <p className="text-gray-400 mb-8">
+        Si tus clientes pagan por transferencia, escribe aquí tus datos para que los vean al pagar. Después de transferir, te envían el comprobante por WhatsApp y tú confirmas el pedido.
+      </p>
+
+      <div className="bg-[#1C1C1E] p-6 rounded-xl border border-white/10 shadow-lg">
+        <TransferSettingsForm
+          initialNequi={transfer?.nequiNumber ?? ''}
+          initialBreB={transfer?.llaveBreB ?? ''}
+        />
       </div>
     </div>
   );
