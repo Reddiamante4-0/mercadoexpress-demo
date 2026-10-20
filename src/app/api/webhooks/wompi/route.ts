@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { createClient } from '@supabase/supabase-js';
+import { enviarEnlaceCreacion } from '@/lib/enlaceCreacion';
 
 export async function POST(req: Request) {
   try {
@@ -88,6 +89,17 @@ export async function POST(req: Request) {
 
     if (updateError) {
       throw updateError;
+    }
+
+    // Pago aprobado en la tienda de ventas: se envía al cliente el enlace para
+    // continuar con la creación de su tienda (una sola vez; ver enlaceCreacion.ts).
+    // Si el correo falla, el pago ya quedó registrado y no se interrumpe nada.
+    if (newStatus === 'Recibido') {
+      try {
+        await enviarEnlaceCreacion(orderId);
+      } catch (e) {
+        console.error('No se pudo enviar el enlace de creación:', e);
+      }
     }
 
     return NextResponse.json({ success: true });

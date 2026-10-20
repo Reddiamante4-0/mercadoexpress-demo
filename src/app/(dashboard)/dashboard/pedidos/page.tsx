@@ -11,12 +11,14 @@ import {
   Check, 
   X,
   FileText,
+  Mail,
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
 import { getOrders, updateOrder, getCurrentStoreId, Order } from '@/lib/supabase-api';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslation } from '@/hooks/useTranslation';
+import { enviarEnlaceCreacionAction } from './actions';
 import { translations } from '@/config/translations';
 
 const STATUS_OPTIONS = [
@@ -92,6 +94,15 @@ export default function AdminOrdersPage() {
         title: t.admin.ordersToastStatusChanged.replace('{status}', translatedStatus),
         type: 'success'
       });
+
+      // Tienda de ventas: al confirmar el pago se le envía al cliente el enlace
+      // para crear su tienda (el servidor lo envía una sola vez).
+      if (newStatus === 'Recibido' && order.customerEmail) {
+        const envio = await enviarEnlaceCreacionAction(order.id);
+        if (envio.enviado) {
+          toast({ title: `Enlace de creación enviado a ${order.customerEmail}`, type: 'success' });
+        }
+      }
     } catch (err: any) {
       console.error('Failed to change status', err);
       toast({
@@ -99,6 +110,16 @@ export default function AdminOrdersPage() {
         type: 'error'
       });
     }
+  };
+
+  const handleReenviarEnlace = async (order: Order) => {
+    const envio = await enviarEnlaceCreacionAction(order.id, true);
+    toast({
+      title: envio.enviado
+        ? `Enlace de creación enviado a ${order.customerEmail}`
+        : (envio.mensaje || 'No se pudo enviar el correo'),
+      type: envio.enviado ? 'success' : 'error'
+    });
   };
 
   const toggleExpandOrder = (id: string) => {
@@ -319,6 +340,29 @@ export default function AdminOrdersPage() {
                             <span className="font-medium text-slate-600">{order.phone}</span>
                           </div>
                         </div>
+
+                        {order.customerEmail && (
+                          <div className="flex gap-2.5 items-center flex-wrap">
+                            <Mail className="w-4 h-4 text-green-600 shrink-0" />
+                            <div>
+                              <span className="font-bold text-slate-700 mr-1.5">Correo:</span>
+                              <span className="font-medium text-slate-600">{order.customerEmail}</span>
+                            </div>
+                            {order.status === 'Recibido' && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleReenviarEnlace(order);
+                                }}
+                                className="px-2.5 py-1 rounded-lg text-[10px] font-bold border bg-white text-slate-600 border-slate-200 hover:border-green-400 hover:text-green-700 cursor-pointer"
+                              >
+                                Reenviar enlace de creación
+                              </button>
+                            )}
+                          </div>
+                        )}
 
                         <div className="flex gap-2.5 items-center">
                           <CreditCard className="w-4 h-4 text-green-600 shrink-0" />

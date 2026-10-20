@@ -66,6 +66,10 @@ export default function CheckoutPage({
   const { language, setLanguage } = useTranslation();
   const t = translations[language];
 
+  // En la tienda de ventas se pide el correo, para enviarle al cliente el
+  // enlace con el que continúa la creación de su tienda.
+  const esTiendaDeVentas = storeSlug === process.env.NEXT_PUBLIC_TIENDA_VENTAS_SLUG;
+
   // Load Cart
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -75,6 +79,7 @@ export default function CheckoutPage({
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [barrio, setBarrio] = useState('');
+  const [email, setEmail] = useState('');
   const [notes, setNotes] = useState('');
   const [deliveryType, setDeliveryType] = useState<'daily' | 'weekly'>('daily');
 
@@ -146,11 +151,27 @@ export default function CheckoutPage({
       return;
     }
 
+    if (esTiendaDeVentas && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      toast({
+        title: 'Escribe un correo válido: ahí te enviaremos la información para crear tu tienda.',
+        type: 'error'
+      });
+      return;
+    }
+
     setIsProcessing(true);
     setProcessingStep('Generando orden...');
     
     try {
       const orderId = crypto.randomUUID();
+
+      // Solo tienda de ventas: correo del cliente y código de quien lo refirió.
+      const datosVentas = esTiendaDeVentas
+        ? {
+            customerEmail: email.trim(),
+            refCodigo: localStorage.getItem(`ref_venta_${storeId}`) || undefined
+          }
+        : {};
       
       const orderItems: OrderItem[] = cart.map(item => ({
         productId: item.product.id,
@@ -174,7 +195,8 @@ export default function CheckoutPage({
           total: cartTotal,
           status: 'Pendiente de pago',
           createdAt: new Date().toISOString(),
-          deliveryType
+          deliveryType,
+          ...datosVentas
         };
 
         setProcessingStep('Guardando pedido...');
@@ -209,7 +231,8 @@ export default function CheckoutPage({
           total: cartTotal,
           status: 'Pendiente de pago',
           createdAt: new Date().toISOString(),
-          deliveryType
+          deliveryType,
+          ...datosVentas
         };
 
         setProcessingStep('Guardando pedido...');
@@ -243,7 +266,8 @@ export default function CheckoutPage({
         total: cartTotal,
         status: 'Pendiente de pago',
         createdAt: new Date().toISOString(),
-        deliveryType
+        deliveryType,
+        ...datosVentas
       };
 
       setProcessingStep('Guardando pedido...');
@@ -406,6 +430,21 @@ export default function CheckoutPage({
                   />
                 </div>
               </div>
+
+              {esTiendaDeVentas && (
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Correo electrónico</label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="tucorreo@ejemplo.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-hidden focus:border-green-600 focus:ring-1 focus:ring-green-600"
+                  />
+                  <p className="text-[10px] text-slate-400 pl-1">A este correo te llegará la información para continuar con la creación de tu tienda.</p>
+                </div>
+              )}
 
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">{t.checkout.notes}</label>

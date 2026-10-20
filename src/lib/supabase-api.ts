@@ -47,6 +47,9 @@ export interface Order {
   createdAt: string;
   deliveryType?: 'daily' | 'weekly';
   store_id?: string;
+  // Solo tienda de ventas: correo del cliente y código de quien lo refirió.
+  customerEmail?: string;
+  refCodigo?: string;
 }
 
 export interface Client {
@@ -151,6 +154,8 @@ function orderToDb(order: Order, storeId: string) {
     total: order.total,
     status: order.status,
     delivery_type: order.deliveryType,
+    customer_email: order.customerEmail,
+    ref_codigo: order.refCodigo,
     created_at: order.createdAt,
   };
 }
@@ -172,6 +177,8 @@ function orderFromDb(row: any): Order {
     createdAt: row.created_at,
     deliveryType: row.delivery_type,
     store_id: row.store_id,
+    customerEmail: row.customer_email ?? undefined,
+    refCodigo: row.ref_codigo ?? undefined,
   };
 }
 
