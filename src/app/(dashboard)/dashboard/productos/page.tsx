@@ -161,8 +161,8 @@ export default function AdminProductsPage() {
 
   const downloadExcelTemplate = () => {
     const ws_data = [
-      ['nombre', 'categoria', 'precio', 'precio_anterior', 'stock', 'imagen', 'descripcion', 'unidad', 'nombre_ingles', 'descripcion_ingles', 'unidad_ingles'],
-      ['Producto de Ejemplo', 'General', 15000, 20000, 10, DEFAULT_IMAGE, 'Descripción del producto', 'und', 'Sample Product', 'Product description', 'unit']
+      ['numero_foto', 'nombre', 'categoria', 'precio', 'precio_anterior', 'stock', 'imagen', 'descripcion', 'unidad', 'nombre_ingles', 'descripcion_ingles', 'unidad_ingles'],
+      [1, 'Producto de Ejemplo', 'General', 15000, 20000, 10, '', 'Descripción del producto', 'und', 'Sample Product', 'Product description', 'unit']
     ];
     const ws = XLSX.utils.aoa_to_sheet(ws_data);
     const wb = XLSX.utils.book_new();
@@ -189,6 +189,36 @@ export default function AdminProductsPage() {
         let createdCount = 0;
         let updatedCount = 0;
         let errorCount = 0;
+        const fotosSinArchivo: number[] = [];
+
+        // Fotos numeradas: si la planilla trae la columna numero_foto, buscamos en el
+        // almacenamiento de la tienda la foto subida con ese número (3.webp, 12.webp…).
+        const hayNumeroFoto = data.some((r: any) => r.numero_foto !== undefined && String(r.numero_foto).trim() !== '');
+        const fotosPorNumero = new Map<number, string>();
+        let listadoVerificado = false;
+        if (hayNumeroFoto) {
+          const bucket = supabase.storage.from('product-images');
+          let offset = 0;
+          let listadoOk = true;
+          while (true) {
+            const { data: archivos, error: listError } = await bucket.list(currentStoreId, { limit: 1000, offset });
+            if (listError || !archivos) { listadoOk = false; break; }
+            for (const a of archivos) {
+              const stem = a.name.replace(/\.[^.]+$/, '');
+              if (/^\d+$/.test(stem) && !fotosPorNumero.has(Number(stem))) {
+                fotosPorNumero.set(Number(stem), a.name);
+              }
+            }
+            if (archivos.length < 1000) break;
+            offset += 1000;
+          }
+          listadoVerificado = listadoOk;
+        }
+        const urlDeFoto = (numero: number): string | undefined => {
+          const nombreArchivo = fotosPorNumero.get(numero) ?? (listadoVerificado ? undefined : `${numero}.webp`);
+          if (!nombreArchivo) return undefined;
+          return supabase.storage.from('product-images').getPublicUrl(`${currentStoreId}/${nombreArchivo}`).data.publicUrl;
+        };
 
         const allProducts = await getProducts(currentStoreId);
         const newProductsList = [...allProducts];
@@ -201,6 +231,15 @@ export default function AdminProductsPage() {
           }
 
           const existingProduct = newProductsList.find(p => p.name.toLowerCase() === row.nombre.toLowerCase().trim());
+
+          let urlNumerada: string | undefined;
+          const numeroFoto = Number(String(row.numero_foto ?? '').trim());
+          if (String(row.numero_foto ?? '').trim() !== '') {
+            if (Number.isInteger(numeroFoto) && numeroFoto > 0) {
+              urlNumerada = urlDeFoto(numeroFoto);
+            }
+            if (!urlNumerada) fotosSinArchivo.push(numeroFoto);
+          }
           
           const parsedProduct: Product = {
             id: existingProduct ? existingProduct.id : crypto.randomUUID(),
@@ -210,7 +249,7 @@ export default function AdminProductsPage() {
             price: Number(row.precio),
             oldPrice: row.precio_anterior ? Number(row.precio_anterior) : undefined,
             stock: row.stock !== undefined ? Number(row.stock) : 10,
-            image: row.imagen?.toString().trim() || DEFAULT_IMAGE,
+            image: urlNumerada || row.imagen?.toString().trim() || DEFAULT_IMAGE,
             description: row.descripcion?.toString().trim() || 'Sin descripción',
             descriptionEn: row.descripcion_ingles?.toString().trim() || undefined,
             unit: row.unidad?.toString().trim() || 'lb',
@@ -242,8 +281,11 @@ export default function AdminProductsPage() {
         });
         setProducts(refreshed.products);
         setTotalCount(refreshed.total);
+        const avisoFotos = fotosSinArchivo.length > 0
+          ? ` Sin foto subida para el N° ${fotosSinArchivo.slice(0, 10).join(', ')}${fotosSinArchivo.length > 10 ? '…' : ''}.`
+          : '';
         toast({
-          title: `Importación finalizada. ${createdCount} creados, ${updatedCount} actualizados, ${errorCount} ignorados.`,
+          title: `Importación finalizada. ${createdCount} creados, ${updatedCount} actualizados, ${errorCount} ignorados.${avisoFotos}`,
           type: createdCount > 0 || updatedCount > 0 ? 'success' : 'error'
         });
       } catch (error) {

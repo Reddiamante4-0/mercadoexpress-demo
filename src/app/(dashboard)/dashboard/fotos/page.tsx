@@ -10,6 +10,7 @@ interface UploadedFile {
   id: string;
   url: string;
   name: string;
+  numero?: number;
 }
 
 export default function AdminFotosPage() {
@@ -44,6 +45,7 @@ export default function AdminFotosPage() {
     }
 
     const newUploaded: UploadedFile[] = [];
+    const numerosEnEsteLote = new Set<number>();
 
     for (const file of files) {
       // 5MB frontend validation
@@ -70,7 +72,23 @@ export default function AdminFotosPage() {
       }
 
       const uuid = crypto.randomUUID();
-      const fileName = `${uuid}.${fileExtension}`;
+
+      // Si el archivo se llama "3.jpg", "12.png", etc., guardamos la foto con ese
+      // número (3.webp, 12.webp) para que la planilla de Excel pueda asociarla
+      // con la columna numero_foto sin copiar URLs a mano. Cualquier otro nombre
+      // se sube como siempre, con un nombre aleatorio.
+      const stem = file.name.replace(/\.[^.]+$/, '').trim();
+      const numero = /^\d+$/.test(stem) ? Number(stem) : undefined;
+      if (numero !== undefined) {
+        if (numero < 1 || numerosEnEsteLote.has(numero)) {
+          toast({ title: `El número ${numero} está repetido o no es válido (${file.name}). Se omitió.`, type: 'error' });
+          errorCount++;
+          continue;
+        }
+        numerosEnEsteLote.add(numero);
+      }
+
+      const fileName = numero !== undefined ? `${numero}.${fileExtension}` : `${uuid}.${fileExtension}`;
       const filePath = `${storeId}/${fileName}`;
 
       try {
@@ -78,7 +96,7 @@ export default function AdminFotosPage() {
           .from('product-images')
           .upload(filePath, fileToUpload, {
             cacheControl: '3600',
-            upsert: false
+            upsert: numero !== undefined
           });
 
         if (uploadError) {
@@ -94,7 +112,8 @@ export default function AdminFotosPage() {
         newUploaded.push({
           id: uuid,
           url: publicUrlData.publicUrl,
-          name: file.name
+          name: file.name,
+          numero
         });
         successCount++;
       } catch (err) {
@@ -130,6 +149,7 @@ export default function AdminFotosPage() {
         </h1>
         <p className="text-xs text-slate-400 mt-1">
           Sube imágenes para tus productos. Luego copia la URL pública para usarla en tu catálogo.
+          Si nombras las fotos 1.jpg, 2.jpg, 3.jpg… puedes poner ese número en la columna numero_foto de la planilla y no necesitas copiar URLs.
         </p>
       </div>
 
@@ -187,7 +207,9 @@ export default function AdminFotosPage() {
                   <img src={file.url} alt={file.name} className="w-full h-full object-cover" />
                 </div>
                 <div className="p-3">
-                  <p className="text-[10px] text-slate-500 truncate mb-2 font-mono" title={file.name}>{file.name}</p>
+                  <p className="text-[10px] text-slate-500 truncate mb-2 font-mono" title={file.name}>
+                    {file.numero !== undefined ? `N° ${file.numero} · ` : ''}{file.name}
+                  </p>
                   <button
                     onClick={() => handleCopyUrl(file.id, file.url)}
                     className="w-full py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
