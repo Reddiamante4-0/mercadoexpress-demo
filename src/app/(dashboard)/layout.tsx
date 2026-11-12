@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Sidebar } from '@/components/dashboard/Sidebar';
 import { brandConfig } from '@/config/brandConfig';
 import { Header } from '@/components/dashboard/Header';
+import { NewOrderAlert } from '@/components/dashboard/NewOrderAlert';
 import { createClient } from '@/lib/supabase/client';
 import { useTranslation } from '@/hooks/useTranslation';
 import { ShieldAlert, Loader2, LogOut } from 'lucide-react';
@@ -292,6 +293,9 @@ export default function DashboardLayout({
           </div>
         </main>
       </div>
+
+      {/* Timbre y aviso de pedidos nuevos */}
+      {isAuthorized && !isSuspended && <NewOrderAlert />}
     </div>
   );
 }
